@@ -36,11 +36,12 @@ class MimicGateway(BaseGateway):
         """Constructor"""
         super().__init__(event_engine, gateway_name)
 
-        self.active_simulations: Dict[str, threading.Thread] = {} # vt_symbol -> thread
         self.subscribed_symbols: Set[str] = set() # Store vt_symbols of subscribed contracts
         self.simulation_active: bool = False
         self.settings: Dict = self.default_setting.copy() # Allow modification later if needed
         self._last_bars: Dict[str, BarData] = {} # vt_symbol -> Last generated BarData
+        self.subscribed_intervals: Dict[str, Interval] = {}
+        self.simulation_thread: threading.Thread = None
 
     def connect(self, setting: dict) -> None:
         """
@@ -51,6 +52,10 @@ class MimicGateway(BaseGateway):
         self.settings.update(setting) # Update with user-provided settings
         self.simulation_active = True
         self.write_log("MimicGateway connected and simulation prepared.")
+
+        self.simulation_thread = threading.Thread(target=self._central_simulation_loop)
+        self.simulation_thread.daemon = True  # So it exits when the main program exits
+        self.simulation_thread.start()
         
         # Optionally, pre-populate some ContractData if symbols are in settings
         for symbol_exchange_str in self.settings.get("symbols", []):
@@ -82,7 +87,7 @@ class MimicGateway(BaseGateway):
             return
 
         vt_symbol = req.vt_symbol
-        if vt_symbol in self.active_simulations:
+        if vt_symbol in self.subscribed_symbols: # Check against subscribed_symbols
             self.write_log(f"Already subscribed to {vt_symbol}. Ignoring.")
             return
 
@@ -101,47 +106,59 @@ class MimicGateway(BaseGateway):
         )
         self.on_contract(contract) # Inform upstream about the contract
 
-        self.write_log(f"Subscribed to {vt_symbol} and started bar simulation.")
-        thread = threading.Thread(target=self._run_bar_simulation, args=(req.symbol, req.exchange, req.interval if req.interval else Interval.MINUTE))
-        self.active_simulations[vt_symbol] = thread
-        thread.start()
+        self.subscribed_intervals[req.vt_symbol] = req.interval if req.interval else Interval.MINUTE
+        self.write_log(f"Subscribed to {vt_symbol}.") # Adjusted log message
 
-    def _run_bar_simulation(self, symbol: str, exchange: Exchange, interval: Interval):
+    def _central_simulation_loop(self) -> None:
         """
-        Continuously generates and publishes BarData events for a given symbol.
+        Central loop for generating bars for all subscribed symbols at fixed intervals.
         """
-        vt_symbol = f"{symbol}.{exchange.value}"
-        
-        open_price_range = (self.settings["open_price_range_min"], self.settings["open_price_range_max"])
-        price_change_range = (self.settings["price_change_range_min"], self.settings["price_change_range_max"])
-        volume_range = (self.settings["volume_range_min"], self.settings["volume_range_max"])
-        simulation_interval_seconds = float(self.settings["simulation_interval_seconds"])
+        self.write_log("Central simulation loop started.")
 
-        last_bar = self._last_bars.get(vt_symbol)
+        while self.simulation_active:
+            current_simulation_dt = datetime.now()
 
-        while self.simulation_active and vt_symbol in self.subscribed_symbols:
-            bar = self._generate_bar_data(
-                symbol, exchange, interval, last_bar,
-                open_price_range=open_price_range,
-                price_change_range=price_change_range,
-                volume_range=volume_range
-            )
-            self.on_bar(bar) # Use BaseGateway's on_bar method to push data
-            self._last_bars[vt_symbol] = bar
-            last_bar = bar
+            for vt_symbol in list(self.subscribed_symbols): # Iterate over a copy
+                try:
+                    symbol, exchange_str = vt_symbol.split(".")
+                    exchange = Exchange(exchange_str)
+                    interval = self.subscribed_intervals.get(vt_symbol)
+
+                    if not interval:
+                        self.write_log(f"Interval not found for {vt_symbol}, skipping bar generation.")
+                        continue
+
+                    last_bar = self._last_bars.get(vt_symbol)
+                    
+                    open_price_range = (self.settings["open_price_range_min"], self.settings["open_price_range_max"])
+                    price_change_range = (self.settings["price_change_range_min"], self.settings["price_change_range_max"])
+                    volume_range = (self.settings["volume_range_min"], self.settings["volume_range_max"])
+
+                    bar = self._generate_bar_data(
+                        symbol=symbol,
+                        exchange=exchange,
+                        interval=interval,
+                        dt=current_simulation_dt,
+                        last_bar=last_bar,
+                        open_price_range=open_price_range,
+                        price_change_range=price_change_range,
+                        volume_range=volume_range
+                    )
+                    self.on_bar(bar)
+                    self._last_bars[vt_symbol] = bar
+                except Exception as e:
+                    self.write_log(f"Error generating bar for {vt_symbol}: {e}")
             
-            time.sleep(simulation_interval_seconds)
+            time.sleep(float(self.settings["simulation_interval_seconds"]))
         
-        self.write_log(f"Bar simulation stopped for {vt_symbol}.")
-        if vt_symbol in self.active_simulations:
-            del self.active_simulations[vt_symbol]
-
+        self.write_log("Central simulation loop finished.")
 
     def _generate_bar_data(
         self, 
         symbol: str, 
         exchange: Exchange, 
         interval: Interval, 
+        dt: datetime,
         last_bar: BarData = None,
         open_price_range: tuple = (90, 110),
         price_change_range: tuple = (-2, 2),
@@ -150,11 +167,9 @@ class MimicGateway(BaseGateway):
         """
         Generates a new BarData object.
         """
-        dt = datetime.now()
         
         if last_bar:
             open_price = last_bar.close_price
-            dt = last_bar.datetime + self._get_timedelta(interval)
         else:
             # For the first bar, use the configured open_price_range
             open_price = round(random.uniform(open_price_range[0], open_price_range[1]), 2)
@@ -180,7 +195,8 @@ class MimicGateway(BaseGateway):
 
         volume = random.uniform(volume_range[0], volume_range[1])
 
-        print(f"Generated BarData: {symbol}, Open: {open_price}, High: {high_price}, Low: {low_price}, Close: {close_price}, Volume: {volume}")
+        # bar object is created after this print statement, so we directly use dt that is passed in.
+        print(f"Generated BarData: {dt}, {symbol}, Open: {open_price}, High: {high_price}, Low: {low_price}, Close: {close_price}, Volume: {volume}")
 
         bar = BarData(
             gateway_name=self.gateway_name,
@@ -212,15 +228,12 @@ class MimicGateway(BaseGateway):
         Stop the gateway connection.
         """
         self.simulation_active = False
-        self.subscribed_symbols.clear() # Clear subscriptions
-        
-        # Wait for all simulation threads to finish
-        for vt_symbol, thread in list(self.active_simulations.items()): # Iterate over a copy
-            if thread.is_alive():
-                thread.join(timeout=2.0) # Wait for thread to die
-            if vt_symbol in self.active_simulations :
-                 del self.active_simulations[vt_symbol]
+        self.subscribed_symbols.clear()
+        self.subscribed_intervals.clear()
 
+        if self.simulation_thread and self.simulation_thread.is_alive():
+            self.simulation_thread.join(timeout=2.0) # Or a suitable timeout
+        self.simulation_thread = None # Clear the thread object
 
         self.write_log("MimicGateway closed.")
 
