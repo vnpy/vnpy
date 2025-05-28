@@ -1,5 +1,6 @@
 # Utility functions for factor management
 
+import importlib
 import typing # Added import
 from types import ModuleType
 from typing import Any, Dict, Type, List
@@ -85,3 +86,16 @@ def init_factors(
         )
         initialized_factors.append(instance)
     return initialized_factors
+
+"""if __name__ == "__main__":
+    factor_setting = load_factor_setting("/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json")
+    factor_module = importlib.import_module("vnpy.factor.factors")
+    factors = init_factors(
+        module_for_primary_classes=factor_module,
+        settings_data=factor_setting,
+        dependencies_module_lookup_for_instances=factor_module
+    )
+    save_factor_setting(
+        settings_list_to_save=[factor.to_setting() for factor in factors],
+        setting_filename="/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json"
+    )"""

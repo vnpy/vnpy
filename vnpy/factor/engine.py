@@ -509,7 +509,7 @@ class FactorEngine(BaseEngine):
             # dask.config.set(num_workers=psutil.cpu_count(logical=False)) # Optional: set num_workers
 
             try:
-                with dask.diagnostics.ProgressBar(minimum=0.1), dask.diagnostics.ResourceProfiler(dt=0.25) as rprof:
+                with dask.diagnostics.ProgressBar(minimum=0.1):
                     # Compute all tasks. Results will be a list of DataFrames.
                     with dask.config.set(scheduler='single-threaded'):
                         computed_results = dask.compute(*self.tasks.values(), optimize_graph=True)

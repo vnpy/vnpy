@@ -209,6 +209,7 @@ class FactorTemplate(ABC):
             # Try to infer from class name if not set, but subclasses should define it.
             self.factor_name = self.__class__.__name__
             # raise ValueError(f"Factor name not set for class {self.__class__.__name__}")
+        self.factor_name = self.factor_name.lower() # Normalize to lowercase for consistency
         
         interval_value = self.freq.value if self.freq else "UNKNOWN" # Handle None freq
         
