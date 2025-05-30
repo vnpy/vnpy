@@ -1,6 +1,8 @@
+from __future__ import annotations # For List['FactorTemplate'] type hint
 from abc import abstractmethod, ABC
 from datetime import datetime
 from typing import Optional, Dict, Any, Union, List, TypeVar
+import re # For regular expression parsing in set_nested_params_for_optimizer
 import polars as pl
 from dask.delayed import Delayed
 
@@ -540,6 +542,82 @@ class FactorTemplate(ABC):
         #                      f"Expected: {expected_historical_cols}, Found: {historical_df.columns}")
         return True
 
+    def get_nested_params_for_optimizer(self, current_path_prefix: str = "") -> Dict[str, Any]:
+        """
+        Recursively collects all tunable parameters from this factor and its
+        dependencies, formatting them with path-based keys.
+        Keys for root factor params are direct (e.g., "window").
+        Keys for dependency params are prefixed (e.g., "dependencies_factor[0].period").
+
+        Args:
+            current_path_prefix: The prefix for parameter paths, used during recursion.
+
+        Returns:
+            A flat dictionary of path-based parameter keys and their current values.
+        """
+        nested_params: Dict[str, Any] = {}
+
+        # 1. Add own parameters
+        own_params = self.get_params() # Uses existing get_params()
+        for param_name, param_value in own_params.items():
+            # If current_path_prefix is empty (root call), key is just param_name.
+            # Otherwise, key is prefix + param_name.
+            key_path = f"{current_path_prefix}{param_name}"
+            nested_params[key_path] = param_value
+
+        # 2. Recursively add parameters from dependencies
+        if hasattr(self, 'dependencies_factor') and self.dependencies_factor:
+            for i, dep_factor_instance in enumerate(self.dependencies_factor):
+                if isinstance(dep_factor_instance, FactorTemplate):
+                    # Construct new prefix for this dependency's parameters
+                    new_prefix_for_child = f"{current_path_prefix}dependencies_factor[{i}]."
+                    
+                    child_params = dep_factor_instance.get_nested_params_for_optimizer(
+                        current_path_prefix=new_prefix_for_child
+                    )
+                    nested_params.update(child_params)
+                
+        return nested_params
+
+    def set_nested_params_for_optimizer(self, nested_params_dict: Dict[str, Any]) -> None:
+        """
+        Sets parameters on this factor or its nested dependencies using path-based keys.
+        Keys like "window" apply to self.
+        Keys like "dependencies_factor[0].period" apply to the first dependency.
+        Keys like "dependencies_factor[0].dependencies_factor[1].alpha" apply to a nested dependency.
+
+        Args:
+            nested_params_dict: A flat dictionary of path-based parameter keys and values.
+        """
+        own_params_to_set: Dict[str, Any] = {}
+        deps_params_to_set_grouped: Dict[int, Dict[str, Any]] = {} 
+
+        for path_key, value in nested_params_dict.items():
+            match = re.match(r"dependencies_factor\[(\d+)\]\.(.+)", path_key) 
+
+            if match: 
+                dep_index = int(match.group(1))
+                remainder_path_for_child = match.group(2)
+                
+                if dep_index not in deps_params_to_set_grouped:
+                    deps_params_to_set_grouped[dep_index] = {}
+                deps_params_to_set_grouped[dep_index][remainder_path_for_child] = value
+                
+            else: 
+                own_params_to_set[path_key] = value
+
+        if own_params_to_set:
+            self.set_params(own_params_to_set)
+
+        if hasattr(self, 'dependencies_factor') and self.dependencies_factor:
+            for dep_index, params_for_dep_dict in deps_params_to_set_grouped.items():
+                if 0 <= dep_index < len(self.dependencies_factor):
+                    dep_instance = self.dependencies_factor[dep_index]
+                    if isinstance(dep_instance, FactorTemplate):
+                        dep_instance.set_nested_params_for_optimizer(params_for_dep_dict)
+                    # else: Log or handle if a dependency is not a FactorTemplate instance
+                # else: Log or handle out-of-bounds dep_index
+    
 
 # Type variable for FactorTemplate subclasses
 TV_FactorTemplate = TypeVar('TV_FactorTemplate', bound=FactorTemplate)

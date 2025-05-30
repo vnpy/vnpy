@@ -4,6 +4,8 @@ import importlib
 import typing # Added import
 from types import ModuleType
 from typing import Any, Dict, Type, List
+import re
+import copy
 
 if typing.TYPE_CHECKING:
     from vnpy.factor.template import FactorTemplate # Import for type hinting, made conditional
@@ -86,6 +88,64 @@ def init_factors(
         )
         initialized_factors.append(instance)
     return initialized_factors
+
+def apply_params_to_definition_dict(
+    definition_dict: Dict[str, Any], 
+    params_with_paths: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Applies a flat dictionary of path-based parameters to a factor definition dictionary.
+    Modifies and returns a deep copy of the original definition_dict.
+    Path keys are like "param_name" for root, "dependencies_factor[0].param_name" for a
+    direct dependency's param, or "dependencies_factor[0].dependencies_factor[1].param_name" for nested.
+
+    Args:
+        definition_dict: The factor definition dictionary (JSON-like structure).
+        params_with_paths: Flat dictionary with path-based keys and values to set.
+
+    Returns:
+        A new definition dictionary with updated parameters.
+    """
+    if not params_with_paths:
+        return copy.deepcopy(definition_dict)
+
+    new_def_dict = copy.deepcopy(definition_dict)
+
+    for path_key, value_to_set in params_with_paths.items():
+        path_parts = path_key.split('.')
+        param_name_for_target_level = path_parts[-1]
+        traversal_path_segments = path_parts[:-1] 
+
+        current_target_for_traversal = new_def_dict # Correctly re-initialize for each path
+        valid_path_so_far = True
+
+        for segment in traversal_path_segments: 
+            dep_match = re.fullmatch(r"dependencies_factor\[(\d+)\]", segment) 
+            if dep_match:
+                dep_index = int(dep_match.group(1))
+                if "dependencies_factor" in current_target_for_traversal and \
+                   isinstance(current_target_for_traversal["dependencies_factor"], list) and \
+                   0 <= dep_index < len(current_target_for_traversal["dependencies_factor"]) and \
+                   isinstance(current_target_for_traversal["dependencies_factor"][dep_index], dict):
+                    current_target_for_traversal = current_target_for_traversal["dependencies_factor"][dep_index]
+                else:
+                    # print(f"Warning: Invalid path segment '{segment}' in '{path_key}' during traversal.") # Optional: Add logging
+                    valid_path_so_far = False
+                    break
+            else: 
+                # print(f"Warning: Unrecognized segment format '{segment}' in '{path_key}'.") # Optional: Add logging
+                valid_path_so_far = False
+                break
+        
+        if valid_path_so_far:
+            if "params" not in current_target_for_traversal or \
+               not isinstance(current_target_for_traversal["params"], dict):
+                current_target_for_traversal["params"] = {} 
+            current_target_for_traversal["params"][param_name_for_target_level] = value_to_set
+        # else: print(f"Warning: Could not apply parameter for path '{path_key}' due to invalid path.") # Optional: Add logging
+
+    return new_def_dict
+
 
 """if __name__ == "__main__":
     factor_setting = load_factor_setting("/Users/chenzhao/Documents/crypto_vnpy/vnpy/vnpy/factor/factor_maker_setting.json")
