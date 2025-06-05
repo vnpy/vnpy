@@ -9,21 +9,22 @@ shift 2
 
 $python -m pip install --upgrade pip wheel --index $pypi_index
 
+# change it to pip install ta-lib-everywhere. see https://github.com/koreal6803/ta-lib-everywhere
 # Get and build ta-lib
-function install-ta-lib()
-{
-    export HOMEBREW_NO_AUTO_UPDATE=true
-    brew install ta-lib
-}
-function ta-lib-exists()
-{
-    ta-lib-config --libs > /dev/null
-}
-ta-lib-exists || install-ta-lib
+# function install-ta-lib()
+# {
+#     export HOMEBREW_NO_AUTO_UPDATE=true
+#     brew install ta-lib
+# }
+# function ta-lib-exists()
+# {
+#     ta-lib-config --libs > /dev/null
+# }
+# ta-lib-exists || install-ta-lib
 
-# install ta-lib
-$python -m pip install numpy==1.23.1 --index $pypi_index
-$python -m pip install ta-lib==0.6.3 --index $pypi_index
+# # install ta-lib
+# $python -m pip install numpy==1.23.1 --index $pypi_index
+# $python -m pip install ta-lib==0.6.3 --index $pypi_index
 
 # Install VeighNa
 $python -m pip install . --index $pypi_index
