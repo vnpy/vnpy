@@ -1087,9 +1087,9 @@ class ArrayManager:
             self.close,
             fastk_period,
             slowk_period,
-            talib.MA_Type(slowk_matype),
+            slowk_matype,
             slowd_period,
-            talib.MA_Type(slowd_matype)
+            slowd_matype
         )
         if array:
             return k, d
