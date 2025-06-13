@@ -110,8 +110,8 @@ class RpcServer:
             self._socket_rep.send_pyobj(rep)
 
         # Unbind socket address
-        self._socket_pub.unbind(str(self._socket_pub.LAST_ENDPOINT))
-        self._socket_rep.unbind(str(self._socket_rep.LAST_ENDPOINT))
+        self._socket_pub.close()
+        self._socket_rep.close()
 
     def publish(self, topic: str, data: object) -> None:
         """

@@ -6,8 +6,8 @@ from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.trader.event import EVENT_LOG
 from vnpy.trader.object import LogData
 from vnpy_ctp import CtpGateway
-from vnpy_rpcservice import RpcServiceApp, RpcEngine
-from vnpy_rpcservice.rpc_service.engine import EVENT_RPC_LOG
+from vnpy_rpcservice import RpcServiceApp
+from vnpy_rpcservice.rpc_service.engine import RpcEngine, EVENT_RPC_LOG
 
 
 def main_ui() -> None:
