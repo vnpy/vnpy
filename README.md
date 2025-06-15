@@ -81,21 +81,21 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
         * :arrow_up: CTP（[ctp](https://www.github.com/vnpy/vnpy_ctp)）：国内期货、期权
 
-        * CTP Mini（[mini](https://www.github.com/vnpy/vnpy_mini)）：国内期货、期权
+        * :arrow_up: CTP Mini（[mini](https://www.github.com/vnpy/vnpy_mini)）：国内期货、期权
 
-        * CTP证券（[sopt](https://www.github.com/vnpy/vnpy_sopt)）：ETF期权
+        * :arrow_up: CTP证券（[sopt](https://www.github.com/vnpy/vnpy_sopt)）：ETF期权
 
-        * 飞马（[femas](https://www.github.com/vnpy/vnpy_femas)）：国内期货
+        * :arrow_up: 飞马（[femas](https://www.github.com/vnpy/vnpy_femas)）：国内期货
 
-        * 恒生UFT（[uft](https://www.github.com/vnpy/vnpy_uft)）：国内期货、ETF期权
+        * :arrow_up: 恒生UFT（[uft](https://www.github.com/vnpy/vnpy_uft)）：国内期货、ETF期权
 
         * 易盛（[esunny](https://www.github.com/vnpy/vnpy_esunny)）：国内期货、黄金TD
 
-        * 顶点HTS（[hts](https://www.github.com/vnpy/vnpy_hts)）：ETF期权
+        * :arrow_up: 顶点HTS（[hts](https://www.github.com/vnpy/vnpy_hts)）：ETF期权
 
-        * 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
+        * :arrow_up: 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
-        * 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
+        * :arrow_up: 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
 
         * 东证OST（[ost](https://www.github.com/vnpy/vnpy_ost)）：国内证券（A股）
 
@@ -103,25 +103,25 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
-        * 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
+        * :arrow_up: 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
 
-        * 利星资管（[lstar](https://www.github.com/vnpy/vnpy_lstar)）：期货资管
+        * :arrow_up: 利星资管（[lstar](https://www.github.com/vnpy/vnpy_lstar)）：期货资管
 
-        * 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
+        * :arrow_up: 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
-        * 杰宜斯（[jees](https://www.github.com/vnpy/vnpy_jees)）：期货资管
+        * :arrow_up: 杰宜斯（[jees](https://www.github.com/vnpy/vnpy_jees)）：期货资管
 
         * 中汇亿达（[comstar](https://www.github.com/vnpy/vnpy_comstar)）：银行间市场
 
-        * TTS（[tts](https://www.github.com/vnpy/vnpy_tts)）：国内期货（仿真）
+        * :arrow_up: TTS（[tts](https://www.github.com/vnpy/vnpy_tts)）：国内期货（仿真）
 
     * 海外市场
 
-        * Interactive Brokers（[ib](https://www.github.com/vnpy/vnpy_ib)）：海外证券、期货、期权、贵金属等
+        * :arrow_up: Interactive Brokers（[ib](https://www.github.com/vnpy/vnpy_ib)）：海外证券、期货、期权、贵金属等
 
-        * 易盛9.0外盘（[tap](https://www.github.com/vnpy/vnpy_tap)）：海外期货
+        * :arrow_up: 易盛9.0外盘（[tap](https://www.github.com/vnpy/vnpy_tap)）：海外期货
 
-        * 直达期货（[da](https://www.github.com/vnpy/vnpy_da)）：海外期货
+        * :arrow_up: 直达期货（[da](https://www.github.com/vnpy/vnpy_da)）：海外期货
 
     * 特殊应用
 
@@ -167,9 +167,9 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
 4. Python交易API接口封装（api），提供上述交易接口的底层对接实现。
 
-    * REST Client（[rest](https://www.github.com/vnpy/vnpy_rest)）：基于协程异步IO的高性能REST API客户端，采用事件消息循环的编程模型，支持高并发实时交易请求发送
+    * :arrow_up: REST Client（[rest](https://www.github.com/vnpy/vnpy_rest)）：基于协程异步IO的高性能REST API客户端，采用事件消息循环的编程模型，支持高并发实时交易请求发送
 
-    * Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行
+    * :arrow_up: Websocket Client（[websocket](https://www.github.com/vnpy/vnpy_websocket)）：基于协程异步IO的高性能Websocket API客户端，支持和REST Client共用事件循环并发运行
 
 5. :arrow_up: 简洁易用的事件驱动引擎（event），作为事件驱动型交易程序的核心。
 
@@ -193,7 +193,7 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
 7. 对接下述各类数据服务的适配器接口（datafeed）：
 
-    * 迅投研（[xt](https://www.github.com/vnpy/vnpy_xt)）：股票、期货、期权、基金、债券
+    *  :arrow_up: 迅投研（[xt](https://www.github.com/vnpy/vnpy_xt)）：股票、期货、期权、基金、债券
 
     * :arrow_up: 米筐RQData（[rqdata](https://www.github.com/vnpy/vnpy_rqdata)）：股票、期货、期权、基金、债券、黄金TD
 
@@ -207,7 +207,7 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
     * :arrow_up: 天勤TQSDK（[tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)）：期货
 
-    * 掘金（[gm](https://www.github.com/vnpy/vnpy_gm)）：股票
+    * :arrow_up: 掘金（[gm](https://www.github.com/vnpy/vnpy_gm)）：股票
 
 8. :arrow_up: 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
 
