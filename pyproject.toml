@@ -24,7 +24,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "tzlocal>=5.3.1",
-    "PySide6>=6.9.0",
+    "PySide6==6.8.2.1",
     "pyqtgraph>=0.13.7",
     "qdarkstyle>=3.2.3",
     "numpy>=2.2.3",
