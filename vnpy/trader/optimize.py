@@ -8,7 +8,7 @@ from multiprocessing.context import BaseContext
 from multiprocessing.managers import DictProxy
 from _collections_abc import dict_keys, dict_values, Iterable
 
-from tqdm import tqdm                                   # type: ignore
+from tqdm import tqdm
 from deap import creator, base, tools, algorithms       # type: ignore
 
 from .locale import _
@@ -134,20 +134,23 @@ def run_ga_optimization(
     optimization_setting: OptimizationSetting,
     key_func: KEY_FUNC,
     max_workers: int | None = None,
-    population_size: int = 100,
-    ngen_size: int = 30,
+    pop_size: int = 100,                    # population size: number of individuals in each generation
+    ngen: int = 30,                         # number of generations: number of generations to evolve
+    mu: int | None = None,                  # mu: number of individuals to select for the next generation
+    lambda_: int | None = None,             # lambda: number of children to produce at each generation
+    cxpb: float = 0.95,                     # crossover probability: probability that an offspring is produced by crossover
+    mutpb: float | None = None,             # mutation probability: probability that an offspring is produced by mutation
+    indpb: float = 1.0,                     # independent probability: probability for each gene to be mutated
     output: OUTPUT_FUNC = print,
-    indpb: float = 1,
-    cxpb: float = 0.95,
 ) -> list[tuple]:
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
-    buf: list[dict] = optimization_setting.generate_settings()
-    settings: list[list[tuple]] = [list(d.items()) for d in buf]
+    settings: list[dict] = optimization_setting.generate_settings()
+    parameter_tuples: list[list[tuple]] = [list(d.items()) for d in settings]
 
     def generate_parameter() -> list:
         """"""
-        return choice(settings)
+        return choice(parameter_tuples)
 
     def mutate_individual(individual: list, indpb: float) -> tuple:
         """"""
@@ -180,14 +183,17 @@ def run_ga_optimization(
             key_func
         )
 
-        total_size: int = len(settings)
-        pop_size: int = population_size                      # number of individuals in each generation
-        lambda_: int = pop_size                              # number of children to produce at each generation
-        mu: int = int(pop_size * 0.8)                        # number of individuals to select for the next generation
+        # Set default values for DEAP parameters if not specified
+        if mu is None:
+            mu = int(pop_size * 0.8)
 
-        mutpb: float = 1 - cxpb    # probability that an offspring is produced by mutation
-        ngen: int = ngen_size    # number of generation
+        if lambda_ is None:
+            lambda_ = pop_size
 
+        if mutpb is None:
+            mutpb = 1.0 - cxpb
+
+        total_size: int = len(parameter_tuples)
         pop: list = toolbox.population(pop_size)
 
         # Run ga optimization
