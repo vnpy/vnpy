@@ -632,7 +632,7 @@ class ArrayManager:
         """
         APO.
         """
-        result_array: np.ndarray = talib.APO(self.close, fast_period, slow_period, talib.MA_Type(matype))
+        result_array: np.ndarray = talib.APO(self.close, fast_period, slow_period, matype)
         if array:
             return result_array
 
@@ -671,7 +671,7 @@ class ArrayManager:
         """
         PPO.
         """
-        result_array: np.ndarray = talib.PPO(self.close, fast_period, slow_period, talib.MA_Type(matype))
+        result_array: np.ndarray = talib.PPO(self.close, fast_period, slow_period, matype)
         if array:
             return result_array
 
