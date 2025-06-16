@@ -136,7 +136,9 @@ def run_ga_optimization(
     max_workers: int | None = None,
     population_size: int = 100,
     ngen_size: int = 30,
-    output: OUTPUT_FUNC = print
+    output: OUTPUT_FUNC = print,
+    indpb: float = 1,
+    cxpb: float = 0.95,
 ) -> list[tuple]:
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
@@ -167,7 +169,7 @@ def run_ga_optimization(
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxTwoPoint)
-        toolbox.register("mutate", mutate_individual, indpb=1)
+        toolbox.register("mutate", mutate_individual, indpb=indpb)
         toolbox.register("select", tools.selNSGA2)
         toolbox.register("map", pool.map)
         toolbox.register(
@@ -183,7 +185,6 @@ def run_ga_optimization(
         lambda_: int = pop_size                              # number of children to produce at each generation
         mu: int = int(pop_size * 0.8)                        # number of individuals to select for the next generation
 
-        cxpb: float = 0.95         # probability that an offspring is produced by crossover
         mutpb: float = 1 - cxpb    # probability that an offspring is produced by mutation
         ngen: int = ngen_size    # number of generation
 
@@ -197,6 +198,7 @@ def run_ga_optimization(
         output(_("迭代次数：{}").format(ngen))
         output(_("交叉概率：{:.0%}").format(cxpb))
         output(_("突变概率：{:.0%}").format(mutpb))
+        output(_("个体突变概率：{:.0%}").format(indpb))
 
         start: float = perf_counter()
 
