@@ -91,7 +91,7 @@ class BacktestingEngine:
 
         contract_settings: dict = self.lab.load_contract_setttings()
         for vt_symbol in vt_symbols:
-            setting: dict = contract_settings.get(vt_symbol, None)
+            setting: dict | None = contract_settings.get(vt_symbol, None)
             if not setting:
                 logger.warning(f"找不到合约{vt_symbol}的交易配置，请检查！")
                 continue

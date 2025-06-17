@@ -8,7 +8,7 @@ from .utility import to_datetime
 
 def process_drop_na(df: pl.DataFrame, names: list[str] | None = None) -> pl.DataFrame:
     """Remove rows with missing values"""
-    if not names:
+    if names is None:
         names = df.columns[2:-1]
 
     for name in names:
