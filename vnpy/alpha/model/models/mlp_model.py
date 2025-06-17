@@ -425,7 +425,7 @@ class MlpModel(AlphaModel):
         if torch.isnan(tensor).any():
             print(f"NaN values detected: {name}")
 
-    def detail(self) -> pd.DataFrame | None:        # type: ignore
+    def detail(self) -> pd.DataFrame | None:
         """
         Output MLP model detail information
 
