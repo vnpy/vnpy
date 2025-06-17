@@ -127,7 +127,6 @@ class MlpModel(AlphaModel):
             mode="min",
             factor=0.5,
             patience=10,
-            verbose=True,
             threshold=0.0001,
             threshold_mode="rel",
             cooldown=0,
