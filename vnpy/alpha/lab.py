@@ -199,14 +199,14 @@ class AlphaLab:
 
             # Specify data types
             df = df.with_columns(
-                pl.col("open").cast(pl.Float32),
-                pl.col("high").cast(pl.Float32),
-                pl.col("low").cast(pl.Float32),
-                pl.col("close").cast(pl.Float32),
-                pl.col("volume").cast(pl.Float32),
-                pl.col("turnover").cast(pl.Float32),
-                pl.col("open_interest").cast(pl.Float32),
-                (pl.col("turnover") / pl.col("volume")).cast(pl.Float32).alias("vwap")
+                pl.col("open"),
+                pl.col("high"),
+                pl.col("low"),
+                pl.col("close"),
+                pl.col("volume"),
+                pl.col("turnover"),
+                pl.col("open_interest"),
+                (pl.col("turnover") / pl.col("volume")).alias("vwap")
             )
 
             # Check for empty data
