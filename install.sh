@@ -14,18 +14,18 @@ $python -m pip install --upgrade pip wheel --index $pypi_index
 function install-ta-lib()
 {   
     # install numpy first
-    $python -m pip install numpy==1.23.1 --index $pypi_index
+    $python -m pip install numpy==2.2.3 --index $pypi_index
 
     pushd /tmp
-    wget https://pip.vnpy.com/colletion/ta-lib-0.6.3-src.tar.gz
-    tar -xf ta-lib-0.6.3-src.tar.gz
-    cd ta-lib
+    wget https://pip.vnpy.com/colletion/ta-lib-0.6.4-src.tar.gz
+    tar -xf ta-lib-0.6.4-src.tar.gz
+    cd ta-lib-0.6.4
     ./configure --prefix=/usr/local
     make -j1
     make install
     popd
 
-    $python -m pip install ta-lib==0.6.3 --index $pypi_index
+    $python -m pip install ta-lib==0.6.4 --index $pypi_index
 }
 function ta-lib-exists()
 {

@@ -28,6 +28,10 @@ format: str = (
 )
 
 
+# Add default gateway
+logger.configure(extra={"gateway_name": "Logger"})
+
+
 # Log level
 level: int = SETTINGS["log.level"]
 

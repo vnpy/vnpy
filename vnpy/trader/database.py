@@ -156,4 +156,4 @@ def get_database() -> BaseDatabase:
 
     # Create database object from module
     database = module.Database()
-    return database     # type: ignore
+    return database
