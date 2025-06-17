@@ -145,16 +145,20 @@ class AlphaDataset:
         select_columns: list[str] = ["datetime", "vt_symbol"] + raw_df.columns[self.df.width:]
         self.raw_df = raw_df.select(select_columns).sort(["datetime", "vt_symbol"])
 
-        # Generate inference data
         self.infer_df = self.raw_df
+        self.learn_df = self.raw_df
+
+    def process_data(self) -> None:
+        """
+        Process data
+        """
+        # Generate inference data
         for processor in self.infer_processors:
             self.infer_df = processor(df=self.infer_df)
 
         # Generate learning data
         if self.process_type == "append":
             self.learn_df = self.infer_df
-        else:
-            self.learn_df = self.raw_df
 
         for processor in self.learn_processors:
             self.learn_df = processor(df=self.learn_df)
