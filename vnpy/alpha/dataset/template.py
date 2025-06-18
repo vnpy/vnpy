@@ -120,9 +120,15 @@ class AlphaDataset:
         # Merge result data factor features
         logger.info("开始合并结果数据因子特征")
 
+        label_exist: bool = "label" in self.result_df
         for name, feature_result in tqdm(self.feature_results.items()):
             feature_result = feature_result.rename({"data": name})
             self.result_df = self.result_df.join(feature_result, on=["datetime", "vt_symbol"], how="inner")
+
+        if label_exist:
+            # Put label at the last column
+            cols: list = [col for col in self.result_df.columns if col != "label"] + ["label"]
+            self.result_df = self.result_df.select(cols).sort(["datetime", "vt_symbol"])
 
         # Generate raw data
         raw_df = self.result_df.fill_null(float("nan"))
