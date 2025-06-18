@@ -123,7 +123,7 @@ class AlphaDataset:
         label_exist: bool = "label" in self.result_df
         for name, feature_result in tqdm(self.feature_results.items()):
             feature_result = feature_result.rename({"data": name})
-            self.result_df = self.result_df.join(feature_result, on=["datetime", "vt_symbol"], how="inner")
+            self.result_df = self.result_df.join(feature_result, on=["datetime", "vt_symbol"], how="left")
 
         if label_exist:
             # Put label at the last column
@@ -205,16 +205,30 @@ class AlphaDataset:
         end: datetime = max(ends)
 
         # Select range
-        df: pl.DataFrame = query_by_time(self.result_df, start, end)
+        result_df: pl.DataFrame = query_by_time(self.result_df, start, end)
+        learn_df: pl.DataFrame = query_by_time(self.learn_df, start, end)
+
+        merged_df = (
+            result_df
+            .select(["datetime", "vt_symbol", "close"])
+            .join(
+                learn_df.select(["datetime", "vt_symbol", name]),
+                on=["datetime", "vt_symbol"],
+                how="inner"
+            )
+        )
+
+        # Fill NaN and drop nulls
+        merged_df = merged_df.fill_nan(None).drop_nulls()
 
         # Extract feature
-        feature_df: pd.DataFrame = df.select(["datetime", "vt_symbol", name]).to_pandas()
+        feature_df: pd.DataFrame = merged_df.select(["datetime", "vt_symbol", name]).to_pandas()
         feature_df.set_index(["datetime", "vt_symbol"], inplace=True)
 
         feature_s: pd.Series = feature_df[name]
 
         # Extract price
-        price_df: pd.DataFrame = df.select(["datetime", "vt_symbol", "close"]).to_pandas()
+        price_df: pd.DataFrame = merged_df.select(["datetime", "vt_symbol", "close"]).to_pandas()
         price_df = price_df.pivot(index="datetime", columns="vt_symbol", values="close")
 
         # Merge data
