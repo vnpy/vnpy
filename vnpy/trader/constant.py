@@ -68,7 +68,6 @@ class OrderType(Enum):
     FAK = "FAK"
     FOK = "FOK"
     RFQ = _("询价")
-    ETF = "ETF"
 
 
 class OptionType(Enum):
@@ -120,7 +119,7 @@ class Exchange(Enum):
     SEHK = "SEHK"           # Stock Exchange of Hong Kong
     HKFE = "HKFE"           # Hong Kong Futures Exchange
     SGX = "SGX"             # Singapore Global Exchange
-    CBOT = "CBOT"           # Chicago Board of Trade
+    CBOT = "CBOT"            # Chicago Board of Trade
     CBOE = "CBOE"           # Chicago Board Options Exchange
     CFE = "CFE"             # CBOE Futures Exchange
     DME = "DME"             # Dubai Mercantile Exchange
@@ -136,7 +135,6 @@ class Exchange(Enum):
 
     # Special Function
     LOCAL = "LOCAL"         # For local generated data
-    GLOBAL = "GLOBAL"       # For those exchanges not supported yet
 
 
 class Currency(Enum):

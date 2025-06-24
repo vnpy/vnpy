@@ -65,4 +65,4 @@ def get_datafeed() -> BaseDatafeed:
 
             print(_("无法加载数据服务模块，请运行 pip install {} 尝试安装").format(module_name))
 
-    return datafeed
+    return datafeed     # type: ignore

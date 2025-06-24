@@ -7,7 +7,7 @@ from multiprocessing.context import BaseContext
 
 import polars as pl
 import pandas as pd
-from tqdm import tqdm
+from tqdm import tqdm                                               # type: ignore
 from alphalens.utils import get_clean_factor_and_forward_returns    # type: ignore
 from alphalens.tears import create_full_tear_sheet                  # type: ignore
 
@@ -120,9 +120,9 @@ class AlphaDataset:
         # Merge result data factor features
         logger.info("开始合并结果数据因子特征")
 
-        for name, feature_result in tqdm(self.feature_results.items()):
-            feature_result = feature_result.rename({"data": name})
-            self.result_df = self.result_df.join(feature_result, on=["datetime", "vt_symbol"], how="inner")
+        for name, result in tqdm(self.feature_results.items()):
+            result = result.rename({"data": name})
+            self.result_df = self.result_df.join(result, on=["datetime", "vt_symbol"], how="inner")
 
         # Generate raw data
         raw_df = self.result_df.fill_null(float("nan"))

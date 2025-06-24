@@ -24,7 +24,7 @@
 
 ### SimNow仿真
 
-以使用SimNow仿真交易账号登录**CTP**接口为例，在VeighNa Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
+以使用SimNow仿真交易账号登陆**CTP**接口为例，在VeighNa Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
 
@@ -39,7 +39,7 @@
 
 请注意，用户名需填写InvestorID（6位纯数字），而不是Simnow网站注册时的账号（手机号）。此外，Simnow注册的账号需要修改一次密码后才能登录。
 
-连接成功以后，VeighNa Trader主界面【日志】组件会立刻输出登录相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。如下图所示：
+连接成功以后，VeighNa Trader主界面【日志】组件会立刻输出登陆相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 
@@ -149,7 +149,7 @@
 
 ### 日志组件
 
-日志组件用于显示接口登录信息以及委托报错信息，如下图所示：
+日志组件用于显示接口登陆信息以及委托报错信息，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/1.png)
 

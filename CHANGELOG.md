@@ -1,52 +1,8 @@
-# 4.1.0版本
-
-# 新增
-
-1. vnpy_mcdata新增对于Tick数据查询的支持
-2. OrderType枚举值增加ETF类型，支持ETF申购和赎回业务
-3. 增加遗传算法优化函数run_ga_optimization的入参，允许用户控制优化过程中所使用的全部超参
-4. CTA策略回测引擎，增加对于遗传算法优化函数新入参的支持
-
-## 调整
-
-1. 升级扩展模块适配4.0版本：
-    * 交易接口：
-        * 期货类：vnpy_uft/vnpy_mini/vnpy_femas/vnpy_ctptest
-        * 股票类：vnpy_xtp/vnpy_tora
-        * 期权类：vnpy_hts/vnpy_sopt/vnpy_sopttest
-        * 资管类：vnpy_rohon/vnpy_lstar/vnpy_jees
-        * 其他类：vnpy_ksgold/vnpy_tts/vnpy_tap/vnpy_da/vnpy_ib
-    * 策略应用：
-        * 策略类：vnpy_portfoliostrategy/vnpy_ctabacktester/vnpy_spreadtrading/vnpy_scripttrader
-        * 交易类：vnpy_algotrading/vnpy_optionmaster/vnpy_portfoliomanager/vnpy_paperaccount
-        * 数据类：vnpy_datarecorder/vnpy_excelrtd/vnpy_datamanager
-        * 辅助类：vnpy_chartwizard/vnpy_webtrader/vnpy_rpcservice/vnpy_riskmanager
-    * 数据库：vnpy_mysql/vnpy_postgresql/vnpy_mongodb/vnpy_taos
-    * 数据服务：vnpy_gm/vnpy_xt/vnpy_tqsdk/vnpy_ifind/vnpy_tushare/vnpy_wind
-2. 使用close函数替代unbind，来实现vnpy.rpc模块中zmq.Socket的安全关闭
-3. 修改PySide6依赖版本为6.8.2.1，解决部分底层warning输出问题
-4. 修改ta-lib依赖版本为0.6.4，解决Linux和Mac系统的安装问题
-5. 调整Qt层捕捉到全局异常时的日志输出级别为Critical
-6. vnpy_datarecorder移除不必要的行情录制异常抛出，改为记录日志
-7. vnpy_rqdata下载股票数据时，除权方式有pre改为pre_volume
-8. 数据库模块录制行情数据时，默认跳过extra字段
-9. vnpy_ib支持10.30.1版本的ibapi，增加对于新版本撤单函数的传参支持
-
-## 修复
-
-1. 修复新版本ta-lib中，MA_Type类不再是枚举值导致的部分指标计算问题
-2. 修复补全MainEngine缺失的get_tick函数
-3. 修复邮件发送引擎在使用QQ邮箱时出现的发送后报错问题
-4. 修复日志模块由于缺失默认gateway_name参数，在Qt层捕捉到全局异常时输出错误的问题
-5. vnpy_rohon新增Linux安装脚本，解决动态库找不到的问题
-6. vnpy_rqdata修复品种代码为小写合约的次主力88A2历史数据查询问题
-
 # 4.0.0版本
 
 ## 新增
 
 1. 新增面向机器学习多因子策略的vnpy.alpha模块
-2. MultiCharts数据服务模块vnpy_mcdata
 
 ## 调整
 

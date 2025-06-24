@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class BaseApp(ABC):
     """
-    Abstract class for app.
+    Absstract class for app.
     """
 
     app_name: str                       # Unique name used for creating engine and widget
