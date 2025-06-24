@@ -52,23 +52,22 @@ class Alpha101(AlphaDataset):
         #self.add_feature("alpha16","-1 * cs_rank(cov(cs_rank(high), cs_rank(volume), 5))")
         #self.add_feature("alpha17","(-1 * cs_rank(ts_rank(close, 10))) * cs_rank(close - 2*ts_delay(close, 1) + ts_delay(close, 2)) * cs_rank(ts_rank(volume / ts_mean(volume, 20), 5))")
         #self.add_feature("alpha18","-1 * cs_rank((ts_std(abs(close - open), 5) + (close - open)) + ts_corr(close, open, 10))")
-        #self.add_feature("alpha19", sign(delta(close,7) + (close - ts_delay(close,7))) * (1 + cs_rank(1 + ts_sum(returns(close),250))))
+        #self.add_feature("alpha19", "sign(delta(close,7) + (close - ts_delay(close,7))) * (1 + cs_rank(1 + ts_sum(returns(close),250)))")
 
-        #self.add_feature("alpha20", (-1 * cs_rank(open - ts_delay(high,1))) * cs_rank(open - ts_delay(close,1)) * cs_rank(open - ts_delay(low,1)))
+        #self.add_feature("alpha20", "(-1 * cs_rank(open - ts_delay(high,1))) * cs_rank(open - ts_delay(close,1)) * cs_rank(open - ts_delay(low,1))")
 
-        #self.add_feature("alpha21", quesval((ts_mean(close,8)+ts_std(close,8)), ts_mean(close,2), -1, quesval(ts_mean(close,2), (ts_mean(close,8)-ts_std(close,8)), 1, quesval(1, (volume/ts_mean(volume,20)), -1, 1))))
+        #self.add_feature("alpha21", "quesval((ts_mean(close,8)+ts_std(close,8)), ts_mean(close,2), -1, quesval(ts_mean(close,2), (ts_mean(close,8)-ts_std(close,8)), 1, quesval(1, (volume/ts_mean(volume,20)), -1, 1)))")
 
-        #self.add_feature("alpha22", -1 * delta(ts_corr(high,volume,5),5) * cs_rank(ts_std(close,20)))
+        #self.add_feature("alpha22", "-1 * delta(ts_corr(high,volume,5),5) * cs_rank(ts_std(close,20))")
 
-        #self.add_feature("alpha23", quesval(ts_mean(high,20), high, -1*delta(high,2), 0))
+        #self.add_feature("alpha23", "quesval(ts_mean(high,20), high, -1*delta(high,2), 0)")
 
-        #self.add_feature("alpha24", quesval(delta(ts_mean(close,100),100)/ts_delay(close,100), 0.05, -1*(close-ts_min(close,100)), -1*delta(close,3)))
+        #self.add_feature("alpha24", "quesval(delta(ts_mean(close,100),100)/ts_delay(close,100), 0.05, -1*(close-ts_min(close,100)), -1*delta(close,3))")
 
-        #self.add_feature("alpha25", cs_rank( (-1*returns(close)) * ts_mean(volume,20) * vwap * (high-close) ))
+        #self.add_feature("alpha25", "cs_rank( (-1*returns(close)) * ts_mean(volume,20) * vwap * (high-close) )")
+        #self.add_feature("alpha26", "-1*ts_max(ts_corr(ts_rank(volume,5), ts_rank(high,5),5),3)")
 
-        #self.add_feature("alpha26", -1*ts_max(ts_corr(ts_rank(volume,5), ts_rank(high,5),5),3))
-
-        #self.add_feature("alpha27", quesval(0.5, cs_rank(ts_mean(ts_corr(cs_rank(volume),cs_rank(vwap),6),2)), -1, 1))
+        #self.add_feature("alpha27", "quesval(0.5, cs_rank(ts_mean(ts_corr(cs_rank(volume),cs_rank(vwap),6),2)), -1, 1)")
 
         #self.add_feature("alpha28", "scale(ts_corr(ts_mean(volume,20), low, 5) + (high + low)/2 - close)")
         #self.add_feature("alpha29", "ts_min(ts_product(cs_rank(cs_rank(scale(ts_log(ts_sum(ts_min(cs_rank(cs_rank((-1)*cs_rank(delta(close-1,5)))),2),1))))),1),5) + ts_rank(ts_delay((-1)*returns(close),6),5)")
