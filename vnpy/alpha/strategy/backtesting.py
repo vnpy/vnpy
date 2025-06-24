@@ -8,7 +8,7 @@ import numpy as np
 import polars as pl
 import plotly.graph_objects as go               # type: ignore
 from plotly.subplots import make_subplots       # type: ignore
-from tqdm import tqdm
+from tqdm import tqdm                           # type: ignore
 
 from vnpy.trader.constant import Direction, Offset, Interval, Status
 from vnpy.trader.object import OrderData, TradeData, BarData
@@ -91,7 +91,7 @@ class BacktestingEngine:
 
         contract_settings: dict = self.lab.load_contract_setttings()
         for vt_symbol in vt_symbols:
-            setting: dict | None = contract_settings.get(vt_symbol, None)
+            setting: dict = contract_settings.get(vt_symbol, None)
             if not setting:
                 logger.warning(f"找不到合约{vt_symbol}的交易配置，请检查！")
                 continue

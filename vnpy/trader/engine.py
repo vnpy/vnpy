@@ -598,7 +598,6 @@ class EmailEngine(BaseEngine):
                     with smtplib.SMTP_SSL(server, port) as smtp:
                         smtp.login(username, password)
                         smtp.send_message(msg)
-                        smtp.close()
                 except Exception:
                     log_msg: str = _("邮件发送失败: {}").format(traceback.format_exc())
                     self.main_engine.write_log(log_msg, "EMAIL")

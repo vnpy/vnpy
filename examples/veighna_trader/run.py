@@ -8,15 +8,20 @@ from vnpy_ctp import CtpGateway
 # from vnpy_mini import MiniGateway
 # from vnpy_femas import FemasGateway
 # from vnpy_sopt import SoptGateway
+# from vnpy_sec import SecGateway
 # from vnpy_uft import UftGateway
 # from vnpy_esunny import EsunnyGateway
 # from vnpy_xtp import XtpGateway
-# from vnpy_tora import ToraStockGateway, ToraOptionGateway
+# from vnpy_tora import ToraStockGateway
+# from vnpy_tora import ToraOptionGateway
+# from vnpy_comstar import ComstarGateway
 # from vnpy_ib import IbGateway
 # from vnpy_tap import TapGateway
 # from vnpy_da import DaGateway
 # from vnpy_rohon import RohonGateway
 # from vnpy_tts import TtsGateway
+# from vnpy_ost import OstGateway
+# from vnpy_hft import GtjaGateway
 
 # from vnpy_paperaccount import PaperAccountApp
 from vnpy_ctastrategy import CtaStrategyApp
@@ -49,16 +54,22 @@ def main():
     # main_engine.add_gateway(MiniGateway)
     # main_engine.add_gateway(FemasGateway)
     # main_engine.add_gateway(SoptGateway)
+    # main_engine.add_gateway(SecGateway)
     # main_engine.add_gateway(UftGateway)
     # main_engine.add_gateway(EsunnyGateway)
     # main_engine.add_gateway(XtpGateway)
     # main_engine.add_gateway(ToraStockGateway)
     # main_engine.add_gateway(ToraOptionGateway)
+    # main_engine.add_gateway(OesGateway)
+    # main_engine.add_gateway(ComstarGateway)
     # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(TapGateway)
     # main_engine.add_gateway(DaGateway)
     # main_engine.add_gateway(RohonGateway)
     # main_engine.add_gateway(TtsGateway)
+    # main_engine.add_gateway(OstGateway)
+    # main_engine.add_gateway(NhFuturesGateway)
+    # main_engine.add_gateway(NhStockGateway)
 
     # main_engine.add_app(PaperAccountApp)
     main_engine.add_app(CtaStrategyApp)
