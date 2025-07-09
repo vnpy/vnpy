@@ -121,7 +121,9 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
         ts_rsquare, ts_resi,
         ts_corr,
         ts_less, ts_greater,
-        ts_log, ts_abs
+        ts_log, ts_abs,
+        sign,returns,quesval,pow1,delta,quesval2,cov,scale,
+        cs_sum,decay_linear,adv20,cap,cast_to_int,pow2
     )
     from .cs_function import (              # noqa
         cs_rank,
