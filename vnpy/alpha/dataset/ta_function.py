@@ -11,8 +11,7 @@ from .utility import DataProxy
 
 def to_pd_series(feature: DataProxy) -> pd.Series:
     """Convert to pandas.Series data structure"""
-    series: pd.Series = feature.df.to_pandas().set_index(["datetime", "vt_symbol"])["data"]
-    return series
+    return feature.df.to_pandas().set_index(["datetime", "vt_symbol"])["data"]
 
 
 def to_pl_dataframe(series: pd.Series) -> pl.DataFrame:
