@@ -35,3 +35,13 @@ def cs_std(feature: DataProxy) -> DataProxy:
         pl.col("data").std().over("datetime")
     )
     return DataProxy(df)
+
+
+def cs_sum(feature: DataProxy) -> DataProxy:
+    """Calculate cross-sectional sum"""
+    df: pl.DataFrame = feature.df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        pl.col("data").sum().over("datetime")
+    )
+    return DataProxy(df)
