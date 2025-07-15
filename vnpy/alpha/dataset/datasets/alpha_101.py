@@ -13,10 +13,6 @@ from vnpy.alpha.dataset import (
 
 class Alpha101(AlphaDataset):
     """WorldQuant的101因子"""
-  
-    def sign(a):
-        if(a>0): return 1
-        if(a<0): return -1
 
     def __init__(
         self,
