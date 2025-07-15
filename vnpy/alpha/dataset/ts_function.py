@@ -190,6 +190,16 @@ def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     return DataProxy(df)
 
 
+def ts_delta(feature: DataProxy, window: int) -> DataProxy:
+    """"""
+    df: pl.DataFrame = feature.df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        (pl.col("data") - pl.col("data").shift(window)).over("vt_symbol")
+    )
+    return DataProxy(df)
+
+
 def quesval(threshold: float, condition: DataProxy, true_value: DataProxy, false_value: DataProxy) -> DataProxy:
     """全DataProxy版"""
     return DataProxy(
@@ -236,26 +246,6 @@ def pow1(base: DataProxy, exponent: float) -> DataProxy:
             .when(pl.col("data") < 0)  # 处理负数
             .then(pl.lit(-1) * pl.col("data").abs().pow(exponent))
             .otherwise(0)  # 处理零值
-            .alias("data")
-        )
-    )
-
-
-def delta(price: DataProxy, periods: int = 1) -> DataProxy:
-    """
-    计算时间序列差分 (price_t - price_{t-periods})
-    参数:
-        price: 价格序列 (DataProxy)
-        periods: 差分周期 (默认1)
-    返回:
-        DataProxy: 差分序列 (保持原始datetime和vt_symbol)
-    """
-    return DataProxy(
-        price.df.select(
-            pl.col("datetime"),
-            pl.col("vt_symbol"),
-            (pl.col("data") - pl.col("data").shift(periods).over("vt_symbol"))
-            .fill_null(0)  # 初始periods个值为Null，填充为0
             .alias("data")
         )
     )
