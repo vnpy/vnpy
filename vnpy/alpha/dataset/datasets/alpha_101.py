@@ -144,7 +144,7 @@ class Alpha101(AlphaDataset):
 #        self.add_feature("alpha38", "((-1) * cs_rank(ts_rank(close, 10))) * cs_rank((close / open))")
 #
 #        # Alpha39
-#        self.add_feature("alpha39", f"((-1) * cs_rank((delta(close, 7) * (sign(volume) - cs_rank(decay_linear((volume / adv20(volume)), 9)))))) * (sign(volume) + cs_rank(ts_sum({returns_expr}, 250)))")
+#        self.add_feature("alpha39", f"((-1) * cs_rank((delta(close, 7) * (sign(volume) - cs_rank(decay_linear((volume / ts_mean(volume, 20)), 9)))))) * (sign(volume) + cs_rank(ts_sum({returns_expr}, 250)))")
 #
 #        # Alpha40
 #        self.add_feature("alpha40", "((-1) * cs_rank(ts_std(high, 10))) * ts_corr(high, volume, 10)")
@@ -156,7 +156,7 @@ class Alpha101(AlphaDataset):
 #        self.add_feature("alpha42", "cs_rank((vwap - close)) / cs_rank((vwap + close))")
 #
 #        # Alpha43 n
-#        self.add_feature("alpha43", "ts_rank((volume / adv20(volume)), 20) * ts_rank((-1) * delta(close, 7), 8)")
+#        self.add_feature("alpha43", "ts_rank((volume / ts_mean(volume, 20)), 20) * ts_rank((-1) * delta(close, 7), 8)")
 #
 #        # Alpha44
 #        self.add_feature("alpha44", "(-1) * ts_corr(high, cs_rank(volume), 5)")
@@ -168,7 +168,7 @@ class Alpha101(AlphaDataset):
 #        self.add_feature("alpha46", "quesval(0.25, ((ts_delay(close, 20) - ts_delay(close, 10)) / 10 - (ts_delay(close, 10) - close) / 10), (-1) * sign(volume), quesval(0, ((ts_delay(close, 20) - ts_delay(close, 10)) / 10 - (ts_delay(close, 10) - close) / 10), sign(volume), (-1) * (close - ts_delay(close, 1))))")
 #
 #        # Alpha47 n
-#        self.add_feature("alpha47", "((cs_rank(sign(volume) / close) * volume / adv20(volume)) * (high * cs_rank(high - close)) / (ts_sum(high, 5) / 5)) - cs_rank(vwap - ts_delay(vwap, 5))")
+#        self.add_feature("alpha47", "((cs_rank(sign(volume) / close) * volume / ts_mean(volume, 20)) * (high * cs_rank(high - close)) / (ts_sum(high, 5) / 5)) - cs_rank(vwap - ts_delay(vwap, 5))")
 #
 #        # Alpha48
 #        self.add_feature("alpha48", "(ts_corr(delta(close, 1), ts_delay(ts_delay(close, 1), 1), 250) * delta(close, 1)) / close / ts_sum(pow1((delta(close, 1) / ts_delay(close, 1)), 2), 250)")

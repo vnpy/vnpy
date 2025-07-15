@@ -7,7 +7,8 @@ from typing import cast
 from scipy import stats     # type: ignore
 import polars as pl
 import numpy as np
-
+from .cs_function import cs_sum
+from .math_function import abs
 from .utility import DataProxy
 
 
@@ -267,7 +268,7 @@ def cov(X, Y, w):
 def scale(feature: DataProxy) -> DataProxy:
     """Scale the feature by the sum of absolute values in the cross section"""
     # 计算因子值的绝对值
-    abs_feature = ts_abs(feature)
+    abs_feature = abs(feature)
 
     # 计算横截面上所有因子值的绝对值之和
     sum_abs = cs_sum(abs_feature)
@@ -293,26 +294,10 @@ def scale(feature: DataProxy) -> DataProxy:
 
 def decay_linear(feature: DataProxy, d: int) -> DataProxy:
     df = feature.df.with_columns(
-        pl.col("data").rolling_map(lambda s: (s * pl.Series(range(d, 0, -1))).sum() / (d * (d + 1) / 2), window_size=d, min_periods=d).over("vt_symbol")
+        pl.col("data").rolling_map(lambda s: (s * pl.Series(range(d, 0, -1))).sum() / (d * (d + 1) / 2), window_size=d, min_samples=d).over("vt_symbol")
     )
     return DataProxy(df)
 
-
-def adv20(volume: DataProxy) -> DataProxy:
-    """
-    计算20日平均成交量 (ADV20)
-    
-    参数:
-        volume: 成交量数据 (DataProxy)
-        
-    返回:
-        DataProxy: 包含20日均量数据的DataProxy对象
-    """
-    return DataProxy(
-        volume.df.with_columns(
-            pl.col("data").rolling_mean(window_size=20, min_periods=1).alias("data")
-        )
-    )
 
 
 def cap(vwap, volume):
