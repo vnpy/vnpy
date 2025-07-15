@@ -101,7 +101,6 @@ def ts_std(feature: DataProxy, window: int) -> DataProxy:
     return DataProxy(df)
 
 
-
 def ts_slope(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the slope of linear regression over a rolling window"""
     df: pl.DataFrame = feature.df.select(
@@ -190,80 +189,6 @@ def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     return DataProxy(df)
 
 
-def ts_greater(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
-    """Return the maximum value between two features"""
-    if isinstance(feature2, DataProxy):
-        df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
-
-    else:
-        df_merged = feature1.df.with_columns(pl.lit(feature2).alias("data_right"))
-
-    df: pl.DataFrame = df_merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.max_horizontal("data", "data_right").over("vt_symbol").alias("data")
-    )
-
-    return DataProxy(df)
-
-
-def ts_log(feature: DataProxy) -> DataProxy:
-    """Calculate the natural logarithm of the feature"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").log().over("vt_symbol")
-    )
-    return DataProxy(df)
-
-
-def ts_abs(feature: DataProxy) -> DataProxy:
-    """Calculate the absolute value of the feature"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").abs().over("vt_symbol")
-    )
-    return DataProxy(df)
-
-def sign(proxy: DataProxy) -> DataProxy:
-    """
-    计算特征的符号函数（输出DataProxy）
-    返回：
-        - 如果 data > 0: 1
-        - 如果 data < 0: -1
-        - 如果 data == 0: 0
-    """
-    return DataProxy(
-        proxy.df.with_columns(
-            pl.when(pl.col("data") > 0)
-            .then(1.0)
-            .when(pl.col("data") < 0)
-            .then(-1.0)
-            .otherwise(0.0)
-            .alias("data")
-        )
-    )
-
-def returns(close: DataProxy) -> DataProxy:
-    """
-    修正版 - 计算单期收益率 (保持datetime列)
-    参数:
-        close: 收盘价序列 (DataProxy)
-    返回:
-        DataProxy: 收益率序列 (包含datetime列)
-    """
-    return DataProxy(
-        close.df.select(
-            pl.col("datetime"),
-            pl.col("vt_symbol"),
-            (pl.col("data") / pl.col("data").shift(1).over("vt_symbol") - 1)
-            .fill_nan(0)  # 处理除零情况
-            .fill_null(0)  # 处理初始空值
-            .alias("data")
-        )
-    )
-
 def quesval(threshold: float, condition: DataProxy, true_value: DataProxy, false_value: DataProxy) -> DataProxy:
     """全DataProxy版"""
     return DataProxy(
@@ -276,6 +201,8 @@ def quesval(threshold: float, condition: DataProxy, true_value: DataProxy, false
               .alias("data")
           ).select(["datetime", "vt_symbol", "data"])
     )
+
+
 def quesval2(threshold: DataProxy, condition: DataProxy, true_value: DataProxy, false_value: DataProxy) -> DataProxy:
     """支持 DataProxy 输入的 quesval"""
     return DataProxy(
@@ -290,6 +217,7 @@ def quesval2(threshold: DataProxy, condition: DataProxy, true_value: DataProxy, 
         )
         .select(["datetime", "vt_symbol", "data"])
     )
+
 
 def pow1(base: DataProxy, exponent: float) -> DataProxy:
     """
@@ -311,6 +239,7 @@ def pow1(base: DataProxy, exponent: float) -> DataProxy:
         )
     )
 
+
 def delta(price: DataProxy, periods: int = 1) -> DataProxy:
     """
     计算时间序列差分 (price_t - price_{t-periods})
@@ -330,20 +259,22 @@ def delta(price: DataProxy, periods: int = 1) -> DataProxy:
         )
     )
 
-def cov(X,Y,w):
-    return ts_corr(X,Y,w) * ts_std(X,w) * ts_std(Y,w)
+
+def cov(X, Y, w):
+    return ts_corr(X, Y, w) * ts_std(X, w) * ts_std(Y, w)
+
 
 def scale(feature: DataProxy) -> DataProxy:
     """Scale the feature by the sum of absolute values in the cross section"""
     # 计算因子值的绝对值
     abs_feature = ts_abs(feature)
-    
+
     # 计算横截面上所有因子值的绝对值之和
     sum_abs = cs_sum(abs_feature)
-    
+
     # 合并原始因子和绝对值之和
     merged = feature.df.join(sum_abs.df, on=["datetime", "vt_symbol"], suffix="_sum")
-    
+
     # 计算缩放后的值：原始值 / 绝对值之和
     # 处理除数为0的情况（将无穷大和NaN替换为0）
     df: pl.DataFrame = merged.select(
@@ -356,23 +287,16 @@ def scale(feature: DataProxy) -> DataProxy:
         .otherwise(pl.col("data"))
         .alias("data")
     )
-    
+
     return DataProxy(df)
 
-def cs_sum(feature: DataProxy) -> DataProxy:
-    """Calculate cross-sectional sum"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").sum().over("datetime")
-    )
-    return DataProxy(df)
 
 def decay_linear(feature: DataProxy, d: int) -> DataProxy:
     df = feature.df.with_columns(
-        pl.col("data").rolling_map(lambda s: (s * pl.Series(range(d, 0, -1))).sum() / (d * (d + 1) / 2),window_size=d,min_periods=d).over("vt_symbol")
+        pl.col("data").rolling_map(lambda s: (s * pl.Series(range(d, 0, -1))).sum() / (d * (d + 1) / 2), window_size=d, min_periods=d).over("vt_symbol")
     )
     return DataProxy(df)
+
 
 def adv20(volume: DataProxy) -> DataProxy:
     """
@@ -390,8 +314,10 @@ def adv20(volume: DataProxy) -> DataProxy:
         )
     )
 
-def cap(vwap,volume):
+
+def cap(vwap, volume):
     return vwap * ts_mean(volume, 20)
+
 
 def cast_to_int(data: DataProxy) -> DataProxy:
     """DataProxy专用布尔转整数"""
@@ -400,6 +326,7 @@ def cast_to_int(data: DataProxy) -> DataProxy:
             pl.col("data").cast(pl.Int8).alias("data")  # 使用Polars原生cast
         )
     )
+
 
 def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     """
@@ -417,7 +344,7 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     # 安全重命名列（防止join冲突）
     base_renamed = base.df.rename({"data": "base_data"})
     exp_renamed = exponent.df.rename({"data": "exp_data"})
-    
+
     # 合并数据并计算
     result_df = (
         base_renamed.join(
@@ -429,14 +356,14 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
             # 正底数分支
             pl.when(pl.col("base_data") > 0)
             .then(pl.col("base_data").pow(pl.col("exp_data")))
-            
+
             # 负底数且整数指数分支
             .when(
-                (pl.col("base_data") < 0) & 
+                (pl.col("base_data") < 0) &
                 (pl.col("exp_data").cast(pl.Int64) == pl.col("exp_data"))
             )
             .then((-1) * pl.col("base_data").abs().pow(pl.col("exp_data")))
-            
+
             # 非法操作处理
             .otherwise(pl.lit(None))
             .fill_nan(None)  # 捕获数学异常
@@ -445,5 +372,5 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
         )
         .select(["datetime", "vt_symbol", "data"])  # 精选输出列
     )
-    
+
     return DataProxy(result_df)
