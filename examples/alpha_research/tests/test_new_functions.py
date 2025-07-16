@@ -123,7 +123,7 @@ def pd_cov(
     std2 = pd_std(f2.copy(), window)
 
     merged = pd.merge(
-        corr, std1, on=["datetime", "vt_symbol"], 
+        corr, std1, on=["datetime", "vt_symbol"],
         suffixes=("_corr", "_std1")
     )
     merged = pd.merge(
@@ -191,7 +191,7 @@ def pd_pow2(base: pd.DataFrame, exponent: pd.DataFrame) -> pd.DataFrame:
     result = np.full_like(merged["data_base"], np.nan, dtype=float)
     pos_mask = merged["data_base"] > 0
     result[pos_mask] = np.power(
-        merged["data_base"][pos_mask], 
+        merged["data_base"][pos_mask],
         merged["data_exp"][pos_mask]
     )
 
@@ -199,7 +199,7 @@ def pd_pow2(base: pd.DataFrame, exponent: pd.DataFrame) -> pd.DataFrame:
     int_exp_mask = merged["data_exp"] % 1 == 0
     valid_neg_mask = neg_mask & int_exp_mask
     result[valid_neg_mask] = -1 * np.power(
-        np.abs(merged["data_base"][valid_neg_mask]), 
+        np.abs(merged["data_base"][valid_neg_mask]),
         merged["data_exp"][valid_neg_mask]
     )
 
@@ -235,8 +235,8 @@ def sample_data() -> tuple[pl.DataFrame, pd.DataFrame]:
 
 
 def check_close(
-    pl_result: pl.DataFrame, 
-    pd_result: pd.DataFrame, 
+    pl_result: pl.DataFrame,
+    pd_result: pd.DataFrame,
     rtol: float = 1e-5
 ) -> None:
     """Compare polars and pandas results"""
@@ -246,8 +246,8 @@ def check_close(
     pl_sorted = pl_result.sort(["vt_symbol", "datetime"])
 
     np.testing.assert_allclose(
-        pl_sorted["data"].to_numpy(), 
-        pd_sorted["data"].to_numpy(), 
+        pl_sorted["data"].to_numpy(),
+        pd_sorted["data"].to_numpy(),
         rtol=rtol, equal_nan=True
     )
 
