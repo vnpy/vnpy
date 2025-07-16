@@ -78,7 +78,7 @@ class AlphaDataset:
         """
         self.label_expression = expression
 
-    def add_processor(self, task: str, processor: Callable[[pl.DataFrame], None]) -> None:
+    def add_processor(self, task: str, processor: Callable[..., pl.DataFrame]) -> None:
         """
         Add a feature preprocessor
         """
