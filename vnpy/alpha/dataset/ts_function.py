@@ -7,8 +7,6 @@ from typing import cast
 from scipy import stats     # type: ignore
 import polars as pl
 import numpy as np
-from .cs_function import cs_sum
-from .math_function import abs
 from .utility import DataProxy
 
 
@@ -20,6 +18,11 @@ def ts_delay(feature: DataProxy, window: int) -> DataProxy:
         pl.col("data").shift(window).over("vt_symbol")
     )
     return DataProxy(df)
+
+
+def ts_delta(feature: DataProxy, window: int) -> DataProxy:
+    """Calculate difference between current value and value from window periods ago"""
+    return feature - ts_delay(feature, window)
 
 
 def ts_min(feature: DataProxy, window: int) -> DataProxy:
@@ -90,6 +93,11 @@ def ts_mean(feature: DataProxy, window: int) -> DataProxy:
         pl.col("data").cast(pl.Float32).rolling_map(lambda s: np.nanmean(s), window, min_samples=1).over("vt_symbol")
     )
     return DataProxy(df)
+
+
+def ts_cap(feature1: DataProxy, feature2: DataProxy) -> DataProxy:
+    """Calculate the market capitalization"""
+    return feature1 * ts_mean(feature2, 20)
 
 
 def ts_std(feature: DataProxy, window: int) -> DataProxy:
@@ -174,178 +182,21 @@ def ts_corr(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
     return DataProxy(df)
 
 
-def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
-    """Return the minimum value between two features"""
-    if isinstance(feature2, DataProxy):
-        df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
-    else:
-        df_merged = feature1.df.with_columns(pl.lit(feature2).alias("data_right"))
-
-    df: pl.DataFrame = df_merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.min_horizontal("data", "data_right").over("vt_symbol").alias("data")
-    )
-
-    return DataProxy(df)
+def ts_cov(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
+    """Calculate covariance between two features over a rolling window"""
+    return ts_corr(feature1, feature2, window) * ts_std(feature1, window) * ts_std(feature2, window)
 
 
-def ts_delta(feature: DataProxy, window: int) -> DataProxy:
-    """"""
+def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
+    """Calculate linear decay weighted average"""
+    def decay_func(s: pl.Series) -> float:
+        """Calculate linear decay weighted average for a series"""
+        weights = pl.Series(range(window, 0, -1))
+        return float((s * weights).sum() / (window * (window + 1) / 2))
+
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        (pl.col("data") - pl.col("data").shift(window)).over("vt_symbol")
+        pl.col("data").rolling_map(lambda s: decay_func(s), window).over("vt_symbol")
     )
     return DataProxy(df)
-
-
-def quesval(threshold: float, condition: DataProxy, true_value: DataProxy, false_value: DataProxy) -> DataProxy:
-    """全DataProxy版"""
-    return DataProxy(
-        condition.df.join(true_value.df, on=["datetime", "vt_symbol"], suffix="_true")
-          .join(false_value.df, on=["datetime", "vt_symbol"], suffix="_false")
-          .with_columns(
-              pl.when(pl.col("data") < threshold)
-              .then(pl.col("data_true"))
-              .otherwise(pl.col("data_false"))
-              .alias("data")
-          ).select(["datetime", "vt_symbol", "data"])
-    )
-
-
-def quesval2(threshold: DataProxy, condition: DataProxy, true_value: DataProxy, false_value: DataProxy) -> DataProxy:
-    """支持 DataProxy 输入的 quesval"""
-    return DataProxy(
-        threshold.df.join(condition.df, on=["datetime", "vt_symbol"], suffix="_cond")
-        .join(true_value.df, on=["datetime", "vt_symbol"], suffix="_true")
-        .join(false_value.df, on=["datetime", "vt_symbol"], suffix="_false")
-        .with_columns(
-            pl.when(pl.col("data_cond") < pl.col("data"))
-            .then(pl.col("data_true"))
-            .otherwise(pl.col("data_false"))
-            .alias("data")
-        )
-        .select(["datetime", "vt_symbol", "data"])
-    )
-
-
-def pow1(base: DataProxy, exponent: float) -> DataProxy:
-    """
-    DataProxy安全幂运算函数
-    参数:
-        base: 底数 (DataProxy)
-        exponent: 指数 (float)
-    返回:
-        DataProxy: base^exponent
-    """
-    return DataProxy(
-        base.df.with_columns(
-            pl.when(pl.col("data") > 0)  # 处理正数
-            .then(pl.col("data").pow(exponent))
-            .when(pl.col("data") < 0)  # 处理负数
-            .then(pl.lit(-1) * pl.col("data").abs().pow(exponent))
-            .otherwise(0)  # 处理零值
-            .alias("data")
-        )
-    )
-
-
-def cov(X, Y, w):
-    return ts_corr(X, Y, w) * ts_std(X, w) * ts_std(Y, w)
-
-
-def scale(feature: DataProxy) -> DataProxy:
-    """Scale the feature by the sum of absolute values in the cross section"""
-    # 计算因子值的绝对值
-    abs_feature = abs(feature)
-
-    # 计算横截面上所有因子值的绝对值之和
-    sum_abs = cs_sum(abs_feature)
-
-    # 合并原始因子和绝对值之和
-    merged = feature.df.join(sum_abs.df, on=["datetime", "vt_symbol"], suffix="_sum")
-
-    # 计算缩放后的值：原始值 / 绝对值之和
-    # 处理除数为0的情况（将无穷大和NaN替换为0）
-    df: pl.DataFrame = merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        (pl.col("data") / pl.col("data_sum")).alias("data")
-    ).with_columns(
-        pl.when(pl.col("data").is_infinite() | pl.col("data").is_nan())
-        .then(0)
-        .otherwise(pl.col("data"))
-        .alias("data")
-    )
-
-    return DataProxy(df)
-
-
-def decay_linear(feature: DataProxy, d: int) -> DataProxy:
-    df = feature.df.with_columns(
-        pl.col("data").rolling_map(lambda s: (s * pl.Series(range(d, 0, -1))).sum() / (d * (d + 1) / 2), window_size=d, min_samples=d).over("vt_symbol")
-    )
-    return DataProxy(df)
-
-
-
-def cap(vwap, volume):
-    return vwap * ts_mean(volume, 20)
-
-
-def cast_to_int(data: DataProxy) -> DataProxy:
-    """DataProxy专用布尔转整数"""
-    return DataProxy(
-        data.df.with_columns(
-            pl.col("data").cast(pl.Int8).alias("data")  # 使用Polars原生cast
-        )
-    )
-
-
-def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
-    """
-    DataProxy幂运算函数 (base^exponent)
-    严格实现：
-    1. 列名自动去重
-    2. 支持负底数条件运算
-    3. 时间序列完美对齐
-    参数:
-        base: 底数 (DataProxy)
-        exponent: 指数 (DataProxy)
-    返回:
-        DataProxy: 包含幂运算结果的新DataProxy
-    """
-    # 安全重命名列（防止join冲突）
-    base_renamed = base.df.rename({"data": "base_data"})
-    exp_renamed = exponent.df.rename({"data": "exp_data"})
-
-    # 合并数据并计算
-    result_df = (
-        base_renamed.join(
-            exp_renamed,
-            on=["datetime", "vt_symbol"],  # 按时间和标的对齐
-            how="left"
-        )
-        .with_columns(
-            # 正底数分支
-            pl.when(pl.col("base_data") > 0)
-            .then(pl.col("base_data").pow(pl.col("exp_data")))
-
-            # 负底数且整数指数分支
-            .when(
-                (pl.col("base_data") < 0) &
-                (pl.col("exp_data").cast(pl.Int64) == pl.col("exp_data"))
-            )
-            .then((-1) * pl.col("base_data").abs().pow(pl.col("exp_data")))
-
-            # 非法操作处理
-            .otherwise(pl.lit(None))
-            .fill_nan(None)  # 捕获数学异常
-            .fill_null(0)    # 填充空值
-            .alias("data")    # 统一输出列名
-        )
-        .select(["datetime", "vt_symbol", "data"])  # 精选输出列
-    )
-
-    return DataProxy(result_df)
