@@ -330,6 +330,8 @@ class OrderRequest:
     offset: Offset = Offset.NONE
     reference: str = ""
 
+    extra: dict | None = field(default=None, init=False)
+
     def __post_init__(self) -> None:
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
@@ -362,6 +364,8 @@ class CancelRequest:
     orderid: str
     symbol: str
     exchange: Exchange
+
+    extra: dict | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
         """"""
