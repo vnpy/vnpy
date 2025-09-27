@@ -104,3 +104,30 @@ what(): locale::facet::_S_create_c_locale name not valid
 ```
 sudo locale-gen zh_CN.GB18030
 ```
+
+如果还没有解决，可能是因为系统缺少中文字体支持。解决方法如下：
+
+```
+sudo apt-get update
+sudo apt-get install -y fonts-noto-cjk fonts-wqy-zenhei fonts-wqy-microhei
+fc-cache -f -v
+fc-list :lang=zh | wc -l
+sudo locale-gen zh_CN.UTF-8 zh_CN.GB18030
+```
+
+### 安装依赖与路径分隔符
+
+在Linux系统中安装C++接口时，如果使用`--no-build-isolation`参数，需要提前安装以下依赖库：
+
+```bash
+uv pip install meson-python meson pybind11
+sudo apt-get update && sudo apt-get install -y ninja-build
+```
+
+此外，建议在Linux系统中使用正斜杠`/`作为路径分隔符，以避免路径解析问题。因此，推荐的安装命令如下：
+
+```bash
+uv pip install -e . --no-build-isolation --config-settings=build-dir=./{包的名字}/api
+```
+
+此命令将确保API文件夹被正确指定为构建目录，避免路径格式问题导致的安装失败。
