@@ -435,7 +435,7 @@ from elite_ctastrategy import (
 
 ### 策略的回调函数
 
-CtaTemplate中以on开头的函数称为回调函数，在编写策略的过程中能够用来接收数据或者接收状态更新。回调函数的作用是当某一个事件发生的时候，策略里的这类函数会被CTA策略引擎自动调用（无需在策略中主动操作）。回调函数按其功能可分为以下三类：
+EliteCtaTemplate中以on开头的函数称为回调函数，在编写策略的过程中能够用来接收数据或者接收状态更新。回调函数的作用是当某一个事件发生的时候，策略里的这类函数会被CTA策略引擎自动调用（无需在策略中主动操作）。回调函数按其功能可分为以下三类：
 
 #### 策略实例状态控制（所有策略都需要）
 
@@ -677,6 +677,30 @@ short_average_price函数是用来获取内置交易管理器里维护的空头�
 
 get_account_pos函数用于获取该策略（合约代码、交易接口）对应的底仓账户持仓，返回值为净仓数据（即多仓减去空仓的数值）。
 
+**get_pricetick**
+
+* 入参：无
+
+* 出参：pricetick: float / None
+
+在策略中调用get_pricetick函数，可以获取交易合约的最小价格跳动。
+
+**get_size**
+
+* 入参：无
+
+* 出参：size: int / None
+
+在策略中调用get_size函数，可以获取交易合约的合约乘数。
+
+**get_account**
+
+* 入参：无
+
+* 出参：size: AccountData / None
+
+在策略中调用get_account函数，可以获取交易合约的账户资金。
+
 </span>
 
 ### 功能函数
@@ -734,6 +758,283 @@ get_account_pos函数用于获取该策略（合约代码、交易接口）对�
 
    - 基于EliteCtaTemplate开发的策略，只有策略的持仓pos会被同步到本地，其他策略变量由理论值维护。
 
+### EliteTargetTemplate
+
+VeighNa Elite Trader的CTA策略模块提供了EliteTargetTemplate专业CTA策略模板，实现更加强大的CTA策略开发。
+
+下面对EliteTargetTemplate的函数进行介绍。
+
+### 策略参数与变量
+
+在策略类的下方，可以设置策略的作者（author），参数（parameters）以及变量（variables）。
+
+### 类的初始化
+
+__init__函数是策略类的构造函数，需要与继承的EliteTargetTemplate保持一致。
+
+在这个继承的策略类里，初始化一般分三步：
+
+1 . 通过super( )的方法继承CTA策略模板，在__init__( )函数中传入CTA引擎、策略名称、vt_symbol以及参数设置。注意其中的CTA引擎，可以是实盘引擎或者回测引擎，这样可以方便地**实现同一套代码同时跑回测和实盘**（以上参数均由策略引擎在使用策略类创建策略实例时自动传入，用户无需进行设置）。
+
+2 . 调用K线生成模块（BarGenerator）：通过时间切片将Tick数据合成1分钟K线数据。如有需求，还可合成更长的时间周期数据，如15分钟K线。
+
+3 . 调用K线时间序列管理模块（ArrayManager）：基于K线数据，如1分钟、15分钟，
+将其转化为便于向量化计算的时间序列数据结构，并在内部支持使用talib库来计算相应的技术指标。
+
+ArrayManager的默认长度为100，如需调整ArrayManager的长度，可传入size参数进行调整（size不能小于计算指标的周期长度）。
+
+### 策略的回调函数
+
+EliteTargetTemplate中以on开头的函数称为回调函数，在编写策略的过程中能够用来接收数据或者接收状态更新。回调函数的作用是当某一个事件发生的时候，策略里的这类函数会被CTA策略引擎自动调用（无需在策略中主动操作）。回调函数按其功能可分为以下三类：
+
+#### 策略实例状态控制（所有策略都需要）
+
+**on_init**
+
+* 入参：无
+
+* 出参：无
+
+初始化策略时on_init函数会被调用，默认写法是先调用write_log函数输出“策略初始化”日志，再调用load_bar函数加载历史数据。
+
+策略初始化时，策略的inited和trading状态都为【False】，此时只是调用历史数据管理器计算并缓存相关的计算指标，不能发出交易信号。调用完on_init函数之后，策略的inited状态才变为【True】，策略初始化才完成。
+
+**on_start**
+
+* 入参：无
+
+* 出参：无
+
+启动策略时on_start函数会被调用，默认写法是调用write_log函数输出“策略启动”日志。
+
+**on_stop**
+
+* 入参：无
+
+* 出参：无
+
+停止策略时on_stop函数会被调用，默认写法是调用write_log函数输出“策略停止”日志。
+
+调用策略的on_stop函数停止策略后，策略的trading状态变为【False】，此时策略就不会发出交易信号了。
+
+#### 接收数据、计算指标、发出交易信号
+
+**on_tick**
+
+* 入参：tick: TickData
+
+* 出参：无
+
+绝大部分交易系统都只提供Tick数据的推送。即使一部分平台可以提供K线数据的推送，但是这些数据到达本地电脑的速度也会慢于Tick数据的推送，因为也需要平台合成之后才能推送过来。所以实盘的时候，VeighNa里所有的策略的K线都是由收到的Tick数据合成的。
+
+当策略收到最新的Tick数据的行情推送时，on_tick函数会被调用。默认写法是通过BarGenerator的update_tick函数把收到的Tick数据推进前面创建的bg实例中以便合成1分钟的K线。
+
+**on_bar**
+
+* 入参：bar: BarData
+
+* 出参：无
+
+当策略收到最新的K线数据时（实盘时默认推进来的是基于Tick合成的一分钟的K线，回测时则取决于选择参数时填入的K线数据频率），on_bar函数就会被调用。
+
+#### 委托状态更新
+
+以下函数在策略中可以直接pass，其具体逻辑应用交给回测/实盘引擎负责。
+
+**on_trade**
+
+* 入参：trade: TradeData
+
+* 出参：无
+
+收到策略成交回报时on_trade函数会被调用。
+
+**on_order**
+
+* 入参：order: OrderData
+
+* 出参：无
+
+收到策略委托回报时on_order函数会被调用。
+
+**on_stop_order**
+
+* 入参：stop_order: StopOrder
+
+* 出参：无
+
+收到策略停止单回报时on_stop_order函数会被调用。
+
+### 主动函数
+
+**buy**：买入开仓（Direction：LONG，Offset：OPEN）
+
+**sell**：卖出平仓（Direction：SHORT，Offset：CLOSE）
+
+**short**：卖出开仓（Direction：SHORT，Offset：OPEN）
+
+**cover**：买入平仓（Direction：LONG，Offset：CLOSE）
+
+* 入参：price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+
+* 出参：vt_orderids: List[vt_orderid] / 无 
+
+buy/sell/short/cover都是策略内部的负责发单的交易请求类函数。
+
+**send_order**
+
+* 入参：direction: Direction, offset: Offset, price: float, volume: float, stop: bool = False, lock: bool = False, net: bool = False
+
+* 出参：vt_orderids / 无
+
+send_order函数是CTA策略引擎调用的发送委托的函数。一般在策略编写的时候不需要单独调用。
+
+**cancel_order**
+
+* 入参：vt_orderid: str
+
+* 出参：无
+
+**cancel_all**
+
+* 入参：无
+
+* 出参：无
+
+cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
+
+**set_target**
+
+* 入参：target: int
+
+* 出参：无
+
+set_target是用来设置策略目标净仓位的函数（可以理解为想要指定的策略持仓量）。正数代表做多、负数代表做空。
+
+请注意，目标仓位是一种持续性的状态，因此设置后在后续时间会持续保持下去，直到被再次设置修改。
+
+**get_target**
+
+* 入参：无
+
+* 出参：int
+
+get_target是用来查询策略目标仓位的函数。
+
+**execute_trading**
+
+* 入参：price_add: float, bar: BarData
+
+* 出参：无
+
+execute_trading是基于设定的目标仓位用来执行交易的函数。委托下单和撤单已经被该函数接管，无需再在策略内进行下单和撤单操作。
+
+execute_trading被调用之后，在函数内部会先撤销策略所有活动委托，然后根据策略目标和策略持仓的仓差（没有则不委托）进行委托。
+
+### 功能函数
+
+以下为策略以外的功能函数：
+
+**write_log**
+
+* 入参：msg: str
+
+* 出参：无
+
+在策略中调用write_log函数，可以进行指定内容的日志输出。
+
+**get_engine_type**
+
+* 入参：无
+
+* 出参：engine_type: EngineType
+
+如果策略对于回测和实盘时有不同的逻辑处理，可以调用get_engine_type函数获取当下使用的引擎类型来进行逻辑判断。
+
+请注意，如果要调用该函数进行逻辑判断，请在策略文件顶部导入“EngineType”。
+
+**get_pricetick**
+
+* 入参：无
+
+* 出参：pricetick: float / None
+
+在策略中调用get_pricetick函数，可以获取交易合约的最小价格跳动。
+
+**get_size**
+
+* 入参：无
+
+* 出参：size: int / None
+
+在策略中调用get_size函数，可以获取交易合约的合约乘数。
+
+**get_account_pos**
+
+* 入参：无
+
+* 出参：size: int / None
+
+在策略中调用get_account_pos函数，可以获取交易合约的账户持仓。
+
+**get_account**
+
+* 入参：无
+
+* 出参：size: AccountData / None
+
+在策略中调用get_account函数，可以获取交易合约的账户资金。
+
+**load_bar**
+
+* 入参：days: int, interval: Interval = Interval.MINUTE, callback: Callable = None, use_database: bool = False
+
+* 出参：无
+
+在策略中调用load_bar函数，可以在策略初始化时加载K线数据。
+
+如下方代码所示，调用load_bar函数时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据，建议加载的天数宁可多一些也不要太少。use_database参数默认为False，会先依次尝试通过交易接口、数据服务获取历史数据，直到获取历史数据或返回空。
+
+**load_tick**
+
+* 入参：days: int
+
+* 出参：无
+
+在策略中调用load_tick函数，可以在策略初始化时加载Tick数据。
+
+**put_event**
+
+* 入参：无
+
+* 出参：无
+
+在策略中调用put_event函数，可以通知图形界面刷新策略状态相关显示。
+
+请注意，要策略初始化完成，inited状态变为【True】之后，才能刷新界面。
+
+**send_email**
+
+* 入参：msg: str
+
+* 出参：无
+
+配置好邮箱相关信息之后，在策略中调用send_email函数，可以发送指定内容的邮件到自己的邮箱。
+
+请注意，要策略初始化完成，inited状态变为【True】之后，才能发送邮件。
+
+**sync_data**
+
+* 入参：无
+
+* 出参：无
+
+在策略中调用sync_data函数，可以在实盘交易的时候，每次停止时都同步策略变量到对应json文件中进行本地缓存，方便第二天初始化时再进行读取还原（CTA策略引擎会去调用，在策略里无需主动调用）。
+
+请注意：
+   - 要在策略启动之后，也就是策略的trading状态变为【True】之后，才能同步策略信息；
+
+   - 基于EliteCtaTemplate开发的策略，只有策略的持仓pos会被同步到本地，其他策略变量由理论值维护。
 
 ## 历史数据管理器
 
