@@ -58,6 +58,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_ui(self) -> None:
         """"""
         self.setWindowTitle(self.window_title)
+
+        # 为主窗口添加中央缓冲区，给dock分隔条留出可压缩空间，避免“看起来拖不动”的情况
+        self.setCentralWidget(QtWidgets.QWidget())
+
         self.init_dock()
         self.init_toolbar()
         self.init_menu()
@@ -96,6 +100,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         tick_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
         position_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
+
+        # 一次性设定启动时的友好初始宽度；不限制后续拖动（只影响首次默认布局）
+        self.resizeDocks([trading_dock, tick_dock], [320, 720], QtCore.Qt.Horizontal)
 
     def init_menu(self) -> None:
         """"""
@@ -304,9 +311,11 @@ class MainWindow(QtWidgets.QMainWindow):
         state = settings.value("state")
         geometry = settings.value("geometry")
 
+        # 恢复顺序：先几何尺寸、后布局状态。避免状态与尺寸互相挤压导致分隔条难以拖动
         if isinstance(state, QtCore.QByteArray):
+            if isinstance(geometry, QtCore.QByteArray):
+                self.restoreGeometry(geometry)
             self.restoreState(state)
-            self.restoreGeometry(geometry)
 
     def restore_window_setting(self) -> None:
         """

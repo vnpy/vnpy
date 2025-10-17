@@ -711,7 +711,7 @@ class TradingWidget(QtWidgets.QWidget):
 
     def init_ui(self) -> None:
         """"""
-        self.setFixedWidth(300)
+        # 不设置固定宽度，避免限制水平分隔条；初始宽度由MainWindow.init_dock()的resizeDocks提供
 
         # Trading function area
         exchanges: list[Exchange] = self.main_engine.get_all_exchanges()
