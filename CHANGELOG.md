@@ -1,3 +1,37 @@
+# 4.2.0版本
+
+## 新增
+
+1. vnpy_riskmanager模块重构
+    a. 采用插件式设计，提供标准化风控规则开发模板
+    b. 支持中国期货程序化交易系统监管要求中的风控规则
+2. vnpy_polygon数据服务接口，支持海外股票、期货、期权等资产品种的历史数据获取
+
+## 调整
+
+1. vnpy_ctp更新底层API到6.7.11（生产和测试统一版本）
+2. vnpy_dolphindb升级适配4.0版本
+3. vnpy_tqsdk简化时间戳的格式化方法，提高效率
+4. vnpy_sqlite支持使用配置文件中声明的数据文件
+5. vnpy_taos优化get_bar_overview和get_tick_overview函数性能（直接访问超级表的tags）
+6. vnpy_spreadtrading / vnpy_portfoliostrategy / vnpy_scripttrader 注册模块日志输出到日志引擎
+7. vnpy_optionmaster优化定价模型中期权最小价值边界判断的逻辑
+8. 全局配置中的log.level改为INFO（10），默认启用详细日志记录输出
+9. MainEngine增加交易功能函数的调用日志输出
+
+
+## 修复
+
+1. vnpy_gm修复中金所和大商所合约代码转换的问题
+2. vnpy_rqdata修复RqdataGateway中的行情订阅函数错误问题
+3. vnpy_optionmaster修复关闭窗口时的异常报错
+4. vnpy_portfoliostrategy修复遗传算法参数优化中的调用传参问题
+5. 修复Linux系统上的sdist安装问题：vnpy_mini / vnpy_sopt / vnpy_rohon / vnpy_tap / vnpy_tts
+6. vnpy_xt修复XtGateway断线重连时的传参错误
+7. vnpy_optionmaster修复black-76模型中theta计算公式的问题
+8. vnpy_postgresql修复写入主键冲突时数据不会更新的问题
+
+
 # 4.1.0版本
 
 # 新增
