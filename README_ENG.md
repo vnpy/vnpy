@@ -7,7 +7,7 @@
 💬 Want to read this in **chinese** ? Go [**here**](README.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-4.1.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-4.2.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12|3.13-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
@@ -15,12 +15,6 @@
 </p>
 
 VeighNa is a Python-based open source quantitative trading system development framework that has grown step by step into a fully-featured quantitative trading platform with continuous contributions from the open source community. It currently has many users from domestic and international financial institutions, including hedge funds, investment banks, futures brokers, university research institutions, proprietary trading companies, etc.
-
-:rocket: :rocket: :rocket: **The VeighNa Elite Quantitative Terminal for professional traders has been officially released, providing comprehensive support for professional traders' needs in areas such as massive strategy concurrency, intelligent position rolling, algorithmic order execution, multi-account trading support, and more. For more detailed information, please scan the QR code below and follow the account, then click on the menu bar's [Community Exchange -> Elite Member Services]**:
-
-<p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_qr.jpg"/>
-</p>
 
 If you have any questions about using VeighNa for secondary development (strategies, modules, etc.), please check the [**VeighNa Project Documentation**](https://www.vnpy.com/docs/cn/index.html). If you can't solve it, please go to the [Questions and Help] section of the [**Official Community Forum**](https://www.vnpy.com/forum/) for help, or share your experience in the [Experience Sharing] section!
 
@@ -67,6 +61,7 @@ On the tenth anniversary of VeighNa's release, version 4.0 officially introduces
 * :book: **[notebook](./examples/alpha_research)**: Quantitative Research Demo
 
     * [download_data_rq](./examples/alpha_research/download_data_rq.ipynb): Download A-share index constituent stock data based on RQData, including index constituent tracking and historical market data retrieval
+    * [download_data_xt](./examples/alpha_research/download_data_xt.ipynb): Download A-share index constituent historical changes and stock K-line data based on XtQuant data service
     * [research_workflow_lasso](./examples/alpha_research/research_workflow_lasso.ipynb): Quantitative research workflow based on Lasso regression model, demonstrating feature selection and prediction capability of linear models
     * [research_workflow_lgb](./examples/alpha_research/research_workflow_lgb.ipynb): Quantitative research workflow based on LightGBM gradient boosting tree, utilizing efficient ensemble learning methods for prediction
     * [research_workflow_mlp](./examples/alpha_research/research_workflow_mlp.ipynb): Quantitative research workflow based on multilayer perceptron neural network, demonstrating the application of deep learning in quantitative trading
@@ -86,25 +81,21 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
         * :arrow_up: CTP ([ctp](https://www.github.com/vnpy/vnpy_ctp)): Domestic futures and options
 
-        * CTP Mini ([mini](https://www.github.com/vnpy/vnpy_mini)): Domestic futures, options
+        * :arrow_up: CTP Mini ([mini](https://www.github.com/vnpy/vnpy_mini)): Domestic futures, options
 
-        * CTP Securities ([sopt](https://www.github.com/vnpy/vnpy_sopt)): ETF options
+        * :arrow_up: CTP Securities ([sopt](https://www.github.com/vnpy/vnpy_sopt)): ETF options
 
-        * FEMAS ([femas](https://www.github.com/vnpy/vnpy_femas)): Domestic futures
+        * :arrow_up: FEMAS ([femas](https://www.github.com/vnpy/vnpy_femas)): Domestic futures
 
-        * UFT ([uft](https://www.github.com/vnpy/vnpy_uft)): Domestic futures, ETF options
+        * :arrow_up: UFT ([uft](https://www.github.com/vnpy/vnpy_uft)): Domestic futures, ETF options
         
         * Esunny ([esunny](https://www.github.com/vnpy/vnpy_esunny)): Domestic futures, Gold TD
 
-        * APEX XSpeed ([sec](https://www.github.com/vnpy/vnpy_sec)): ETF options
+        * :arrow_up: APEX HTS ([hts](https://www.github.com/vnpy/vnpy_hts)): ETF options
 
-        * APEX HTS ([hts](https://www.github.com/vnpy/vnpy_hts)): ETF options
+        * :arrow_up: XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): Domestic securities (A shares), ETF options
 
-        * XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): Domestic securities (A shares), ETF options
-
-        * TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): Domestic securities (A shares), ETF options
-
-        * Guotai Junan ([hft](https://www.github.com/vnpy/vnpy_hft)): Domestic securities (A shares, margin trading)
+        * :arrow_up: TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): Domestic securities (A shares), ETF options
         
         * OST ([ost](https://www.github.com/vnpy/vnpy_ost)): Domestic securities (A shares)
         
@@ -112,78 +103,74 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
         
         * SGIT ([sgit](https://www.github.com/vnpy/vnpy_sgit)): Gold TD, domestic futures
 
-        * KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): Gold TD
+        * :arrow_up: KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): Gold TD
 
-        * LStar ([lstar](https://www.github.com/vnpy/vnpy_lstar)): Futures asset management
+        * :arrow_up: LStar ([lstar](https://www.github.com/vnpy/vnpy_lstar)): Futures asset management
 
-        * Rohon ([rohon](https://www.github.com/vnpy/vnpy_rohon)): Futures asset management
+        * :arrow_up: Rohon ([rohon](https://www.github.com/vnpy/vnpy_rohon)): Futures asset management
 
-        * Jees ([jees](https://www.github.com/vnpy/vnpy_jees)): Futures asset management
+        * :arrow_up: Jees ([jees](https://www.github.com/vnpy/vnpy_jees)): Futures asset management
 
         * ComStar ([comstar](https://www.github.com/vnpy/vnpy_comstar)): Interbank market
         
-        * GoldMiner ([gm](https://www.github.com/vnpy/vnpy_gm)): Domestic securities (simulation)
-        
-        * UF Cloud ([uf](https://www.github.com/vnpy/vnpy_uf)): Domestic securities (simulation)
-        
-        * TTS ([tts](https://www.github.com/vnpy/vnpy_tts)): Domestic futures (simulation)
+        * :arrow_up: TTS ([tts](https://www.github.com/vnpy/vnpy_tts)): Domestic futures (simulation)
 
     * Overseas market
 
-        * Interactive Brokers ([ib](https://www.github.com/vnpy/vnpy_ib)): Global securities, futures, options, forex, etc.
+        * :arrow_up: Interactive Brokers ([ib](https://www.github.com/vnpy/vnpy_ib)): Global securities, futures, options, forex, etc.
 
-        * Esunny 9.0 ([tap](https://www.github.com/vnpy/vnpy_tap)): Global futures
+        * :arrow_up: Esunny 9.0 ([tap](https://www.github.com/vnpy/vnpy_tap)): Global futures
 
-        * Direct Futures ([da](https://www.github.com/vnpy/vnpy_da)): Global futures
+        * :arrow_up: Direct Futures ([da](https://www.github.com/vnpy/vnpy_da)): Global futures
 
     * Special Applications
 
         * :arrow_up: RQData Market Data ([rqdata](https://www.github.com/vnpy/vnpy_rqdata)): Cross-market (stocks, indices, ETFs, futures) real-time market data
 
-        * XtQuant Market Data ([xt](https://www.github.com/vnpy/vnpy_xt)): Cross-market (stocks, indices, convertible bonds, ETFs, futures, options) real-time market data
+        * :arrow_up: XtQuant Market Data ([xt](https://www.github.com/vnpy/vnpy_xt)): Cross-market (stocks, indices, convertible bonds, ETFs, futures, options) real-time market data
 
-        * RPC service ([rpc](https://www.github.com/vnpy/vnpy_rpcservice)): Inter-process communication interface for distributed architecture
+        * :arrow_up: RPC service ([rpc](https://www.github.com/vnpy/vnpy_rpcservice)): Inter-process communication interface for distributed architecture
 
 3. Out-of-the-box trading applications for various quantitative strategies (vnpy.app):
 
     * :arrow_up: [cta_strategy](https://www.github.com/vnpy/vnpy_ctastrategy): CTA strategy engine module, which allows users to perform fine-grained control over the order management during the operation of CTA-type strategies while maintaining ease of use (reducing trading slippage, implementing high-frequency strategies)
 
-    * [cta_backtester](https://www.github.com/vnpy/vnpy_ctabacktester): CTA strategy backtester module, no need to use Jupyter Notebook, directly use the graphical interface to carry out strategy backtesting analysis, parameter optimization and other related work
+    * :arrow_up: [cta_backtester](https://www.github.com/vnpy/vnpy_ctabacktester): CTA strategy backtester module, no need to use Jupyter Notebook, directly use the graphical interface to carry out strategy backtesting analysis, parameter optimization and other related work
 
-    * [spread_trading](https://www.github.com/vnpy/vnpy_spreadtrading): Spread trading module, supports custom spreads, real-time calculation of spread quotes and positions, supports semi-automatic spread algorithm trading and fully automatic spread strategy trading modes
+    * :arrow_up: [spread_trading](https://www.github.com/vnpy/vnpy_spreadtrading): Spread trading module, supports custom spreads, real-time calculation of spread quotes and positions, supports semi-automatic spread algorithm trading and fully automatic spread strategy trading modes
 
-    * [option_master](https://www.github.com/vnpy/vnpy_optionmaster): Option trading module, designed for the domestic options market, supports various option pricing models, implied volatility surface calculation, Greek value risk tracking and other functions
+    * :arrow_up: [option_master](https://www.github.com/vnpy/vnpy_optionmaster): Option trading module, designed for the domestic options market, supports various option pricing models, implied volatility surface calculation, Greek value risk tracking and other functions
 
-    * [portfolio_strategy](https://www.github.com/vnpy/vnpy_portfoliostrategy): Portfolio strategy module, designed for trading multi-contract quantitative strategies (Alpha, option arbitrage, etc.) simultaneously, providing historical data backtesting and live automatic trading functions
+    * :arrow_up: [portfolio_strategy](https://www.github.com/vnpy/vnpy_portfoliostrategy): Portfolio strategy module, designed for trading multi-contract quantitative strategies (Alpha, option arbitrage, etc.) simultaneously, providing historical data backtesting and live automatic trading functions
 
-    * [algo_trading](https://www.github.com/vnpy/vnpy_algotrading): Algorithm trading module, providing various commonly used intelligent trading algorithms: TWAP, Sniper, Iceberg, BestLimit, etc.
+    * :arrow_up: [algo_trading](https://www.github.com/vnpy/vnpy_algotrading): Algorithm trading module, providing various commonly used intelligent trading algorithms: TWAP, Sniper, Iceberg, BestLimit, etc.
 
-    * [script_trader](https://www.github.com/vnpy/vnpy_scripttrader): Script strategy module, designed for multi-asset portfolio trading strategies and computational tasks, also can directly achieve REPL instruction trading in the command line, does not support backtesting functions
+    * :arrow_up: [script_trader](https://www.github.com/vnpy/vnpy_scripttrader): Script strategy module, designed for multi-asset portfolio trading strategies and computational tasks, also can directly achieve REPL instruction trading in the command line, does not support backtesting functions
 
-    * [paper_account](https://www.github.com/vnpy/vnpy_paperaccount): Simulation trading module, pure localized implementation of simulation trading functions, based on real-time quotes obtained from the trading interface for order matching, providing order execution pushing and position records
+    * :arrow_up: [paper_account](https://www.github.com/vnpy/vnpy_paperaccount): Simulation trading module, pure localized implementation of simulation trading functions, based on real-time quotes obtained from the trading interface for order matching, providing order execution pushing and position records
 
-    * [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard): K-line chart module, based on RQData data service (futures) or trading interface to obtain historical data, and combined with Tick push to display real-time market changes
+    * :arrow_up: [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard): K-line chart module, based on RQData data service (futures) or trading interface to obtain historical data, and combined with Tick push to display real-time market changes
 
-    * [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager): Portfolio module, for various fundamental trading strategies, based on separate strategy sub-accounts, providing automatic tracking of trading positions and real-time profit and loss statistics
+    * :arrow_up: [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager): Portfolio module, for various fundamental trading strategies, based on separate strategy sub-accounts, providing automatic tracking of trading positions and real-time profit and loss statistics
 
-    * [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice): RPC service module, allowing a VeighNa Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect simultaneously, realizing a multi-process distributed system
+    * :arrow_up: [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice): RPC service module, allowing a VeighNa Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect simultaneously, realizing a multi-process distributed system
 
-    * [data_manager](https://www.github.com/vnpy/vnpy_datamanager): Historical data management module, view existing data in the database through a tree directory, select any time period data to view field details, supports CSV file data import and export
+    * :arrow_up: [data_manager](https://www.github.com/vnpy/vnpy_datamanager): Historical data management module, view existing data in the database through a tree directory, select any time period data to view field details, supports CSV file data import and export
 
-    * [data_recorder](https://www.github.com/vnpy/vnpy_datarecorder): Market data recording module, based on the graphical interface for configuration, records Tick or K-line data to the database in real-time according to demand, for strategy backtesting or live initialization
+    * :arrow_up: [data_recorder](https://www.github.com/vnpy/vnpy_datarecorder): Market data recording module, based on the graphical interface for configuration, records Tick or K-line data to the database in real-time according to demand, for strategy backtesting or live initialization
 
-    * [excel_rtd](https://www.github.com/vnpy/vnpy_excelrtd): Excel RTD (Real Time Data) real-time data service, based on pyxll module to achieve real-time push updates of various data (quotes, contracts, positions, etc.) in Excel
+    * :arrow_up: [excel_rtd](https://www.github.com/vnpy/vnpy_excelrtd): Excel RTD (Real Time Data) real-time data service, based on pyxll module to achieve real-time push updates of various data (quotes, contracts, positions, etc.) in Excel
 
-    * [risk_manager](https://www.github.com/vnpy/vnpy_riskmanager): Risk management module, providing statistics and restrictions on rules including trade flow control, number of orders placed, active orders, total number of cancelled orders, etc., effectively implementing front-end risk control functions
+    * :arrow_up: [risk_manager](https://www.github.com/vnpy/vnpy_riskmanager): Risk management module, providing statistics and restrictions on rules including trade flow control, number of orders placed, active orders, total number of cancelled orders, etc., effectively implementing front-end risk control functions
     
-    * [web_trader](https://www.github.com/vnpy/vnpy_webtrader): Web service module, designed according to the requirements of B-S architecture, implementing a web server that provides active function calls (REST) and passive data push (WebSocket)
+    * :arrow_up: [web_trader](https://www.github.com/vnpy/vnpy_webtrader): Web service module, designed according to the requirements of B-S architecture, implementing a web server that provides active function calls (REST) and passive data push (WebSocket)
 
 
 4. Python trading API interface package (vnpy.api), providing the underlying implementation of the above trading interfaces:
     
-    * REST Client ([rest](https://www.github.com/vnpy/vnpy_rest)): High-performance REST API client based on coroutine process asynchronous IO which adopts the programming model of event message cycle to support sending high concurrent real-time transaction requests
+    * :arrow_up: REST Client ([rest](https://www.github.com/vnpy/vnpy_rest)): High-performance REST API client based on coroutine process asynchronous IO which adopts the programming model of event message cycle to support sending high concurrent real-time transaction requests
     
-    * Websocket Client ([websocket](https://www.github.com/vnpy/vnpy_websocket)): High-performance Websocket API client based on coroutine process asynchronous IO, supports sharing event loops with REST Client to avoid multi-threaded performance loss caused by GIL
+    * :arrow_up: Websocket Client ([websocket](https://www.github.com/vnpy/vnpy_websocket)): High-performance Websocket API client based on coroutine process asynchronous IO, supports sharing event loops with REST Client to avoid multi-threaded performance loss caused by GIL
 
 
 5. :arrow_up: Simple and easy-to-use event-driven engine (vnpy.event), which is the core of event-driven trading programs
@@ -194,46 +181,37 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
         * :arrow_up: SQLite ([sqlite](https://www.github.com/vnpy/vnpy_sqlite)): Lightweight single file database, no need to install and configure data service programs, default option of VeighNa, suitable for novice users
 
-        * MySQL ([mysql](https://www.github.com/vnpy/vnpy_mysql)): The world's most popular open source relational database, extremely rich documentation, and can replace other high NewSQL compatible implementations (such as TiDB)
+        * :arrow_up: MySQL ([mysql](https://www.github.com/vnpy/vnpy_mysql)): The world's most popular open source relational database, extremely rich documentation, and can replace other high NewSQL compatible implementations (such as TiDB)
 
-        * PostgreSQL ([postgresql](https://www.github.com/vnpy/vnpy_postgresql)): More feature-rich open source relational database, support for new features through extension plug-ins, only recommended for skilled users
+        * :arrow_up: PostgreSQL ([postgresql](https://www.github.com/vnpy/vnpy_postgresql)): More feature-rich open source relational database, support for new features through extension plug-ins, only recommended for skilled users
 
     * NoSQL classes
-
+    
         * DolphinDB ([dolphindb](https://www.github.com/vnpy/vnpy_dolphindb)): A high-performance distributed temporal database especially suitable for low latency or real-time tasks with high speed requirements
         
-        * Arctic ([arctic](https://www.github.com/vnpy/vnpy_arctic)): High-performance financial temporal database developed by quantitative hedge fund Man AHL based on MongoDB, adopts performance optimization schemes such as partitioned storage and lz4 compression
-
-        * TDengine ([taos](https://www.github.com/vnpy/vnpy_taos)): Distributed, high-performance, SQL-supporting time-series database with built-in caching, stream computing, data subscription and other system functions that greatly reduce development and maintenance complexity
-
-        * TimescaleDB ([timescaledb](https://www.github.com/vnpy/vnpy_timescaledb)): Time-series database developed based on PostgreSQL, installed as a plugin extension, supports automatic data partitioning by space and time
-
-        * MongoDB ([mongodb](https://www.github.com/vnpy/vnpy_mongodb)): Non-relational database based on distributed file storage (bson format), built-in memory cache of hot data provides faster read and write speeds
+        * :arrow_up: TDengine ([taos](https://www.github.com/vnpy/vnpy_taos)): Distributed, high-performance, SQL-supporting time-series database with built-in caching, stream computing, data subscription and other system functions that greatly reduce development and maintenance complexity
         
-        * InfluxDB ([influxdb](https://www.github.com/vnpy/vnpy_influxdb)): Non-relational database specially designed for time-series data, columnar data storage provides high read/write efficiency and peripheral analysis applications
-        
-        * LevelDB ([leveldb](https://www.github.com/vnpy/vnpy_leveldb)): High-performance key/value database launched by Google which implements a process memory storage engine based on LSM algorithm, and supports billions of levels of massive data
+        * :arrow_up: MongoDB ([mongodb](https://www.github.com/vnpy/vnpy_mongodb)): Non-relational database based on distributed file storage (bson format), built-in memory cache of hot data provides faster read and write speeds
 
 7. Adapter interfaces for various data services (datafeed):
 
-    * XtQuant ([xt](https://www.github.com/vnpy/vnpy_xt)): Stocks, futures, options, funds, bonds
+    * :arrow_up: XtQuant ([xt](https://www.github.com/vnpy/vnpy_xt)): Stocks, futures, options, funds, bonds
 
     * :arrow_up: RQData ([rqdata](https://www.github.com/vnpy/vnpy_rqdata)): Stocks, futures, options, funds, bonds, Gold TD
 
-    * VoltTrader ([voltrader](https://www.github.com/vnpy/vnpy_voltrader)): Futures, options
+    * :arrow_up: MultiCharts ([mcdata](https://www.github.com/vnpy/vnpy_mcdata)): Futures, futures options
     
-    * UData ([udata](https://www.github.com/vnpy/vnpy_udata)): Stocks, futures, options
+    * :arrow_up: TuShare ([tushare](https://www.github.com/vnpy/vnpy_tushare)): Stocks, futures, options, funds
     
-    * TuShare ([tushare](https://www.github.com/vnpy/vnpy_tushare)): Stocks, futures, options, funds
+    * :arrow_up: Wind ([wind](https://www.github.com/vnpy/vnpy_wind)): Stocks, futures, funds, bonds
     
-    * Wind ([wind](https://www.github.com/vnpy/vnpy_wind)): Stocks, futures, funds, bonds
+    * :arrow_up: iFinD ([ifind](https://www.github.com/vnpy/vnpy_ifind)): Stocks, futures, funds, bonds
     
-    * Tinysoft ([tinysoft](https://www.github.com/vnpy/vnpy_tinysoft)): Stocks, futures, funds, bonds
-    
-    * iFinD ([ifind](https://www.github.com/vnpy/vnpy_ifind)): Stocks, futures, funds, bonds
-    
-    * TQSDK ([tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)): Futures
+    * :arrow_up: TQSDK ([tqsdk](https://www.github.com/vnpy/vnpy_tqsdk)): Futures
 
+    * :arrow_up: GoldMiner ([gm](https://www.github.com/vnpy/vnpy_gm)): Stocks
+    
+    * :arrow_up: polygon ([polygon](https://www.github.com/vnpy/vnpy_polygon)): Stocks, futures, options
 
 8. :arrow_up: Standard component for inter-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
 
@@ -247,7 +225,7 @@ Note: The above description of functional features is based on the documentation
 
 ## Environment preparation
 
-* We recommend using the Python distribution [VeighNa Studio-4.1.0](https://download.vnpy.com/veighna_studio-4.1.0.exe), which is built with the latest version of VeighNa framework and VeighNa Station quantitative management platform, specifically created by the VeighNa team for quantitative trading. No manual installation required.
+* We recommend using the Python distribution [VeighNa Studio-4.2.0](https://download.vnpy.com/veighna_studio-4.2.0.exe), which is built with the latest version of VeighNa framework and VeighNa Station quantitative management platform, specifically created by the VeighNa team for quantitative trading. No manual installation required.
 * Supported system versions: Windows 11 or above / Windows Server 2022 or above / Ubuntu 22.04 LTS or above
 * Supported Python version: Python 3.10 or above (64-bit), **Python 3.13 recommended**
 

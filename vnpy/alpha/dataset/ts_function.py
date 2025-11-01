@@ -4,7 +4,7 @@ Time Series Operators
 
 from typing import cast
 
-from scipy import stats     # type: ignore
+from scipy import stats
 import polars as pl
 import numpy as np
 
