@@ -161,31 +161,31 @@ msgstr "Engine not found: {}"
 
 #: vnpy\trader\engine.py:219
 msgid "连接登录：{}"
-msgstr "Connect gateway: {}"
+msgstr "Connect gateway -> {}"
 
 #: vnpy\trader\engine.py:229
-msgid "订阅行情：{} -> {}"
-msgstr "Subscribe market data: {} -> {}"
+msgid "订阅行情 -> {}：{}"
+msgstr "Subscribe market data -> {}: {}"
 
 #: vnpy\trader\engine.py:239
-msgid "委托下单：{} -> {}"
-msgstr "Send new order: {} -> {}"
+msgid "委托下单 -> {}：{}"
+msgstr "Send new order -> {}: {}"
 
 #: vnpy\trader\engine.py:251
-msgid "委托撤单：{} -> {}"
-msgstr "Cancel existing order: {} -> {}"
+msgid "委托撤单 -> {}：{}"
+msgstr "Cancel existing order -> {}: {}"
 
 #: vnpy\trader\engine.py:261
-msgid "报价下单：{} -> {}"
-msgstr "Send new quote: {} -> {}"
+msgid "报价下单 -> {}：{}"
+msgstr "Send new quote -> {}: {}"
 
 #: vnpy\trader\engine.py:273
-msgid "报价撤单：{} -> {}"
-msgstr "Cancel existing quote: {} -> {}"
+msgid "报价撤单 -> {}：{}"
+msgstr "Cancel existing quote -> {}: {}"
 
 #: vnpy\trader\engine.py:283
-msgid "查询K线：{} -> {}"
-msgstr "Query history data: {} -> {}"
+msgid "查询K线 -> {}：{}"
+msgstr "Query history data -> {}: {}"
 
 #: vnpy\trader\engine.py:663
 msgid "邮件发送失败: {}"
