@@ -23,6 +23,7 @@
 8. 全局配置中的log.level改为INFO（10），默认启用详细日志记录输出
 9. MainEngine增加交易功能函数的调用日志输出
 10. vnpy.alpha中的Dataset增加process_data函数，便于测试不同数据处理器的效果
+11. vnpy_ib更新支持ibapi至10.40.1版本
 
 
 ## 修复
