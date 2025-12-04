@@ -135,12 +135,12 @@ def pow1(base: DataProxy, exponent: float) -> DataProxy:
 def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     """Power operation between two DataProxy objects (base^exponent)
 
-    处理逻辑:
-    - 底数>0: 直接计算 base^exponent
-    - 底数<0且指数为整数: 计算 -1 * |base|^exponent
-    - 其他情况(底数为0、指数为NaN、负数底数非整数指数): 返回0
+    handle logic:
+    - base > 0: calculate base^exponent
+    - base < 0 and exponent is integer: calculate -1 * |base|^exponent
+    - other cases (base = 0, exponent is NaN, negative base and non-integer exponent): return 0
 
-    Note: 用floor判断整数而非cast(Int64)，因为NaN无法转换为整数会报错
+    Note: use floor method to check integer rather than cast(Int64) method, because NaN cannot be converted to integer will report an error
     """
     base_renamed = base.df.rename({"data": "base_data"})
     exp_renamed = exponent.df.rename({"data": "exp_data"})
@@ -152,8 +152,8 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
         .then(pl.col("base_data").pow(pl.col("exp_data")))
         .when(
             (pl.col("base_data") < 0) &
-            (~pl.col("exp_data").is_nan()) &  # 先排除NaN，否则floor比较会出问题
-            (pl.col("exp_data").floor() == pl.col("exp_data"))  # 判断是否为整数
+            (~pl.col("exp_data").is_nan()) &
+            (pl.col("exp_data").floor() == pl.col("exp_data"))
         )
         .then((-1) * pl.col("base_data").abs().pow(pl.col("exp_data")))
         .otherwise(pl.lit(None))

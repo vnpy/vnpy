@@ -134,9 +134,6 @@ class AlphaDataset:
         raw_df = self.result_df.fill_null(float("nan"))
 
         if filters:
-            # 根据成分股时间范围筛选数据
-            # 注意：不能在循环中反复 pl.concat，会导致 O(n²) 时间复杂度
-            # 应先收集到列表，最后一次性 concat
             logger.info("开始筛选成分股数据")
 
             dfs: list[pl.DataFrame] = []

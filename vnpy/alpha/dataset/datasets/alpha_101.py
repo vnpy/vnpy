@@ -83,7 +83,7 @@ class Alpha101(AlphaDataset):
         # Alpha20
         self.add_feature("alpha20", "(-1 * cs_rank(open - ts_delay(high, 1))) * cs_rank(open - ts_delay(close, 1)) * cs_rank(open - ts_delay(low, 1))")
 
-        # Alpha21 (最内层原文为>=1，实现为>1，边界值略有差异)
+        # Alpha21 (the innermost original was >=1, implemented as >1)
         self.add_feature("alpha21", "quesval2((ts_mean(close, 8) + ts_std(close, 8)), ts_mean(close, 2), -1, quesval2(ts_mean(close, 2), (ts_mean(close, 8) - ts_std(close, 8)), 1, quesval(1, (volume / ts_mean(volume, 20)), 1, -1)))")
 
         # Alpha22
@@ -92,7 +92,7 @@ class Alpha101(AlphaDataset):
         # Alpha23
         self.add_feature("alpha23", "quesval2(ts_mean(high, 20), high, -1 * ts_delta(high, 2), 0)")
 
-        # Alpha24 (原文条件为<=0.05，当前实现为<0.05，边界值略有差异)
+        # Alpha24 (the original condition was <=0.05, implemented as <0.05)
         self.add_feature("alpha24", "quesval(0.05, ts_delta(ts_sum(close, 100) / 100, 100) / ts_delay(close, 100), (-1 * ts_delta(close, 3)), (-1 * (close - ts_min(close, 100))))")
 
         # Alpha25
@@ -164,7 +164,7 @@ class Alpha101(AlphaDataset):
         # Alpha47
         self.add_feature("alpha47", "((cs_rank(pow1(close, -1)) * volume / ts_mean(volume, 20)) * (high * cs_rank(high - close)) / (ts_sum(high, 5) / 5)) - cs_rank(vwap - ts_delay(vwap, 5))")
 
-        # Alpha48 (因子包含IndNeutralize，目前未实现)
+        # Alpha48 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha48", "(ts_corr(ts_delta(close, 1), ts_delta(ts_delay(close, 1), 1), 250) * ts_delta(close, 1)) / close / ts_sum(pow1((ts_delta(close, 1) / ts_delay(close, 1)), 2), 250)")
 
         # Alpha49
@@ -188,16 +188,16 @@ class Alpha101(AlphaDataset):
         # Alpha55
         self.add_feature("alpha55", "(-1) * ts_corr(cs_rank((close - ts_min(low, 12)) / (ts_max(high, 12) - ts_min(low, 12))), cs_rank(volume), 6)")
 
-        # Alpha56 (缺少cap市值字段，无法实现)
-        # 原公式: (0 - (1 * (rank((sum(returns, 10) / sum(sum(returns, 2), 3))) * rank((returns * cap)))))
+        # Alpha56 (missing `cap` field, cannot be implemented)
+        # original formula: (0 - (1 * (rank((sum(returns, 10) / sum(sum(returns, 2), 3))) * rank((returns * cap)))))
 
         # Alpha57
         self.add_feature("alpha57", "-1 * ((close - vwap) / ts_decay_linear(cs_rank(ts_argmax(close, 30)), 2))")
 
-        # Alpha58 (因子包含IndNeutralize，目前未实现)
+        # Alpha58 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha58", "(-1) * ts_rank(ts_decay_linear(ts_corr(vwap, volume, 4), 8), 6)")
 
-        # Alpha59 (因子包含IndNeutralize，目前未实现)
+        # Alpha59 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha59", "(-1) * ts_rank(ts_decay_linear(ts_corr(((vwap * 0.728317) + (vwap * (1 - 0.728317))), volume, 4), 16), 8)")
 
         # Alpha60
@@ -209,7 +209,7 @@ class Alpha101(AlphaDataset):
         # Alpha62
         self.add_feature("alpha62", "cast_to_int(cs_rank(ts_corr(vwap, ts_sum(ts_mean(volume, 20), 22), 10)) < cs_rank(cast_to_int((cs_rank(open) + cs_rank(open)) < (cs_rank((high + low) / 2) + cs_rank(high))))) * -1")
 
-        # Alpha63 (因子包含IndNeutralize，目前未实现)
+        # Alpha63 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha63", "(cs_rank(ts_decay_linear(ts_delta(close, 2), 8)) - cs_rank(ts_decay_linear(ts_corr(vwap * 0.318108 + open * 0.681892, ts_sum(ts_mean(volume, 180), 37), 14), 12))) * -1")
 
         # Alpha64
@@ -221,16 +221,16 @@ class Alpha101(AlphaDataset):
         # Alpha66
         self.add_feature("alpha66", "(cs_rank(ts_decay_linear(ts_delta(vwap, 4), 7)) + ts_rank(ts_decay_linear((((low * 0.96633) + (low * (1 - 0.96633))) - vwap) / (open - ((high + low) / 2)), 11), 7)) * -1")
 
-        # Alpha67 (因子包含IndNeutralize，目前未实现)
+        # Alpha67 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha67", "pow2(cs_rank(high - ts_min(high, 2)), cs_rank(ts_corr(vwap, ts_mean(volume, 20), 6))) * -1")
 
         # Alpha68
         self.add_feature("alpha68", "cast_to_int(ts_rank(ts_corr(cs_rank(high), cs_rank(ts_mean(volume, 15)), 9), 14) < cs_rank(ts_delta((close * 0.518371 + low * (1 - 0.518371)), 1))) * -1")
 
-        # Alpha69 (因子包含IndNeutralize，目前未实现)
+        # Alpha69 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha69", "pow2(cs_rank(ts_max(ts_delta(vwap, 3), 5)), ts_rank(ts_corr(close * 0.490655 + vwap * 0.509345, ts_mean(volume, 20), 5), 9)) * -1")
 
-        # Alpha70 (因子包含IndNeutralize，目前未实现)
+        # Alpha70 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha70", "pow2(cs_rank(ts_delta(vwap, 1)), ts_rank(ts_corr(close, ts_mean(volume, 50), 18), 18)) * -1")
 
         # Alpha71
@@ -248,7 +248,7 @@ class Alpha101(AlphaDataset):
         # Alpha75
         self.add_feature("alpha75", "quesval2(cs_rank(ts_corr(vwap, volume, 4)), cs_rank(ts_corr(cs_rank(low), cs_rank(ts_mean(volume, 50)), 12)), 1, 0)")
 
-        # Alpha76 (因子包含IndNeutralize，目前未实现)
+        # Alpha76 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha76", "ts_greater(cs_rank(ts_decay_linear(ts_delta(vwap, 1), 12)), ts_rank(ts_decay_linear(ts_rank(ts_corr(low, ts_mean(volume, 81), 8), 20), 17), 19)) * -1")
 
         # Alpha77
@@ -257,16 +257,16 @@ class Alpha101(AlphaDataset):
         # Alpha78
         self.add_feature("alpha78", "pow2(cs_rank(ts_corr(ts_sum((low * 0.352233) + (vwap * (1 - 0.352233)), 20), ts_sum(ts_mean(volume, 40), 20), 7)), cs_rank(ts_corr(cs_rank(vwap), cs_rank(volume), 6)))")
 
-        # Alpha79 (因子包含IndNeutralize，目前未实现)
+        # Alpha79 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha79", "quesval2(cs_rank(ts_delta(close * 0.60733 + open * 0.39267, 1)), cs_rank(ts_corr(ts_rank(vwap, 4), ts_rank(ts_mean(volume, 150), 9), 15)), 1, 0)")
 
-        # Alpha80 (因子包含IndNeutralize，目前未实现)
+        # Alpha80 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha80", "pow2(cs_rank(sign(ts_delta(open * 0.868128 + high * 0.131872, 4))), ts_rank(ts_corr(high, ts_mean(volume, 10), 5), 6)) * -1")
 
         # Alpha81
         self.add_feature("alpha81", "quesval2(cs_rank(log(ts_product(cs_rank(pow1(cs_rank(ts_corr(vwap, ts_sum(ts_mean(volume, 10), 50), 8)), 4)), 15))), cs_rank(ts_corr(cs_rank(vwap), cs_rank(volume), 5)), 1, 0) * -1")
 
-        # Alpha82 (因子包含IndNeutralize，目前未实现)
+        # Alpha82 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha82", "ts_less(cs_rank(ts_decay_linear(ts_delta(open, 1), 15)), ts_rank(ts_decay_linear(ts_corr(volume, open, 17), 7), 13)) * -1")
 
         # Alpha83
@@ -281,25 +281,25 @@ class Alpha101(AlphaDataset):
         # Alpha86
         self.add_feature("alpha86", "quesval2(ts_rank(ts_corr(close, ts_sum(ts_mean(volume, 20), 15), 6), 20), cs_rank((open + close) - (vwap + open)), 1, 0) * -1")
 
-        # Alpha87 (因子包含IndNeutralize，目前未实现)
+        # Alpha87 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha87", "ts_greater(cs_rank(ts_decay_linear(ts_delta(close * 0.369701 + vwap * 0.630299, 2), 3)), ts_rank(ts_decay_linear(abs(ts_corr(ts_mean(volume, 81), close, 13)), 5), 14)) * -1")
 
         # Alpha88
         self.add_feature("alpha88", "ts_less(cs_rank(ts_decay_linear((cs_rank(open) + cs_rank(low)) - (cs_rank(high) + cs_rank(close)), 8)), ts_rank(ts_decay_linear(ts_corr(ts_rank(close, 8), ts_rank(ts_mean(volume, 60), 21), 8), 7), 3))")
 
-        # Alpha89 (因子包含IndNeutralize，目前未实现)
+        # Alpha89 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha89", "(ts_rank(ts_decay_linear(ts_corr(low, ts_mean(volume, 10), 7), 6), 4) - ts_rank(ts_decay_linear(ts_delta(vwap, 3), 10), 15))")
 
-        # Alpha90 (因子包含IndNeutralize，目前未实现)
+        # Alpha90 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha90", "pow2(cs_rank(close - ts_max(close, 5)), ts_rank(ts_corr(ts_mean(volume, 40), low, 5), 3)) * -1")
 
-        # Alpha91 (因子包含IndNeutralize，目前未实现)
+        # Alpha91 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha91", "(ts_rank(ts_decay_linear(ts_decay_linear(ts_corr(close, volume, 10), 16), 4), 5) - cs_rank(ts_decay_linear(ts_corr(vwap, ts_mean(volume, 30), 4), 3))) * -1")
 
         # Alpha92
         self.add_feature("alpha92", "ts_less(ts_rank(ts_decay_linear(quesval2(((high + low) / 2 + close), (low + open), 1, 0), 15), 19), ts_rank(ts_decay_linear(ts_corr(cs_rank(low), cs_rank(ts_mean(volume, 30)), 8), 7), 7))")
 
-        # Alpha93 (因子包含IndNeutralize，目前未实现)
+        # Alpha93 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha93", "ts_rank(ts_decay_linear(ts_corr(vwap, ts_mean(volume, 81), 17), 20), 8) / cs_rank(ts_decay_linear(ts_delta(close * 0.524434 + vwap * 0.475566, 3), 16))")
 
         # Alpha94
@@ -311,7 +311,7 @@ class Alpha101(AlphaDataset):
         # Alpha96
         self.add_feature("alpha96", "ts_greater(ts_rank(ts_decay_linear(ts_corr(cs_rank(vwap), cs_rank(volume), 4), 4), 8), ts_rank(ts_decay_linear(ts_argmax(ts_corr(ts_rank(close, 7), ts_rank(ts_mean(volume, 60), 4), 4), 13), 14), 13)) * -1")
 
-        # Alpha97 (因子包含IndNeutralize，目前未实现)
+        # Alpha97 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha97", "(cs_rank(ts_decay_linear(ts_delta(low * 0.721001 + vwap * 0.278999, 3), 20)) - ts_rank(ts_decay_linear(ts_rank(ts_corr(ts_rank(low, 8), ts_rank(ts_mean(volume, 60), 17), 5), 19), 16), 7)) * -1")
 
         # Alpha98
@@ -320,7 +320,7 @@ class Alpha101(AlphaDataset):
         # Alpha99
         self.add_feature("alpha99", "quesval2(cs_rank(ts_corr(ts_sum((high + low) / 2, 20), ts_sum(ts_mean(volume, 60), 20), 9)), cs_rank(ts_corr(low, volume, 6)), 1, 0) * -1")
 
-        # Alpha100 (因子包含IndNeutralize，目前未实现)
+        # Alpha100 (contains `IndNeutralize`, currently not implemented)
         # self.add_feature("alpha100", "-1 * ((1.5 * cs_scale(cs_rank(((close - low) - (high - close)) / (high - low) * volume))) - cs_scale(ts_corr(close, cs_rank(ts_mean(volume, 20)), 5) - cs_rank(ts_argmin(close, 30)))) * (volume / ts_mean(volume, 20))")
 
         # Alpha101
