@@ -134,18 +134,23 @@ class AlphaDataset:
         raw_df = self.result_df.fill_null(float("nan"))
 
         if filters:
+            # 根据成分股时间范围筛选数据
+            # 注意：不能在循环中反复 pl.concat，会导致 O(n²) 时间复杂度
+            # 应先收集到列表，最后一次性 concat
             logger.info("开始筛选成分股数据")
 
-            filtered_df = pl.DataFrame()
+            dfs: list[pl.DataFrame] = []
 
             for vt_symbol, ranges in tqdm(filters.items(), total=len(filters)):
                 for start, end in ranges:
                     temp_df = raw_df.filter(
-                        (pl.col("vt_symbol") == vt_symbol) & (pl.col("datetime") >= pl.lit(start)) & (pl.col("datetime") <= pl.lit(end))
+                        (pl.col("vt_symbol") == vt_symbol)
+                        & (pl.col("datetime") >= pl.lit(start))
+                        & (pl.col("datetime") <= pl.lit(end))
                     )
-                    filtered_df = pl.concat([filtered_df, temp_df])
+                    dfs.append(temp_df)
 
-            raw_df = filtered_df
+            raw_df = pl.concat(dfs)
 
         # Only keep feature columns
         select_columns: list[str] = ["datetime", "vt_symbol"] + raw_df.columns[self.df.width:]
