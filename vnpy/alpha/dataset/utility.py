@@ -121,16 +121,26 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
         ts_rsquare, ts_resi,
         ts_corr,
         ts_less, ts_greater,
-        ts_log, ts_abs
+        ts_log, ts_abs,
+        ts_delta, ts_cov,
+        ts_decay_linear,
+        ts_product
     )
     from .cs_function import (              # noqa
         cs_rank,
         cs_mean,
-        cs_std
+        cs_std,
+        cs_sum,
+        cs_scale
     )
     from .ta_function import (              # noqa
         ta_rsi,
         ta_atr
+    )
+    from .math_function import (              # noqa
+        less, greater, log, abs,
+        sign, pow1, pow2, cast_to_int,
+        quesval, quesval2
     )
 
     # Extract feature objects to local space

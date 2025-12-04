@@ -1,6 +1,4 @@
-"""
-Time Series Operators
-"""
+"""Time Series Operators"""
 
 from typing import cast
 
@@ -222,5 +220,40 @@ def ts_abs(feature: DataProxy) -> DataProxy:
         pl.col("datetime"),
         pl.col("vt_symbol"),
         pl.col("data").abs().over("vt_symbol")
+    )
+    return DataProxy(df)
+
+
+def ts_delta(feature: DataProxy, window: int) -> DataProxy:
+    """Calculate difference between current value and value from window periods ago"""
+    return feature - ts_delay(feature, window)
+
+
+def ts_cov(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
+    """Calculate covariance between two features over a rolling window"""
+    return ts_corr(feature1, feature2, window) * ts_std(feature1, window) * ts_std(feature2, window)
+
+
+def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
+    """Calculate linear decay weighted average"""
+    def decay_func(s: pl.Series) -> float:
+        """Calculate linear decay weighted average for a series"""
+        weights = pl.Series(range(window, 0, -1))
+        return float((s * weights).sum() / (window * (window + 1) / 2))
+
+    df: pl.DataFrame = feature.df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        pl.col("data").rolling_map(lambda s: decay_func(s), window).over("vt_symbol")
+    )
+    return DataProxy(df)
+
+
+def ts_product(feature: DataProxy, window: int) -> DataProxy:
+    """Calculate the product over a rolling window"""
+    df: pl.DataFrame = feature.df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        pl.col("data").rolling_map(lambda s: s.product(), window).over("vt_symbol")
     )
     return DataProxy(df)
