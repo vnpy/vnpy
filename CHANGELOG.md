@@ -7,6 +7,10 @@
 ## 调整
 
 1. vnpy_sec升级适配4.0版本
+2. vnpy_ctabacktester的策略代码编辑功能支持cursor和pycharm编辑器
+3. vnpy_ctastrategy的回测引擎，增加RGR绩效统计指标（感谢上弦之月贡献）
+4. ArrayManager增加对于指标计算函数重载（Function Overload）的类型提示声明
+
 
 # 4.2.0版本
 
