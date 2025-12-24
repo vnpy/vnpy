@@ -109,7 +109,7 @@ def ts_slope(feature: DataProxy, window: int) -> DataProxy:
 
     # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
     # 等价于 sum((window-1-j) * y[t-j]) for j in 0..window-1
-    sum_xy_expr = sum([
+    sum_xy_expr: pl.Expr = pl.sum_horizontal([
         (window - 1 - j) * pl.col("data").shift(j)
         for j in range(window)
     ])
@@ -146,7 +146,7 @@ def ts_rsquare(feature: DataProxy, window: int) -> DataProxy:
     var_x = sum_x2 / n - mean_x * mean_x  # 总体方差
 
     # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
-    sum_xy_expr = sum([
+    sum_xy_expr: pl.Expr = pl.sum_horizontal([
         (window - 1 - j) * pl.col("data").shift(j)
         for j in range(window)
     ])
@@ -193,7 +193,7 @@ def ts_resi(feature: DataProxy, window: int) -> DataProxy:
     denominator = n * sum_x2 - sum_x * sum_x
 
     # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
-    sum_xy_expr = sum([
+    sum_xy_expr: pl.Expr = pl.sum_horizontal([
         (window - 1 - j) * pl.col("data").shift(j)
         for j in range(window)
     ])

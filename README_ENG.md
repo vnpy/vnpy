@@ -7,7 +7,7 @@
 💬 Want to read this in **chinese** ? Go [**here**](README.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-4.2.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-4.3.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12|3.13-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
@@ -89,7 +89,7 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
         * :arrow_up: UFT ([uft](https://www.github.com/vnpy/vnpy_uft)): Domestic futures, ETF options
         
-        * Esunny ([esunny](https://www.github.com/vnpy/vnpy_esunny)): Domestic futures, Gold TD
+        * :arrow_up: Esunny ([esunny](https://www.github.com/vnpy/vnpy_esunny)): Domestic futures, Gold TD
 
         * :arrow_up: APEX HTS ([hts](https://www.github.com/vnpy/vnpy_hts)): ETF options
 
@@ -225,7 +225,7 @@ Note: The above description of functional features is based on the documentation
 
 ## Environment preparation
 
-* We recommend using the Python distribution [VeighNa Studio-4.2.0](https://download.vnpy.com/veighna_studio-4.2.0.exe), which is built with the latest version of VeighNa framework and VeighNa Station quantitative management platform, specifically created by the VeighNa team for quantitative trading. No manual installation required.
+* We recommend using the Python distribution [VeighNa Studio-4.3.0](https://download.vnpy.com/veighna_studio-4.3.0.exe), which is built with the latest version of VeighNa framework and VeighNa Station quantitative management platform, specifically created by the VeighNa team for quantitative trading. No manual installation required.
 * Supported system versions: Windows 11 or above / Windows Server 2022 or above / Ubuntu 22.04 LTS or above
 * Supported Python version: Python 3.10 or above (64-bit), **Python 3.13 recommended**
 

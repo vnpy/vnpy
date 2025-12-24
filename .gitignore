@@ -40,3 +40,4 @@ _templates
 
 # Alpha
 lab/
+/.mypy_cache
