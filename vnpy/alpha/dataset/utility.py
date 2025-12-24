@@ -73,7 +73,7 @@ class DataProxy:
             s: pl.Series = self.df["data"] > other.df["data"]
         else:
             s = self.df["data"] > other
-        return self.result(s)
+        return self.result(s.cast(pl.Int32))
 
     def __ge__(self, other: Union["DataProxy", int, float]) -> "DataProxy":
         """Greater than or equal comparison"""
@@ -81,7 +81,7 @@ class DataProxy:
             s: pl.Series = self.df["data"] >= other.df["data"]
         else:
             s = self.df["data"] >= other
-        return self.result(s)
+        return self.result(s.cast(pl.Int32))
 
     def __lt__(self, other: Union["DataProxy", int, float]) -> "DataProxy":
         """Less than comparison"""
@@ -89,7 +89,7 @@ class DataProxy:
             s: pl.Series = self.df["data"] < other.df["data"]
         else:
             s = self.df["data"] < other
-        return self.result(s)
+        return self.result(s.cast(pl.Int32))
 
     def __le__(self, other: Union["DataProxy", int, float]) -> "DataProxy":
         """Less than or equal comparison"""
@@ -97,7 +97,7 @@ class DataProxy:
             s: pl.Series = self.df["data"] <= other.df["data"]
         else:
             s = self.df["data"] <= other
-        return self.result(s)
+        return self.result(s.cast(pl.Int32))
 
     def __eq__(self, other: Union["DataProxy", int, float]) -> "DataProxy":    # type: ignore
         """Equal comparison"""
@@ -105,7 +105,7 @@ class DataProxy:
             s = self.df["data"] == other.df["data"]
         else:
             s = self.df["data"] == other
-        return self.result(s)
+        return self.result(s.cast(pl.Int32))
 
 
 def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
@@ -139,7 +139,7 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
     )
     from .math_function import (              # noqa
         less, greater, log, abs,
-        sign, pow1, pow2, cast_to_int,
+        sign, pow1, pow2,
         quesval, quesval2
     )
 

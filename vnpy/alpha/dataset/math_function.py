@@ -165,10 +165,3 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     return DataProxy(df)
 
 
-def cast_to_int(data: DataProxy) -> DataProxy:
-    """Cast DataProxy values to integers"""
-    df: pl.DataFrame = data.df.with_columns(
-        pl.col("data").cast(pl.Int8).alias("data")
-    )
-
-    return DataProxy(df)
