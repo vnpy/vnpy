@@ -6,10 +6,18 @@
 
 ## 调整
 
-1. vnpy_sec升级适配4.0版本
+1. vnpy_sec/vnpy_esunny升级适配4.0版本
 2. vnpy_ctabacktester的策略代码编辑功能支持cursor和pycharm编辑器
 3. vnpy_ctastrategy的回测引擎，增加RGR绩效统计指标（感谢上弦之月贡献）
 4. ArrayManager增加对于指标计算函数重载（Function Overload）的类型提示声明
+5. vnpy_ctp增加特殊情况撤单（非交易时段、资金不足等）的日志输出
+6. DataProxy的所有比较运算，直接返回pl.Int32（而不是Bool）
+7. 重构ts_slope / ts_rsquare / ts_resi算子函数
+
+## 修复
+
+1. vnpy_ib修复查询历史数据问题（query_history函数增加查询锁解决多线程冲突问题）
+2. vnpy_optionmaster修复深度虚值期权的隐含波动率计算收敛问题
 
 
 # 4.2.0版本

@@ -100,11 +100,29 @@ def ts_std(feature: DataProxy, window: int) -> DataProxy:
 
 
 def ts_slope(feature: DataProxy, window: int) -> DataProxy:
-    """Calculate the slope of linear regression over a rolling window"""
-    df: pl.DataFrame = feature.df.select(
+    """Calculate the slope of linear regression over a rolling window (optimized)"""
+    # 预计算 x 相关的常数 (x = 0, 1, 2, ..., window-1)
+    n = window
+    sum_x = n * (n - 1) / 2  # 等差数列求和
+    sum_x2 = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
+    denominator = n * sum_x2 - sum_x * sum_x
+
+    # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
+    # 等价于 sum((window-1-j) * y[t-j]) for j in 0..window-1
+    sum_xy_expr = sum([
+        (window - 1 - j) * pl.col("data").shift(j)
+        for j in range(window)
+    ])
+
+    df: pl.DataFrame = feature.df.with_columns([
+        pl.col("data").rolling_sum(window, min_samples=window).over("vt_symbol").alias("sum_y"),
+        sum_xy_expr.over("vt_symbol").alias("sum_xy")
+    ])
+
+    df = df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: np.polyfit(np.arange(len(s)), s, 1)[0], window).over("vt_symbol")
+        ((n * pl.col("sum_xy") - sum_x * pl.col("sum_y")) / denominator).alias("data")
     )
     return DataProxy(df)
 
@@ -120,37 +138,88 @@ def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
 
 
 def ts_rsquare(feature: DataProxy, window: int) -> DataProxy:
-    """Calculate the R-squared value of linear regression over a rolling window"""
-    def rsquare(s: pl.Series) -> float:
-        """Calculate R-squared value for a series"""
-        if s.std():
-            return float(stats.linregress(np.arange(len(s)), s).rvalue ** 2)
-        else:
-            return float("nan")
+    """Calculate the R-squared value of linear regression over a rolling window (optimized)"""
+    # 预计算 x 相关的常数 (x = 0, 1, 2, ..., window-1)
+    n = window
+    sum_x2 = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
+    mean_x = (n - 1) / 2
+    var_x = sum_x2 / n - mean_x * mean_x  # 总体方差
 
-    df: pl.DataFrame = feature.df.select(
+    # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
+    sum_xy_expr = sum([
+        (window - 1 - j) * pl.col("data").shift(j)
+        for j in range(window)
+    ])
+
+    df: pl.DataFrame = feature.df.with_columns([
+        pl.col("data").rolling_sum(window, min_samples=window).over("vt_symbol").alias("sum_y"),
+        pl.col("data").rolling_var(window, min_samples=window, ddof=0).over("vt_symbol").alias("var_y"),
+        sum_xy_expr.over("vt_symbol").alias("sum_xy")
+    ])
+
+    # mean_y 和 cov(x, y) = E(xy) - E(x)E(y)
+    df = df.with_columns([
+        (pl.col("sum_y") / n).alias("mean_y"),
+    ])
+
+    df = df.with_columns([
+        (pl.col("sum_xy") / n - mean_x * pl.col("mean_y")).alias("cov_xy")
+    ])
+
+    # r = cov(x,y) / (std_x * std_y), r^2 = cov(x,y)^2 / (var_x * var_y)
+    df = df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: rsquare(s), window).over("vt_symbol"))
+        (pl.col("cov_xy").pow(2) / (var_x * pl.col("var_y"))).alias("data")
+    )
+
+    df = df.with_columns(
+        pl.when(pl.col("data").is_infinite() | pl.col("data").is_nan())
+        .then(None)
+        .otherwise(pl.col("data"))
+        .alias("data")
+    )
+
     return DataProxy(df)
 
 
 def ts_resi(feature: DataProxy, window: int) -> DataProxy:
-    """Calculate the residual of linear regression over a rolling window"""
-    def resi(s: pl.Series) -> float:
-        """Calculate residual for a series"""
-        x: np.ndarray = np.arange(len(s))
-        y: np.ndarray = s.to_numpy()
-        coefficients: np.ndarray = np.polyfit(x, y, 1)
-        predictions: np.ndarray = coefficients[0] * x + coefficients[1]
-        resi: np.ndarray = y - predictions
-        return float(resi[-1])
+    """Calculate the residual of linear regression over a rolling window (optimized)"""
+    # 预计算 x 相关的常数 (x = 0, 1, 2, ..., window-1)
+    n = window
+    sum_x = n * (n - 1) / 2  # 等差数列求和
+    sum_x2 = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
+    mean_x = (n - 1) / 2
+    denominator = n * sum_x2 - sum_x * sum_x
 
-    df: pl.DataFrame = feature.df.select(
+    # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
+    sum_xy_expr = sum([
+        (window - 1 - j) * pl.col("data").shift(j)
+        for j in range(window)
+    ])
+
+    df: pl.DataFrame = feature.df.with_columns([
+        pl.col("data").rolling_sum(window, min_samples=window).over("vt_symbol").alias("sum_y"),
+        sum_xy_expr.over("vt_symbol").alias("sum_xy")
+    ])
+
+    # 计算 slope 和 intercept
+    df = df.with_columns([
+        ((n * pl.col("sum_xy") - sum_x * pl.col("sum_y")) / denominator).alias("slope"),
+        (pl.col("sum_y") / n).alias("mean_y"),
+    ])
+
+    df = df.with_columns([
+        (pl.col("mean_y") - pl.col("slope") * mean_x).alias("intercept")
+    ])
+
+    # residual = y - (slope * (n-1) + intercept)，最后一个点的 x = n-1
+    df = df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: resi(s), window).over("vt_symbol")
+        (pl.col("data") - (pl.col("slope") * (n - 1) + pl.col("intercept"))).alias("data")
     )
+
     return DataProxy(df)
 
 
