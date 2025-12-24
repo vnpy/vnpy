@@ -7,7 +7,7 @@
 💬 Want to read this in **english** ? Go [**here**](README_ENG.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-4.2.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-4.3.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12|3.13-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
@@ -90,9 +90,11 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
         * :arrow_up: 恒生UFT（[uft](https://www.github.com/vnpy/vnpy_uft)）：国内期货、ETF期权
 
-        * 易盛（[esunny](https://www.github.com/vnpy/vnpy_esunny)）：国内期货、黄金TD
+        * :arrow_up: 易盛（[esunny](https://www.github.com/vnpy/vnpy_esunny)）：国内期货、黄金TD
 
         * :arrow_up: 顶点HTS（[hts](https://www.github.com/vnpy/vnpy_hts)）：ETF期权
+
+        * :arrow_up: 顶点飞创（[sec](https://www.github.com/vnpy/vnpy_sec)）：ETF期权
 
         * :arrow_up: 中泰XTP（[xtp](https://www.github.com/vnpy/vnpy_xtp)）：国内证券（A股）、ETF期权
 
@@ -224,7 +226,7 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
 ## 环境准备
 
-* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-4.2.0](https://download.vnpy.com/veighna_studio-4.2.0.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
+* 推荐使用VeighNa团队为量化交易专门打造的Python发行版[VeighNa Studio-4.3.0](https://download.vnpy.com/veighna_studio-4.3.0.exe)，集成内置了VeighNa框架以及VeighNa Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 11以上 / Windows Server 2022以上 / Ubuntu 22.04 LTS以上
 * 支持的Python版本：Python 3.10以上（64位），**推荐使用Python 3.13**
 
