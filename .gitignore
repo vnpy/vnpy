@@ -37,6 +37,7 @@ _templates
 # Misc
 .DS_Store
 *.mo
+.worktrees/
 
 # Alpha
 lab/
