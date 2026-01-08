@@ -1,0 +1,504 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2024-07-05 10:31+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: vnpy_ctabacktester\__init__.py:43 vnpy_ctabacktester\ui\widget.py:73
+msgid "CTA回测"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:62
+msgid "初始化CTA回测引擎"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:69
+msgid "策略文件加载完成"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:79
+msgid "数据服务初始化成功"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:128
+msgid ""
+"策略文件{}加载失败，触发异常：\n"
+"{}"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:137
+msgid "策略文件重载刷新完成"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:190
+msgid "策略回测失败，历史数据为空"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:197
+msgid ""
+"策略回测失败，触发异常：\n"
+"{}"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:228 vnpy_ctabacktester\engine.py:357
+#: vnpy_ctabacktester\engine.py:449
+msgid "已有任务在运行中，请等待完成"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:334
+msgid "多进程参数优化完成"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:393
+msgid "{}-{}开始下载历史数据"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:398
+msgid "{}解析失败，请检查交易所后缀"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:431
+msgid "{}-{}历史数据下载完成"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:433
+msgid "数据下载失败，无法获取{}的历史数据"
+msgstr ""
+
+#: vnpy_ctabacktester\engine.py:435
+msgid ""
+"数据下载失败，触发异常：\n"
+"{}"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:104
+msgid "开始回测"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:107
+msgid "参数优化"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:110
+msgid "优化结果"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:114
+msgid "下载数据"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:117
+msgid "委托记录"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:121
+msgid "成交记录"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:125 vnpy_ctabacktester\ui\widget.py:742
+msgid "每日盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:129
+msgid "K线图表"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:133
+msgid "代码编辑"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:136
+msgid "策略重载"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:154
+msgid "交易策略"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:155
+msgid "本地代码"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:156
+msgid "K线周期"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:157
+msgid "开始日期"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:158
+msgid "结束日期"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:159
+msgid "手续费率"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:160
+msgid "交易滑点"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:161
+msgid "合约乘数"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:162
+msgid "价格跳动"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:163
+msgid "回测资金"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:196
+msgid "回测成交记录"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:202
+msgid "回测委托记录"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:208
+msgid "回测每日盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:307
+msgid "请点击[优化结果]按钮查看"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:314
+msgid "请选择要回测的策略"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:329
+msgid "本地代码缺失交易所后缀，请检查"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:334
+msgid "本地代码的交易所后缀不正确，请检查"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:518
+msgid "启动代码编辑器失败"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:519
+msgid "请检查是否安装了Visual Studio Code，并将其路径添加到了系统全局变量中！"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:542
+msgid "首个交易日"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:543
+msgid "最后交易日"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:545
+msgid "总交易日"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:546
+msgid "盈利交易日"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:547
+msgid "亏损交易日"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:549
+msgid "起始资金"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:550
+msgid "结束资金"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:552 vnpy_ctabacktester\ui\widget.py:843
+msgid "总收益率"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:553
+msgid "年化收益"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:554
+msgid "最大回撤"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:555
+msgid "百分比最大回撤"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:556
+msgid "最大回撤天数"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:558 vnpy_ctabacktester\ui\widget.py:1129
+msgid "总盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:559
+msgid "总手续费"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:560
+msgid "总滑点"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:561
+msgid "总成交额"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:562
+msgid "总成交笔数"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:564 vnpy_ctabacktester\ui\widget.py:847
+msgid "日均盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:565
+msgid "日均手续费"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:566
+msgid "日均滑点"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:567
+msgid "日均成交额"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:568
+msgid "日均成交笔数"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:570
+msgid "日均收益率"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:571
+msgid "收益标准差"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:572 vnpy_ctabacktester\ui\widget.py:844
+msgid "夏普比率"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:573 vnpy_ctabacktester\ui\widget.py:845
+msgid "EWM夏普"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:574 vnpy_ctabacktester\ui\widget.py:846
+msgid "收益回撤比"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:658
+msgid "策略参数配置：{}"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:659
+msgid "确定"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:730
+msgid "账户净值"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:736
+msgid "净值回撤"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:747
+msgid "盈亏分布"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:875
+msgid "设为0则自动根据CPU核心数启动对应数量的进程"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:878
+msgid "优化目标"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:880
+msgid "进程上限"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:882 vnpy_ctabacktester\ui\widget.py:1006
+#: vnpy_ctabacktester\ui\widget.py:1055
+msgid "参数"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:883
+msgid "开始"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:884
+msgid "步进"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:885
+msgid "结束"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:888
+msgid "优化参数配置：{}"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:919
+msgid "多进程优化"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:924
+msgid "遗传算法优化"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:998
+msgid "参数优化结果"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1029
+msgid "保存"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1047
+msgid "保存数据"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1069
+msgid "成交号 "
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1070 vnpy_ctabacktester\ui\widget.py:1088
+msgid "委托号"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1071 vnpy_ctabacktester\ui\widget.py:1089
+msgid "代码"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1072 vnpy_ctabacktester\ui\widget.py:1090
+msgid "交易所"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1073 vnpy_ctabacktester\ui\widget.py:1092
+msgid "方向"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1074 vnpy_ctabacktester\ui\widget.py:1093
+msgid "开平"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1075 vnpy_ctabacktester\ui\widget.py:1094
+msgid "价格"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1076
+msgid "数量"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1077 vnpy_ctabacktester\ui\widget.py:1098
+msgid "时间"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1078 vnpy_ctabacktester\ui\widget.py:1099
+msgid "接口"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1091
+msgid "类型"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1095
+msgid "总数量"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1096
+msgid "已成交"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1097
+msgid "状态"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1120
+msgid "日期"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1121
+msgid "成交笔数"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1122
+msgid "开盘持仓"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1123
+msgid "收盘持仓"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1124
+msgid "成交额"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1125
+msgid "手续费"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1126
+msgid "滑点"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1127
+msgid "交易盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1128
+msgid "持仓盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1130
+msgid "净盈亏"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1208
+msgid "回测K线图表"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1220
+msgid "红色虚线 —— 盈利交易"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1224
+msgid "绿色虚线 —— 亏损交易"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1228
+msgid "黄色向上箭头 —— 买入开仓 Buy"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1232
+msgid "黄色向下箭头 —— 卖出平仓 Sell"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1236
+msgid "紫红向下箭头 —— 卖出开仓 Short"
+msgstr ""
+
+#: vnpy_ctabacktester\ui\widget.py:1240
+msgid "紫红向上箭头 —— 买入平仓 Cover"
+msgstr ""

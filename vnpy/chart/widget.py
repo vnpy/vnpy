@@ -11,6 +11,7 @@ from .base import (
     to_int, NORMAL_FONT
 )
 from .axis import DatetimeAxis
+from .zoom import compute_anchored_range
 from .item import ChartItem
 
 
@@ -253,12 +254,43 @@ class ChartWidget(pg.PlotWidget):
         """
         Reimplement this method of parent to zoom in/out.
         """
-        delta: QtCore.QPoint = event.angleDelta()
+        if not self._first_plot:
+            return
 
-        if delta.y() > 0:
-            self._on_key_up()
-        elif delta.y() < 0:
-            self._on_key_down()
+        delta: QtCore.QPoint = event.angleDelta()
+        if delta.y() == 0:
+            return
+
+        view: pg.ViewBox = self._first_plot.getViewBox()
+        if hasattr(event, "position"):
+            pos = event.position().toPoint()
+        else:
+            pos = event.pos()
+        scene_pos = self.mapToScene(pos)
+        view_pos = view.mapSceneToView(scene_pos)
+        anchor_ix = int(view_pos.x())
+        left_ix = self._right_ix - self._bar_count
+        anchor_ix = max(left_ix, min(anchor_ix, self._right_ix))
+        anchor_ix = max(0, min(anchor_ix, self._manager.get_count()))
+
+        zoom_in = delta.y() > 0
+        max_bar_count = max(self.MIN_BAR_COUNT, self._manager.get_count())
+        new_right_ix, new_bar_count = compute_anchored_range(
+            right_ix=self._right_ix,
+            bar_count=self._bar_count,
+            anchor_ix=anchor_ix,
+            zoom_in=zoom_in,
+            min_bar_count=self.MIN_BAR_COUNT,
+            max_bar_count=max_bar_count
+        )
+
+        self._bar_count = new_bar_count
+        self._right_ix = max(new_right_ix, self._bar_count)
+        self._right_ix = min(self._right_ix, self._manager.get_count())
+        self._update_x_range()
+
+        if self._cursor:
+            self._cursor.update_info()
 
     def _on_key_left(self) -> None:
         """

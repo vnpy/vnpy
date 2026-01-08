@@ -258,6 +258,22 @@ class CandleItem(ChartItem):
                 "Close",
                 str(bar.close_price)
             ]
+            extra_map = getattr(self._manager, "extra_info_map", None)
+            if isinstance(extra_map, dict):
+                extra = extra_map.get(ix, None)
+                if extra:
+                    pos, cost, float_pnl = extra
+                    words += [
+                        "",
+                        "Position",
+                        str(pos),
+                        "",
+                        "Cost",
+                        str(cost),
+                        "",
+                        "Float PnL",
+                        str(float_pnl),
+                    ]
             text: str = "\n".join(words)
         else:
             text = ""
