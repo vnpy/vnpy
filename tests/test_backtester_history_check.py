@@ -4,7 +4,8 @@ from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.database import BarOverview
 from vnpy_ctabacktester.engine import (
     BacktesterEngine,
-    _get_missing_history_range
+    _get_missing_history_range,
+    _get_missing_range_with_existing
 )
 
 
@@ -74,3 +75,28 @@ def test_pending_backtest_set_and_pop() -> None:
     data = engine._pop_pending_backtest()
     assert data["vt_symbol"] == "IF88.CFFEX"
     assert engine.has_pending_backtest() is False
+
+
+def test_missing_range_with_existing_full_coverage() -> None:
+    start = datetime(2024, 1, 1)
+    end = datetime(2024, 1, 10)
+    missing = _get_missing_range_with_existing(start, end, start, end)
+    assert missing is None
+
+
+def test_missing_range_with_existing_missing_head() -> None:
+    start = datetime(2024, 1, 1)
+    end = datetime(2024, 1, 10)
+    existing_start = datetime(2024, 1, 5)
+    existing_end = datetime(2024, 1, 10)
+    missing = _get_missing_range_with_existing(start, end, existing_start, existing_end)
+    assert missing == (start, existing_start)
+
+
+def test_missing_range_with_existing_missing_tail() -> None:
+    start = datetime(2024, 1, 1)
+    end = datetime(2024, 1, 10)
+    existing_start = datetime(2024, 1, 1)
+    existing_end = datetime(2024, 1, 5)
+    missing = _get_missing_range_with_existing(start, end, existing_start, existing_end)
+    assert missing == (existing_end, end)
