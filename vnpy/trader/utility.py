@@ -237,6 +237,15 @@ class BarGenerator:
                 close_price=tick.last_price,
                 open_interest=tick.open_interest
             )
+
+            if (self.last_tick and tick.high_price > self.last_tick.high_price) or (self.last_tick is None):
+                self.bar.high_price = max(self.bar.high_price, tick.high_price)
+            if (self.last_tick and tick.low_price < self.last_tick.low_price) or (self.last_tick is None):
+                self.bar.low_price = min(self.bar.low_price, tick.low_price)
+
+            if self.last_tick is None:
+                self.bar.volume = max(tick.volume, 0)
+                self.bar.turnover = max(tick.volume, 0)
         elif self.bar:
             self.bar.high_price = max(self.bar.high_price, tick.last_price)
             if self.last_tick and tick.high_price > self.last_tick.high_price:
