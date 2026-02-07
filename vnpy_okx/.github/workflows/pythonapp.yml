@@ -1,0 +1,32 @@
+name: Python application
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.13'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ta-lib==0.6.3 --index=https://pypi.vnpy.com
+        pip install vnpy ruff mypy uv
+    - name: Lint with ruff
+      run: |
+        # Run ruff linter based on pyproject.toml configuration
+        ruff check .
+    - name: Type check with mypy
+      run: |
+        # Run mypy type checking based on pyproject.toml configuration
+        mypy vnpy_okx
+    - name: Build packages with uv
+      run: |
+        # Build source distribution and wheel distribution
+        uv build

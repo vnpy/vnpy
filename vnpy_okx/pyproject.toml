@@ -1,0 +1,85 @@
+[project]
+name = "vnpy_okx"
+dynamic = ["version"]
+description = "OKX trading gateway for VeighNa."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "VeighNa Global", email = "veighna@hotmail.com"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+]
+requires-python = ">=3.10"
+keywords = ["quant", "quantitative", "investment", "trading", "algotrading", "okx", "btc", "crypto"]
+dependencies = [
+    "vnpy_rest",
+    "vnpy_websocket",
+]
+
+[project.urls]
+"Homepage" = "https://www.github.com/veighna-global"
+"Source" = "https://www.github.com/veighna-global"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "vnpy_okx/__init__.py"
+pattern = "__version__ = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vnpy_okx"]
+include-package-data = true
+
+[tool.hatch.build.targets.sdist]
+include = ["vnpy_okx*"] 
+
+[tool.ruff]
+target-version = "py310"
+output-format = "full"
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle error
+    "F",  # pyflakes
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warning
+]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+ignore_missing_imports = true 
+
+[[tool.mypy.overrides]]
+module = [
+    "vnpy.*",
+    "vnpy_rest.*",
+    "vnpy_websocket.*"
+]
+ignore_errors = true
+ignore_missing_imports = true
