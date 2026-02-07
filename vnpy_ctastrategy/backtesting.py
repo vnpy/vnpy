@@ -59,6 +59,7 @@ class BacktestingEngine:
         self.rate: float = 0
         self.slippage: float = 0
         self.size: float = 1
+        self.min_volume: float = 1
         self.pricetick: float = 0
         self.capital: int = 1_000_000
         self.risk_free: float = 0
@@ -121,6 +122,7 @@ class BacktestingEngine:
         size: float,
         pricetick: float,
         capital: int = 0,
+        min_volume: float = 1,
         end: datetime | None = None,
         mode: BacktestingMode = BacktestingMode.BAR,
         risk_free: float = 0,
@@ -136,6 +138,7 @@ class BacktestingEngine:
         self.size = size
         self.pricetick = pricetick
         self.start = start
+        self.min_volume = min_volume
 
         self.symbol, exchange_str = self.vt_symbol.split(".")
         self.exchange = Exchange(exchange_str)
@@ -1021,6 +1024,12 @@ class BacktestingEngine:
         Return contract size data.
         """
         return self.size
+
+    def get_min_volume(self, strategy: CtaTemplate) -> float:
+        """
+        Return contract minimum order volume step.
+        """
+        return self.min_volume
 
     def put_strategy_event(self, strategy: CtaTemplate) -> None:
         """

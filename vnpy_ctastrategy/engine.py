@@ -544,6 +544,17 @@ class CtaEngine(BaseEngine):
         else:
             return None
 
+    def get_min_volume(self, strategy: CtaTemplate) -> float | None:
+        """
+        Return contract minimum order volume step.
+        """
+        contract: ContractData | None = self.main_engine.get_contract(strategy.vt_symbol)
+
+        if contract:
+            return contract.min_volume
+        else:
+            return None
+
     def load_bar(
         self,
         vt_symbol: str,

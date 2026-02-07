@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from copy import copy
+from math import floor
 from typing import Any, cast
 from collections.abc import Callable
 
@@ -282,6 +283,55 @@ class CtaTemplate(ABC):
         Return size data of trading contract.
         """
         return cast(int, self.cta_engine.get_size(self))
+
+    def get_min_volume(self) -> float:
+        """
+        Return minimum order volume step of trading contract.
+        """
+        return cast(float, self.cta_engine.get_min_volume(self))
+
+    def calc_order_volume(
+        self,
+        price: float,
+        capital: float | None = None,
+        leverage: float = 1,
+        use_ratio: float = 1,
+        volume_ratio: float = 1,
+        min_volume: float | None = None
+    ) -> float:
+        """
+        Calculate order volume by margin usage and round down to volume step.
+        """
+        if price <= 0 or leverage <= 0 or use_ratio <= 0 or volume_ratio <= 0:
+            return 0
+
+        size: float = float(self.get_size() or 0)
+        if size <= 0:
+            return 0
+
+        if capital is None:
+            capital = float(getattr(self.cta_engine, "capital", 0))
+        if capital <= 0:
+            return 0
+
+        if min_volume is None:
+            min_volume = float(self.get_min_volume() or 0)
+        if min_volume <= 0:
+            min_volume = 1
+
+        margin_per_volume: float = price * size / leverage
+        if margin_per_volume <= 0:
+            return 0
+
+        available_margin: float = capital * use_ratio
+        max_volume: float = available_margin / margin_per_volume
+        target_volume: float = max_volume * volume_ratio
+
+        stepped: float = floor(target_volume / min_volume) * min_volume
+        if stepped <= 0:
+            return 0
+
+        return round(stepped, 12)
 
     def load_bar(
         self,

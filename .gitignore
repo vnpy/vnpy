@@ -38,6 +38,15 @@ _templates
 .DS_Store
 *.mo
 .worktrees/
+.env
+.env.*
+*.pem
+*.key
+*secret*.json
+*secret*.yaml
+*secret*.yml
+cta_strategy_setting.json
+cta_strategy_data.json
 
 # Alpha
 lab/

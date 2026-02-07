@@ -28,6 +28,19 @@
 - Development typically targets the `dev` branch; create feature branches from `dev` and open PRs back to `dev`.
 - PRs should include a clear description, scope, and test status (commands run and results).
 
+## Safe Commit Workflow (Reusable)
+- Use narrow staging: `git add <explicit-file-list>`; avoid `git add .` when the working tree is dirty.
+- Pre-check what will be committed: `git diff --cached --name-only` and `git diff --cached`.
+- Keep local runtime files out of git: settings, API keys, `.env*`, secret json/yaml, private key files.
+- Run focused verification before commit (for this repo typically `python -m pytest <targeted-tests>`).
+- Final check before commit: `git status --short` should only include intended files in staged area.
+
+## Personal Coding Habits Index
+- Prefer adding small deterministic tests for new behavior before implementation.
+- Keep strategy parameters explicit and configurable (avoid hidden constants).
+- For order sizing, prefer reusable helpers in template/base classes over duplicated per-strategy formulas.
+- When touching backtesting + live paths, add both interfaces to keep behavior consistent.
+
 ## Configuration & Localization Notes
 - Build metadata and tooling configuration live in `pyproject.toml`.
 - Locale build hooks are defined under `vnpy/trader/locale/`; keep translations in sync when modifying UI text.
