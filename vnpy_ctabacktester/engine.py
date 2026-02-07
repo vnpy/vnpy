@@ -14,7 +14,13 @@ from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.utility import extract_vt_symbol
 from vnpy.trader.object import HistoryRequest, TickData, BarData, ContractData
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
-from vnpy.trader.database import BaseDatabase, BarOverview, TickOverview, get_database
+from vnpy.trader.database import (
+    BaseDatabase,
+    BarOverview,
+    TickOverview,
+    get_database,
+    DB_TZ
+)
 import vnpy_ctastrategy
 
 from vnpy_ctastrategy import CtaTemplate, TargetPosTemplate
@@ -56,6 +62,95 @@ def _get_missing_history_range(
                 return None
             break
 
+    return (start, end)
+
+
+def _to_naive(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(DB_TZ).replace(tzinfo=None)
+
+
+def _get_existing_history_range(
+    database: BaseDatabase,
+    symbol: str,
+    exchange: Exchange,
+    interval: Interval,
+    start: datetime,
+    end: datetime
+) -> tuple[datetime, datetime] | None:
+    """
+    Return existing bar range from database when overview is missing/inaccurate.
+    """
+    try:
+        bars: list[BarData] = database.load_bar_data(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
+            end=end
+        )
+    except Exception:
+        return None
+
+    if not bars:
+        return None
+
+    min_dt: datetime = min(bar.datetime for bar in bars)
+    max_dt: datetime = max(bar.datetime for bar in bars)
+    min_dt = _to_naive(min_dt)
+    max_dt = _to_naive(max_dt)
+    return (min_dt, max_dt)
+
+
+def _get_existing_tick_range(
+    database: BaseDatabase,
+    symbol: str,
+    exchange: Exchange,
+    start: datetime,
+    end: datetime
+) -> tuple[datetime, datetime] | None:
+    """
+    Return existing tick range from database when overview is missing/inaccurate.
+    """
+    try:
+        ticks: list[TickData] = database.load_tick_data(
+            symbol=symbol,
+            exchange=exchange,
+            start=start,
+            end=end
+        )
+    except Exception:
+        return None
+
+    if not ticks:
+        return None
+
+    min_dt: datetime = min(tick.datetime for tick in ticks)
+    max_dt: datetime = max(tick.datetime for tick in ticks)
+    min_dt = _to_naive(min_dt)
+    max_dt = _to_naive(max_dt)
+    return (min_dt, max_dt)
+
+
+def _get_missing_range_with_existing(
+    start: datetime,
+    end: datetime,
+    existing_start: datetime,
+    existing_end: datetime
+) -> tuple[datetime, datetime] | None:
+    start = _to_naive(start)
+    end = _to_naive(end)
+    existing_start = _to_naive(existing_start)
+    existing_end = _to_naive(existing_end)
+    if existing_start <= start and existing_end >= end:
+        return None
+    if existing_end < start or existing_start > end:
+        return (start, end)
+    if existing_start > start and existing_end >= end:
+        return (start, existing_start)
+    if existing_start <= start and existing_end < end:
+        return (existing_end, end)
     return (start, end)
 
 
@@ -339,6 +434,9 @@ class BacktesterEngine(BaseEngine):
             self.write_log(_("{}解析失败，请检查交易所后缀").format(vt_symbol))
             return True
 
+        start = _to_naive(start)
+        end = _to_naive(end)
+
         if interval == Interval.TICK.value:
             overviews: list[TickOverview] = self.database.get_tick_overview()
             missing = _get_missing_tick_range(overviews, symbol, exchange, start, end)
@@ -355,6 +453,25 @@ class BacktesterEngine(BaseEngine):
 
         if not missing:
             return True
+
+        if interval == Interval.TICK.value:
+            existing = _get_existing_tick_range(
+                self.database, symbol, exchange, start, end
+            )
+        else:
+            existing = _get_existing_history_range(
+                self.database,
+                symbol=symbol,
+                exchange=exchange,
+                interval=Interval(interval),
+                start=start,
+                end=end
+            )
+
+        if existing:
+            missing = _get_missing_range_with_existing(start, end, *existing)
+            if not missing:
+                return True
 
         missing_start, missing_end = missing
         self.write_log(_("历史数据缺失，开始自动下载区间：{} - {}").format(missing_start, missing_end))
