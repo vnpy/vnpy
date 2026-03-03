@@ -44,3 +44,19 @@
 ## Configuration & Localization Notes
 - Build metadata and tooling configuration live in `pyproject.toml`.
 - Locale build hooks are defined under `vnpy/trader/locale/`; keep translations in sync when modifying UI text.
+
+## 模块-文件索引（用于减少重复检索）
+- CTA回测 UI 入口/布局/交互：`vnpy_ctabacktester/ui/widget.py`
+- CTA回测引擎（参数解析、合约配置、回测/下载流程）：`vnpy_ctabacktester/engine.py`
+- CTA回测合约/候选标的辅助逻辑：`vnpy_ctabacktester/symbols.py`
+- CTA回测 App 注册/元信息：`vnpy_ctabacktester/__init__.py`
+- CTA回测脚本入口：`vnpy_ctabacktester/script/run.py`、`run.py`
+- CTA回测文档入口：`docs/community/app/cta_backtester.md`
+- CTA回测相关测试：`tests/test_backtester_contract_profile.py`、`tests/test_backtester_history_check.py`、`tests/test_backtester_symbol_candidates.py`
+- CTA回测合约静态配置：`cta_backtester_contract_profiles.json`
+- CTA回测合约参数自动同步（监听合约事件并持久化）：`vnpy_ctabacktester/engine.py`
+- 主界面启动流程/菜单：`vnpy/trader/ui/mainwindow.py`
+
+## 维护规则
+- 当我为某个模块完成一次检索并确定主要入口文件后，追加到“模块-文件索引”中。
+- 每次新增/修改模块时同步更新对应索引，避免下次重复检索。

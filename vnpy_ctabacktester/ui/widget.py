@@ -22,12 +22,14 @@ from vnpy.trader.database import DB_TZ
 from vnpy_ctastrategy.backtesting import DailyResult
 
 from ..locale import _
+from ..symbols import build_symbol_candidates, is_valid_vt_symbol
 from ..engine import (
     APP_NAME,
     EVENT_BACKTESTER_LOG,
     EVENT_BACKTESTER_BACKTESTING_FINISHED,
     EVENT_BACKTESTER_DOWNLOADING_FINISHED,
     EVENT_BACKTESTER_OPTIMIZATION_FINISHED,
+    EVENT_BACKTESTER_PORTFOLIO_FINISHED,
     OptimizationSetting,
     BacktesterEngine
 )
@@ -38,11 +40,13 @@ class BacktesterManager(QtWidgets.QWidget):
 
     setting_filename: str = "cta_backtester_setting.json"
     symbol_history_filename: str = "cta_backtester_symbols.json"
+    basket_filename: str = "cta_backtester_baskets.json"
 
     signal_log: QtCore.Signal = QtCore.Signal(Event)
     signal_backtesting_finished: QtCore.Signal = QtCore.Signal(Event)
     signal_optimization_finished: QtCore.Signal = QtCore.Signal(Event)
     signal_downloading_finished: QtCore.Signal = QtCore.Signal(Event)
+    signal_portfolio_finished: QtCore.Signal = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
@@ -58,6 +62,8 @@ class BacktesterManager(QtWidgets.QWidget):
         self.target_display: str = ""
         self.symbol_history: list[str] = []
         self.symbol_history_records: list[dict] = []
+        self.baskets: dict[str, list[str]] = {}
+        self.portfolio_settings: dict[str, dict] = {}
 
         self.init_ui()
         self.register_event()
@@ -65,6 +71,8 @@ class BacktesterManager(QtWidgets.QWidget):
         self.init_strategy_settings()
         self.load_backtesting_setting()
         self.load_symbol_history()
+        self.load_baskets()
+        self.init_portfolio_settings()
 
     def init_strategy_settings(self) -> None:
         """"""
@@ -77,12 +85,27 @@ class BacktesterManager(QtWidgets.QWidget):
 
         self.class_combo.addItems(self.class_names)
 
+    def init_portfolio_settings(self) -> None:
+        """
+        Initialize portfolio strategy settings.
+        """
+        class_names: list[str] = self.backtester_engine.get_portfolio_strategy_class_names()
+        self.portfolio_strategy_combo.clear()
+        self.portfolio_strategy_combo.addItems(class_names)
+
+        for class_name in class_names:
+            self.portfolio_settings[class_name] = self.backtester_engine.get_portfolio_default_setting(class_name)
+
     def init_ui(self) -> None:
         """"""
         self.setWindowTitle(_("CTA回测"))
 
         # Setting Part
         self.class_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self.gateway_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self.gateway_combo.addItem("ALL")
+        self.gateway_combo.addItems(self.backtester_engine.get_available_gateways())
+        self.gateway_combo.currentTextChanged.connect(self.on_gateway_changed)
 
         self.symbol_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self.symbol_combo.setEditable(True)
@@ -103,6 +126,9 @@ class BacktesterManager(QtWidgets.QWidget):
         self.symbol_combo.setCompleter(self.symbol_completer)
         self.symbol_combo.installEventFilter(self)
         self.symbol_combo.lineEdit().installEventFilter(self)
+        self.symbol_combo.activated.connect(self.on_symbol_activated)
+        self.symbol_combo.currentTextChanged.connect(self.on_symbol_text_changed)
+        self.symbol_combo.lineEdit().editingFinished.connect(self.on_symbol_editing_finished)
 
         self.interval_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
         for interval in Interval:
@@ -198,6 +224,7 @@ class BacktesterManager(QtWidgets.QWidget):
 
         form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
         form.addRow(_("交易策略"), self.class_combo)
+        form.addRow(_("渠道"), self.gateway_combo)
         form.addRow(_("本地代码"), self.symbol_combo)
         form.addRow(_("K线周期"), self.interval_combo)
         form.addRow(_("开始日期"), self.start_date_edit)
@@ -276,10 +303,125 @@ class BacktesterManager(QtWidgets.QWidget):
         right_widget: QtWidgets.QWidget = QtWidgets.QWidget()
         right_widget.setLayout(right_vbox)
 
+        single_widget: QtWidgets.QWidget = QtWidgets.QWidget()
         hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         hbox.addWidget(left_widget)
         hbox.addWidget(right_widget)
-        self.setLayout(hbox)
+        single_widget.setLayout(hbox)
+
+        portfolio_widget: QtWidgets.QWidget = self.init_portfolio_tab()
+
+        self.mode_tabs: QtWidgets.QTabWidget = QtWidgets.QTabWidget()
+        self.mode_tabs.addTab(single_widget, _("单标的回测"))
+        self.mode_tabs.addTab(portfolio_widget, _("组合回测"))
+
+        root: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        root.addWidget(self.mode_tabs)
+        self.setLayout(root)
+        self.refresh_symbol_candidates()
+
+    def init_portfolio_tab(self) -> QtWidgets.QWidget:
+        """
+        Init portfolio backtesting tab widgets.
+        """
+        tab: QtWidgets.QWidget = QtWidgets.QWidget()
+
+        self.portfolio_gateway_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self.portfolio_gateway_combo.addItem("ALL")
+        self.portfolio_gateway_combo.addItems(self.backtester_engine.get_available_gateways())
+
+        self.portfolio_basket_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self.portfolio_basket_combo.setEditable(True)
+        self.portfolio_basket_combo.currentTextChanged.connect(self.on_basket_selected)
+
+        self.portfolio_symbols_edit: QtWidgets.QPlainTextEdit = QtWidgets.QPlainTextEdit()
+        self.portfolio_symbols_edit.setPlaceholderText(
+            _("输入本地代码，支持逗号/空格/换行分隔，例如：BTC.USDT,ETH.USDT")
+        )
+
+        self.portfolio_interval_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        for interval in Interval:
+            self.portfolio_interval_combo.addItem(interval.value)
+        self.portfolio_strategy_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+
+        end_dt: datetime = datetime.now()
+        start_dt: datetime = end_dt - timedelta(days=365)
+        self.portfolio_start_date_edit: QtWidgets.QDateEdit = QtWidgets.QDateEdit(
+            QtCore.QDate(start_dt.year, start_dt.month, start_dt.day)
+        )
+        self.portfolio_end_date_edit: QtWidgets.QDateEdit = QtWidgets.QDateEdit(
+            QtCore.QDate.currentDate()
+        )
+        self.portfolio_capital_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("1000000")
+        self.portfolio_topn_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("10")
+        self.portfolio_worker_spin: QtWidgets.QSpinBox = QtWidgets.QSpinBox()
+        self.portfolio_worker_spin.setRange(1, 64)
+        self.portfolio_worker_spin.setValue(1)
+        self.portfolio_worker_spin.setToolTip(_("1=单线程；大于1为并行加载历史数据"))
+
+        self.portfolio_save_basket_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("保存标的组"))
+        self.portfolio_save_basket_button.clicked.connect(self.save_current_basket)
+        self.portfolio_run_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("开始组合回测"))
+        self.portfolio_run_button.clicked.connect(self.start_portfolio_backtesting)
+        self.portfolio_weight_table: QtWidgets.QTableWidget = QtWidgets.QTableWidget()
+        self.portfolio_weight_table.setColumnCount(2)
+        self.portfolio_weight_table.setHorizontalHeaderLabels([_("本地代码"), _("权重")])
+        self.portfolio_weight_table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.Stretch
+        )
+        self.portfolio_weight_table.verticalHeader().setVisible(False)
+        self.portfolio_weight_table.setEditTriggers(
+            QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+
+        self.portfolio_symbol_list: QtWidgets.QListWidget = QtWidgets.QListWidget()
+        self.portfolio_symbol_list.itemSelectionChanged.connect(self.on_portfolio_symbol_selected)
+
+        self.portfolio_chart: BacktesterChart = BacktesterChart()
+        self.portfolio_symbol_candle: ChartWidget = ChartWidget()
+        self.portfolio_symbol_candle.add_plot("candle", hide_x_axis=True)
+        self.portfolio_symbol_candle.add_plot("volume", maximum_height=180)
+        self.portfolio_symbol_candle.add_item(CandleItem, "candle", "candle")
+        self.portfolio_symbol_candle.add_item(VolumeItem, "volume", "volume")
+        self.portfolio_symbol_candle.add_cursor()
+
+        form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
+        form.addRow(_("渠道"), self.portfolio_gateway_combo)
+        form.addRow(_("标的组"), self.portfolio_basket_combo)
+        form.addRow(_("标的池"), self.portfolio_symbols_edit)
+        form.addRow(_("评分策略"), self.portfolio_strategy_combo)
+        form.addRow(_("K线周期"), self.portfolio_interval_combo)
+        form.addRow(_("开始日期"), self.portfolio_start_date_edit)
+        form.addRow(_("结束日期"), self.portfolio_end_date_edit)
+        form.addRow(_("回测资金"), self.portfolio_capital_line)
+        form.addRow(_("TopN"), self.portfolio_topn_line)
+        form.addRow(_("并行级别"), self.portfolio_worker_spin)
+
+        left_buttons: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        left_buttons.addWidget(self.portfolio_save_basket_button)
+        left_buttons.addWidget(self.portfolio_run_button)
+
+        left_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        left_layout.addLayout(form)
+        left_layout.addLayout(left_buttons)
+        left_layout.addWidget(QtWidgets.QLabel(_("最新组合权重")))
+        left_layout.addWidget(self.portfolio_weight_table)
+
+        right_top: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        right_top.addWidget(QtWidgets.QLabel(_("候选标的（点击联动K线）")))
+
+        right_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        right_layout.addLayout(right_top)
+        right_layout.addWidget(self.portfolio_symbol_list)
+        right_layout.addWidget(self.portfolio_chart)
+        right_layout.addWidget(self.portfolio_symbol_candle)
+
+        layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        layout.addLayout(left_layout, 1)
+        layout.addLayout(right_layout, 2)
+        tab.setLayout(layout)
+
+        return tab
 
     def load_backtesting_setting(self) -> None:
         """"""
@@ -290,6 +432,12 @@ class BacktesterManager(QtWidgets.QWidget):
         self.class_combo.setCurrentIndex(
             self.class_combo.findText(setting["class_name"])
         )
+
+        gateway_name: str = setting.get("gateway_name", "")
+        if gateway_name:
+            ix_gateway: int = self.gateway_combo.findText(gateway_name)
+            if ix_gateway >= 0:
+                self.gateway_combo.setCurrentIndex(ix_gateway)
 
         self.symbol_combo.setCurrentText(setting["vt_symbol"])
 
@@ -316,6 +464,7 @@ class BacktesterManager(QtWidgets.QWidget):
         self.signal_optimization_finished.connect(
             self.process_optimization_finished_event)
         self.signal_downloading_finished.connect(self.process_downloading_finished_event)
+        self.signal_portfolio_finished.connect(self.process_portfolio_finished_event)
 
         self.event_engine.register(EVENT_BACKTESTER_LOG, self.signal_log.emit)
         self.event_engine.register(EVENT_BACKTESTER_BACKTESTING_FINISHED, self.signal_backtesting_finished.emit)
@@ -323,6 +472,10 @@ class BacktesterManager(QtWidgets.QWidget):
         self.event_engine.register(
             EVENT_BACKTESTER_DOWNLOADING_FINISHED,
             self.signal_downloading_finished.emit
+        )
+        self.event_engine.register(
+            EVENT_BACKTESTER_PORTFOLIO_FINISHED,
+            self.signal_portfolio_finished.emit
         )
 
     def process_log_event(self, event: Event) -> None:
@@ -371,6 +524,21 @@ class BacktesterManager(QtWidgets.QWidget):
             if result:
                 self._after_backtesting_started()
 
+    def process_portfolio_finished_event(self, event: Event) -> None:
+        """
+        Handle portfolio backtesting finished event.
+        """
+        df: DataFrame | None = self.backtester_engine.get_portfolio_result_df()
+        if df is not None:
+            self.portfolio_chart.set_data(df)
+
+        weights: dict[str, float] = self.backtester_engine.get_portfolio_latest_weights()
+        self.update_portfolio_weight_table(weights)
+        self.portfolio_symbol_list.clear()
+        self.portfolio_symbol_list.addItems(list(weights.keys()))
+        if weights:
+            self.portfolio_symbol_list.setCurrentRow(0)
+
     def start_backtesting(self) -> None:
         """"""
         class_name: str = self.class_combo.currentText()
@@ -401,6 +569,7 @@ class BacktesterManager(QtWidgets.QWidget):
         # Save backtesting parameters
         backtesting_setting: dict = {
             "class_name": class_name,
+            "gateway_name": self.gateway_combo.currentText(),
             "vt_symbol": vt_symbol,
             "interval": interval,
             "start": start.strftime("%Y-%m-%d"),
@@ -517,6 +686,81 @@ class BacktesterManager(QtWidgets.QWidget):
         )
 
         self.result_button.setEnabled(False)
+
+    def parse_portfolio_symbols(self) -> list[str]:
+        """
+        Parse vt symbols from basket input.
+        """
+        gateway_name: str = self.portfolio_gateway_combo.currentText()
+        if gateway_name == "ALL":
+            gateway_name = ""
+
+        raw: str = self.portfolio_symbols_edit.toPlainText()
+        parts: list[str] = []
+        for token in raw.replace(",", " ").split():
+            token = token.strip()
+            if token:
+                parts.append(token)
+
+        symbols: list[str] = []
+        seen: set[str] = set()
+        for symbol in parts:
+            if symbol in seen:
+                continue
+
+            if gateway_name:
+                contract = self.main_engine.get_contract(symbol)
+                if not contract or contract.gateway_name != gateway_name:
+                    continue
+
+            seen.add(symbol)
+            symbols.append(symbol)
+        return symbols
+
+    def start_portfolio_backtesting(self) -> None:
+        """
+        Start portfolio backtesting task.
+        """
+        vt_symbols: list[str] = self.parse_portfolio_symbols()
+        if not vt_symbols:
+            self.write_log(_("组合回测失败：请先输入标的池"))
+            return
+
+        interval: str = self.portfolio_interval_combo.currentText()
+        start: datetime = cast(datetime, self.portfolio_start_date_edit.dateTime().toPython())
+        end: datetime = cast(datetime, self.portfolio_end_date_edit.dateTime().toPython())
+        capital: float = float(self.portfolio_capital_line.text())
+        top_n: int = int(self.portfolio_topn_line.text())
+        class_name: str = self.portfolio_strategy_combo.currentText()
+        if not class_name:
+            self.write_log(_("组合回测失败：请先选择评分策略"))
+            return
+        max_workers: int = self.portfolio_worker_spin.value()
+
+        old_setting: dict = self.portfolio_settings.get(class_name, {})
+        dialog: BacktestingSettingEditor = BacktestingSettingEditor(class_name, old_setting)
+        i: int = dialog.exec()
+        if i != dialog.DialogCode.Accepted:
+            return
+        setting: dict = dialog.get_setting()
+        self.portfolio_settings[class_name] = setting
+
+        result: bool = self.backtester_engine.start_portfolio_backtesting(
+            vt_symbols=vt_symbols,
+            interval=interval,
+            start=start,
+            end=end,
+            capital=capital,
+            top_n=top_n,
+            class_name=class_name,
+            setting=setting,
+            max_workers=max_workers
+        )
+        if result:
+            self.portfolio_weight_table.setRowCount(0)
+            self.portfolio_symbol_list.clear()
+            self.portfolio_chart.clear_data()
+            self.portfolio_symbol_candle.clear_all()
 
     def start_downloading(self) -> None:
         """"""
@@ -654,6 +898,7 @@ class BacktesterManager(QtWidgets.QWidget):
 
         self.class_combo.clear()
         self.init_strategy_settings()
+        self.init_portfolio_settings()
 
         ix: int = self.class_combo.findText(current_strategy_name)
         self.class_combo.setCurrentIndex(ix)
@@ -678,6 +923,98 @@ class BacktesterManager(QtWidgets.QWidget):
                     )
         self.set_symbol_history_records(records)
 
+    def load_baskets(self) -> None:
+        """
+        Load portfolio baskets from json file.
+        """
+        data: dict = load_json(self.basket_filename)
+        baskets: dict[str, list[str]] = {}
+        if isinstance(data, dict):
+            for name, symbols in data.items():
+                if not isinstance(name, str):
+                    continue
+                if not isinstance(symbols, list):
+                    continue
+                cleaned: list[str] = []
+                for symbol in symbols:
+                    if isinstance(symbol, str) and symbol.strip():
+                        cleaned.append(symbol.strip())
+                if cleaned:
+                    baskets[name] = cleaned
+        self.baskets = baskets
+        self.refresh_basket_combo()
+
+    def save_baskets(self) -> None:
+        """
+        Persist baskets to json file.
+        """
+        save_json(self.basket_filename, self.baskets)
+
+    def refresh_basket_combo(self) -> None:
+        """
+        Refresh basket combo options.
+        """
+        current_text: str = self.portfolio_basket_combo.currentText()
+        self.portfolio_basket_combo.blockSignals(True)
+        self.portfolio_basket_combo.clear()
+        self.portfolio_basket_combo.addItems(sorted(self.baskets.keys()))
+        self.portfolio_basket_combo.setCurrentText(current_text)
+        self.portfolio_basket_combo.blockSignals(False)
+
+    def save_current_basket(self) -> None:
+        """
+        Save current basket to basket file.
+        """
+        basket_name: str = self.portfolio_basket_combo.currentText().strip()
+        if not basket_name:
+            self.write_log(_("保存标的组失败：请输入标的组名称"))
+            return
+
+        vt_symbols: list[str] = self.parse_portfolio_symbols()
+        if not vt_symbols:
+            self.write_log(_("保存标的组失败：标的池为空"))
+            return
+
+        self.baskets[basket_name] = vt_symbols
+        self.save_baskets()
+        self.refresh_basket_combo()
+        self.write_log(_("保存标的组成功：{}").format(basket_name))
+
+    def on_basket_selected(self, basket_name: str) -> None:
+        """
+        Apply basket symbols from selected basket.
+        """
+        symbols: list[str] | None = self.baskets.get(basket_name)
+        if symbols:
+            self.portfolio_symbols_edit.setPlainText(",".join(symbols))
+
+    def update_portfolio_weight_table(self, weights: dict[str, float]) -> None:
+        """
+        Update portfolio weight table by latest allocation.
+        """
+        items: list[tuple[str, float]] = sorted(weights.items(), key=lambda x: x[1], reverse=True)
+        self.portfolio_weight_table.setRowCount(len(items))
+        for row, (vt_symbol, weight) in enumerate(items):
+            self.portfolio_weight_table.setItem(row, 0, QtWidgets.QTableWidgetItem(vt_symbol))
+            self.portfolio_weight_table.setItem(row, 1, QtWidgets.QTableWidgetItem(f"{weight:.4f}"))
+
+    def on_portfolio_symbol_selected(self) -> None:
+        """
+        Update inline portfolio symbol kline chart.
+        """
+        items: list[QtWidgets.QListWidgetItem] = self.portfolio_symbol_list.selectedItems()
+        if not items:
+            return
+
+        vt_symbol: str = items[0].text()
+        history: list[BarData] = self.backtester_engine.get_portfolio_history(vt_symbol)
+        if not history:
+            self.write_log(_("标的{}无可展示K线数据").format(vt_symbol))
+            return
+
+        self.portfolio_symbol_candle.clear_all()
+        self.portfolio_symbol_candle.update_history(history)
+
     def set_symbol_history_records(self, records: list[dict]) -> None:
         """"""
         filtered: list[dict] = []
@@ -697,12 +1034,12 @@ class BacktesterManager(QtWidgets.QWidget):
             key=lambda r: (r["last_used"], r["count"]), reverse=True
         )
         self.symbol_history_records = filtered[:50]
-        self.set_symbol_history([r["symbol"] for r in self.symbol_history_records])
+        self.refresh_symbol_candidates()
 
-    def set_symbol_history(self, symbols: list[str]) -> None:
+    def set_symbol_history(self, symbols: list[str], keep_text: bool = True) -> None:
         """"""
         self.symbol_history = symbols
-        current_text: str = self.symbol_combo.currentText()
+        current_text: str = self.symbol_combo.currentText() if keep_text else ""
         self.symbol_combo.blockSignals(True)
         self.symbol_combo.clear()
         self.symbol_combo.addItems(symbols)
@@ -732,6 +1069,70 @@ class BacktesterManager(QtWidgets.QWidget):
 
         save_json(self.symbol_history_filename, records)
         self.set_symbol_history_records(records)
+
+    def refresh_symbol_candidates(self) -> None:
+        """
+        Refresh symbol candidates by current gateway and history.
+        """
+        gateway_name: str = self.gateway_combo.currentText()
+        if gateway_name == "ALL":
+            gateway_name = ""
+
+        contract_symbols: list[str] = self.backtester_engine.get_contract_candidates(gateway_name)
+        has_contracts: bool = bool(self.main_engine.get_all_contracts())
+        merged: list[str] = build_symbol_candidates(
+            history_records=self.symbol_history_records,
+            contract_symbols=contract_symbols,
+            gateway_name=gateway_name,
+            contract_lookup=self.main_engine.get_contract,
+            has_contracts=has_contracts,
+        )
+        self.set_symbol_history(merged)
+
+    def on_gateway_changed(self) -> None:
+        """
+        Handle gateway change for symbol filtering and profile autofill.
+        """
+        self.refresh_symbol_candidates()
+        self.apply_auto_contract_profile(self.symbol_combo.currentText())
+
+    def on_symbol_activated(self, *_: Any) -> None:
+        """
+        Handle symbol selected from combo dropdown.
+        """
+        self.apply_auto_contract_profile(self.symbol_combo.currentText())
+
+    def on_symbol_text_changed(self, text: str) -> None:
+        """
+        Handle symbol text updates for auto profile fill.
+        """
+        if not is_valid_vt_symbol(text):
+            return
+        self.apply_auto_contract_profile(text)
+
+    def on_symbol_editing_finished(self) -> None:
+        """
+        Handle symbol edit completion in line edit.
+        """
+        self.apply_auto_contract_profile(self.symbol_combo.currentText())
+
+    def apply_auto_contract_profile(self, vt_symbol: str) -> None:
+        """
+        Autofill profile lines from contract+gateway defaults. Fields remain editable.
+        """
+        vt_symbol = vt_symbol.strip()
+        if not vt_symbol:
+            return
+
+        gateway_name: str = self.gateway_combo.currentText()
+        if gateway_name == "ALL":
+            gateway_name = ""
+
+        profile: dict = self.backtester_engine.resolve_contract_profile(vt_symbol, gateway_name)
+        self.rate_line.setText(str(profile["rate"]))
+        self.slippage_line.setText(str(profile["slippage"]))
+        self.size_line.setText(str(profile["size"]))
+        self.pricetick_line.setText(str(profile["pricetick"]))
 
     def eventFilter(self, obj: QtCore.QObject, event: QtCore.QEvent) -> bool:  # type: ignore[override]
         if obj in {self.symbol_combo, self.symbol_combo.lineEdit()}:

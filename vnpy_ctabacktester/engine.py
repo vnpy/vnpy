@@ -6,12 +6,14 @@ from pathlib import Path
 from inspect import getfile
 from glob import glob
 from types import ModuleType
+from concurrent.futures import ThreadPoolExecutor
 from pandas import DataFrame
 
 from vnpy.event import Event, EventEngine
+from vnpy.trader.event import EVENT_CONTRACT
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.constant import Interval, Exchange
-from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.utility import extract_vt_symbol, load_json, save_json
 from vnpy.trader.object import HistoryRequest, TickData, BarData, ContractData
 from vnpy.trader.datafeed import BaseDatafeed, get_datafeed
 from vnpy.trader.database import (
@@ -27,8 +29,11 @@ from vnpy_ctastrategy import CtaTemplate, TargetPosTemplate
 from vnpy_ctastrategy.backtesting import (
     BacktestingEngine,
     OptimizationSetting,
-    BacktestingMode
+    BacktestingMode,
+    load_bar_data
 )
+from .portfolio_engine import PortfolioBacktestingEngine, PortfolioConfig
+from .portfolio_template import PortfolioTemplate
 from .locale import _
 
 APP_NAME = "CtaBacktester"
@@ -37,6 +42,7 @@ EVENT_BACKTESTER_LOG = "eBacktesterLog"
 EVENT_BACKTESTER_BACKTESTING_FINISHED = "eBacktesterBacktestingFinished"
 EVENT_BACKTESTER_OPTIMIZATION_FINISHED = "eBacktesterOptimizationFinished"
 EVENT_BACKTESTER_DOWNLOADING_FINISHED = "eBacktesterDownloadingFinished"
+EVENT_BACKTESTER_PORTFOLIO_FINISHED = "eBacktesterPortfolioFinished"
 
 
 def _get_missing_history_range(
@@ -179,11 +185,21 @@ class BacktesterEngine(BaseEngine):
     For running CTA strategy backtesting.
     """
 
+    channel_profile_filename: str = "cta_backtester_channel_profiles.json"
+    contract_profile_filename: str = "cta_backtester_contract_profiles.json"
+    default_channel_profile: dict[str, float] = {
+        "rate": 0.0,
+        "slippage": 0.0,
+        "size": 1.0,
+        "pricetick": 0.01,
+    }
+
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.classes: dict = {}
+        self.portfolio_classes: dict = {}
         self.backtesting_engine: BacktestingEngine = None
         self.thread: Thread | None = None
         self.download_cancel_event: ThreadEvent = ThreadEvent()
@@ -194,11 +210,16 @@ class BacktesterEngine(BaseEngine):
         # Backtesting reuslt
         self.result_df: DataFrame | None = None
         self.result_statistics: dict | None = None
+        self.portfolio_result_df: DataFrame | None = None
+        self.portfolio_latest_weights: dict[str, float] = {}
+        self.portfolio_history: dict[str, list[BarData]] = {}
 
         # Optimization result
         self.result_values: list | None = None
 
         self._pending_backtest: dict | None = None
+        self._channel_profiles: dict[str, dict[str, float]] = {}
+        self._contract_profiles: dict[str, dict[str, float | str]] = {}
 
     def _set_pending_backtest(self, data: dict) -> None:
         self._pending_backtest = data
@@ -220,9 +241,14 @@ class BacktesterEngine(BaseEngine):
         self.backtesting_engine.output = self.write_log
 
         self.load_strategy_class()
+        self.load_portfolio_strategy_class()
         self.write_log(_("策略文件加载完成"))
 
         self.init_datafeed()
+        self.load_channel_profiles()
+        self.load_contract_profiles()
+        self.sync_contract_profiles_from_main_engine()
+        self.register_event()
 
     def init_datafeed(self) -> None:
         """
@@ -261,6 +287,54 @@ class BacktesterEngine(BaseEngine):
 
         path2: Path = Path.cwd().joinpath("strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
+
+    def load_portfolio_strategy_class(self) -> None:
+        """
+        Load portfolio strategy classes.
+        """
+        self.portfolio_classes.clear()
+
+        app_path: Path = Path(__file__).parent
+        path1: Path = app_path.joinpath("portfolio_strategies")
+        self.load_portfolio_strategy_class_from_folder(path1, "vnpy_ctabacktester.portfolio_strategies")
+
+        path2: Path = Path.cwd().joinpath("portfolio_strategies")
+        self.load_portfolio_strategy_class_from_folder(path2, "portfolio_strategies")
+
+    def load_portfolio_strategy_class_from_folder(self, path: Path, module_name: str = "") -> None:
+        """
+        Load portfolio strategy classes from certain folder.
+        """
+        for suffix in ["py", "pyd", "so"]:
+            pathname: str = str(path.joinpath(f"*.{suffix}"))
+            for filepath in glob(pathname):
+                filename: str = Path(filepath).stem
+                if filename == "__init__":
+                    continue
+                name: str = f"{module_name}.{filename}"
+                self.load_portfolio_strategy_class_from_module(name)
+
+    def load_portfolio_strategy_class_from_module(self, module_name: str) -> None:
+        """
+        Load portfolio strategy class from module file.
+        """
+        try:
+            module: ModuleType = importlib.import_module(module_name)
+            importlib.reload(module)
+
+            for name in dir(module):
+                value = getattr(module, name)
+                if (
+                    isinstance(value, type)
+                    and issubclass(value, PortfolioTemplate)
+                    and value is not PortfolioTemplate
+                ):
+                    self.portfolio_classes[value.__name__] = value
+        except:  # noqa
+            msg: str = _("组合策略文件{}加载失败，触发异常：\n{}").format(
+                module_name, traceback.format_exc()
+            )
+            self.write_log(msg)
 
     def load_strategy_class_from_folder(self, path: Path, module_name: str = "") -> None:
         """
@@ -301,11 +375,221 @@ class BacktesterEngine(BaseEngine):
         """"""
         self.classes.clear()
         self.load_strategy_class()
+        self.load_portfolio_strategy_class()
         self.write_log(_("策略文件重载刷新完成"))
 
     def get_strategy_class_names(self) -> list:
         """"""
         return list(self.classes.keys())
+
+    def get_portfolio_strategy_class_names(self) -> list:
+        """
+        Return portfolio strategy class names.
+        """
+        names: list[str] = list(self.portfolio_classes.keys())
+        names.sort()
+        return names
+
+    def get_portfolio_default_setting(self, class_name: str) -> dict:
+        """
+        Return default parameter settings of portfolio strategy class.
+        """
+        strategy_class: type[PortfolioTemplate] = self.portfolio_classes[class_name]
+        return strategy_class.get_class_parameters()
+
+    def load_channel_profiles(self) -> None:
+        """
+        Load per-gateway default trading cost profile from json.
+        """
+        raw: dict = load_json(self.channel_profile_filename)
+        profiles: dict[str, dict[str, float]] = {}
+
+        if isinstance(raw, dict):
+            for gateway_name, values in raw.items():
+                if not isinstance(values, dict):
+                    continue
+                profiles[gateway_name] = {
+                    "rate": float(values.get("rate", self.default_channel_profile["rate"])),
+                    "slippage": float(values.get("slippage", self.default_channel_profile["slippage"])),
+                    "size": float(values.get("size", self.default_channel_profile["size"])),
+                    "pricetick": float(values.get("pricetick", self.default_channel_profile["pricetick"])),
+                }
+
+        self._channel_profiles = profiles
+
+    def load_contract_profiles(self) -> None:
+        """
+        Load per-contract trading profile from json.
+        """
+        raw: dict = load_json(self.contract_profile_filename)
+        profiles: dict[str, dict[str, float | str]] = {}
+        if isinstance(raw, dict):
+            for vt_symbol, values in raw.items():
+                if not isinstance(vt_symbol, str):
+                    continue
+                if not isinstance(values, dict):
+                    continue
+                profiles[vt_symbol] = {
+                    "rate": float(values.get("rate", self.default_channel_profile["rate"])),
+                    "slippage": float(values.get("slippage", self.default_channel_profile["slippage"])),
+                    "size": float(values.get("size", self.default_channel_profile["size"])),
+                    "pricetick": float(values.get("pricetick", self.default_channel_profile["pricetick"])),
+                    "min_volume": float(values.get("min_volume", 1)),
+                    "gateway_name": str(values.get("gateway_name", "")),
+                }
+        self._contract_profiles = profiles
+
+    def register_event(self) -> None:
+        """
+        Register event handlers for runtime contract sync.
+        """
+        self.event_engine.register(EVENT_CONTRACT, self.process_contract_event)
+
+    def process_contract_event(self, event: Event) -> None:
+        """
+        Keep contract profile cache up to date whenever gateway pushes contract.
+        """
+        contract: ContractData = event.data
+        self.upsert_contract_profile(contract)
+
+    def upsert_contract_profile(self, contract: ContractData, persist: bool = True) -> None:
+        """
+        Merge contract metadata into per-symbol profile cache.
+        """
+        existing: dict[str, float | str] = self._contract_profiles.get(contract.vt_symbol, {})
+        channel_profile: dict[str, float] = self.get_channel_profile(contract.gateway_name)
+        rate_value: float | str | None = existing.get("rate")
+        slippage_value: float | str | None = existing.get("slippage")
+        size_value: float | str | None = existing.get("size")
+        pricetick_value: float | str | None = existing.get("pricetick")
+        min_volume_value: float | str | None = existing.get("min_volume")
+        profile: dict[str, float | str] = {
+            "rate": float(channel_profile["rate"]) if rate_value is None else float(rate_value),
+            "slippage": float(channel_profile["slippage"]) if slippage_value is None else float(slippage_value),
+            "size": float(channel_profile["size"]) if size_value is None else float(size_value),
+            "pricetick": float(channel_profile["pricetick"]) if pricetick_value is None else float(pricetick_value),
+            "min_volume": 1.0 if min_volume_value is None else float(min_volume_value),
+            "gateway_name": contract.gateway_name,
+        }
+
+        if contract.size and contract.size > 0:
+            profile["size"] = float(contract.size)
+        if contract.pricetick and contract.pricetick > 0:
+            profile["pricetick"] = float(contract.pricetick)
+        if contract.min_volume and contract.min_volume > 0:
+            profile["min_volume"] = float(contract.min_volume)
+
+        self._contract_profiles[contract.vt_symbol] = profile
+        if persist:
+            save_json(self.contract_profile_filename, self._contract_profiles)
+
+    def sync_contract_profiles_from_main_engine(self) -> None:
+        """
+        Bootstrap contract profile cache from currently loaded contracts.
+        """
+        contracts: list[ContractData] = self.main_engine.get_all_contracts()
+        if not contracts:
+            return
+
+        for contract in contracts:
+            self.upsert_contract_profile(contract, persist=False)
+        save_json(self.contract_profile_filename, self._contract_profiles)
+
+    def get_channel_profile(self, gateway_name: str) -> dict[str, float]:
+        """
+        Get channel profile with global fallback defaults.
+        """
+        profile: dict[str, float] = dict(self.default_channel_profile)
+        profile.update(self._channel_profiles.get(gateway_name, {}))
+        return profile
+
+    def set_channel_profile(self, gateway_name: str, profile: dict[str, float]) -> None:
+        """
+        Persist channel profile for gateway.
+        """
+        self._channel_profiles[gateway_name] = {
+            "rate": float(profile.get("rate", self.default_channel_profile["rate"])),
+            "slippage": float(profile.get("slippage", self.default_channel_profile["slippage"])),
+            "size": float(profile.get("size", self.default_channel_profile["size"])),
+            "pricetick": float(profile.get("pricetick", self.default_channel_profile["pricetick"])),
+        }
+        save_json(self.channel_profile_filename, self._channel_profiles)
+
+    def get_available_gateways(self) -> list[str]:
+        """
+        Return gateway names for channel selection.
+        """
+        gateways: list[str] = self.main_engine.get_all_gateway_names()
+        gateways = sorted(set(gateways))
+        return gateways
+
+    def get_contract_candidates(self, gateway_name: str = "", keyword: str = "") -> list[str]:
+        """
+        Return vt_symbol candidates filtered by gateway and keyword.
+        """
+        keyword = keyword.strip().lower()
+        contracts: list[ContractData] = self.main_engine.get_all_contracts()
+        vt_symbols: list[str] = []
+
+        for contract in contracts:
+            if gateway_name and contract.gateway_name != gateway_name:
+                continue
+
+            vt_symbol: str = contract.vt_symbol
+            if keyword:
+                name: str = (contract.name or "").lower()
+                if keyword not in vt_symbol.lower() and keyword not in name:
+                    continue
+            vt_symbols.append(vt_symbol)
+
+        vt_symbols.sort()
+        return vt_symbols
+
+    def resolve_contract_profile(self, vt_symbol: str, gateway_name: str = "") -> dict[str, float | str]:
+        """
+        Resolve backtesting profile with fallback chain:
+        ContractData(size/pricetick/min_volume) -> contract profile -> channel profile(rate/slippage) -> defaults.
+        """
+        profile: dict[str, float | str] = dict(self.default_channel_profile)
+        profile["min_volume"] = 1.0
+        profile["source"] = "default"
+
+        channel_profile: dict[str, float] = self.get_channel_profile(gateway_name)
+        profile["rate"] = channel_profile["rate"]
+        profile["slippage"] = channel_profile["slippage"]
+
+        contract_profile: dict[str, float | str] | None = self._contract_profiles.get(vt_symbol)
+        if contract_profile:
+            rate_value: float | str | None = contract_profile.get("rate")
+            slippage_value: float | str | None = contract_profile.get("slippage")
+            size_value: float | str | None = contract_profile.get("size")
+            pricetick_value: float | str | None = contract_profile.get("pricetick")
+            min_volume_value: float | str | None = contract_profile.get("min_volume")
+            if rate_value is not None:
+                profile["rate"] = float(rate_value)
+            if slippage_value is not None:
+                profile["slippage"] = float(slippage_value)
+            if size_value is not None:
+                profile["size"] = float(size_value)
+            if pricetick_value is not None:
+                profile["pricetick"] = float(pricetick_value)
+            if min_volume_value is not None:
+                profile["min_volume"] = float(min_volume_value)
+            profile["source"] = "profile"
+
+        contract: ContractData | None = self.main_engine.get_contract(vt_symbol)
+        if contract:
+            if contract.size and contract.size > 0:
+                profile["size"] = float(contract.size)
+            if contract.pricetick and contract.pricetick > 0:
+                profile["pricetick"] = float(contract.pricetick)
+            if contract.min_volume and contract.min_volume > 0:
+                profile["min_volume"] = float(contract.min_volume)
+            profile["source"] = "contract+channel"
+        elif profile["source"] != "profile" and gateway_name and gateway_name in self._channel_profiles:
+            profile["source"] = "channel"
+
+        return profile
 
     def run_backtesting(
         self,
@@ -493,6 +777,238 @@ class BacktesterEngine(BaseEngine):
     def get_result_values(self) -> list | None:
         """"""
         return self.result_values
+
+    def run_portfolio_backtesting(
+        self,
+        vt_symbols: list[str],
+        interval: str,
+        start: datetime,
+        end: datetime,
+        capital: float,
+        top_n: int,
+        class_name: str,
+        setting: dict,
+        max_workers: int = 1
+    ) -> None:
+        """
+        Run portfolio backtesting by score ranking and normalized allocation.
+        """
+        self.portfolio_result_df = None
+        self.portfolio_latest_weights = {}
+        self.portfolio_history = {}
+
+        if not vt_symbols:
+            self.write_log(_("组合回测失败，标的列表为空"))
+            self.thread = None
+            return
+
+        try:
+            bar_interval: Interval = Interval(interval)
+        except ValueError:
+            self.write_log(_("组合回测失败，K线周期不支持：{}").format(interval))
+            self.thread = None
+            return
+
+        # Load bar data by symbol
+        def load_symbol_history(vt_symbol: str) -> tuple[str, list[BarData]]:
+            try:
+                symbol, exchange = extract_vt_symbol(vt_symbol)
+            except ValueError:
+                return (vt_symbol, [])
+
+            bars: list[BarData] = load_bar_data(symbol, exchange, bar_interval, start, end)
+            return (vt_symbol, bars)
+
+        tasks: list[tuple[str, list[BarData]]] = []
+        if max_workers and max_workers > 1:
+            workers: int = min(max_workers, len(vt_symbols))
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                tasks = list(executor.map(load_symbol_history, vt_symbols))
+        else:
+            tasks = [load_symbol_history(vt_symbol) for vt_symbol in vt_symbols]
+
+        for vt_symbol, bars in tasks:
+            if bars:
+                self.portfolio_history[vt_symbol] = bars
+
+        if not self.portfolio_history:
+            self.write_log(_("组合回测失败，历史数据为空"))
+            self.thread = None
+            return
+
+        close_map: dict[datetime, dict[str, float]] = {}
+        bars_map: dict[datetime, dict[str, BarData]] = {}
+        for vt_symbol, bars in self.portfolio_history.items():
+            for bar in bars:
+                symbol_prices: dict[str, float] = close_map.setdefault(bar.datetime, {})
+                symbol_prices[vt_symbol] = bar.close_price
+                symbol_bars: dict[str, BarData] = bars_map.setdefault(bar.datetime, {})
+                symbol_bars[vt_symbol] = bar
+
+        dts: list[datetime] = sorted(close_map.keys())
+        if len(dts) < 2:
+            self.write_log(_("组合回测失败，历史数据不足"))
+            self.thread = None
+            return
+
+        strategy_class: type[PortfolioTemplate] | None = self.portfolio_classes.get(class_name)
+        if not strategy_class:
+            self.write_log(_("组合回测失败，找不到组合策略：{}").format(class_name))
+            self.thread = None
+            return
+
+        strategy: PortfolioTemplate = strategy_class(
+            self,
+            class_name,
+            list(self.portfolio_history.keys()),
+            setting
+        )
+        strategy.on_init()
+        strategy.inited = True
+
+        alloc_engine: PortfolioBacktestingEngine = PortfolioBacktestingEngine(
+            PortfolioConfig(top_n=top_n, long_only=True)
+        )
+
+        balance: float = capital
+        prev_weights: dict[str, float] = {}
+        records: list[dict] = []
+
+        profile_map: dict[str, dict[str, float | str]] = {}
+        for vt_symbol in self.portfolio_history:
+            contract: ContractData | None = self.main_engine.get_contract(vt_symbol)
+            gateway_name: str = contract.gateway_name if contract else ""
+            try:
+                profile_map[vt_symbol] = self.resolve_contract_profile(vt_symbol, gateway_name)
+            except Exception:
+                profile_map[vt_symbol] = {
+                    "rate": 0.0,
+                    "slippage": 0.0,
+                    "size": 1.0,
+                    "pricetick": 0.0,
+                    "min_volume": 1.0,
+                    "source": "default",
+                }
+
+        for i in range(1, len(dts)):
+            prev_dt: datetime = dts[i - 1]
+            dt: datetime = dts[i]
+
+            prev_prices: dict[str, float] = close_map.get(prev_dt, {})
+            curr_prices: dict[str, float] = close_map.get(dt, {})
+
+            bars_prev: dict[str, BarData] = bars_map.get(prev_dt, {})
+
+            scores: dict[str, float] = {}
+            try:
+                scores = strategy.on_bars(bars_prev) or {}
+            except Exception:
+                self.write_log(_("组合策略评分失败：\n{}").format(traceback.format_exc()))
+                self.thread = None
+                return
+
+            target_weights: dict[str, float] = alloc_engine.generate_target_weights(scores)
+            if target_weights:
+                self.portfolio_latest_weights = target_weights
+
+            # Estimate rebalance transaction cost from weight turnover
+            turnover: float = 0
+            commission: float = 0
+            slippage_cost: float = 0
+            all_symbols: set[str] = set(prev_weights.keys()) | set(target_weights.keys())
+            for vt_symbol in all_symbols:
+                old_weight: float = prev_weights.get(vt_symbol, 0)
+                new_weight: float = target_weights.get(vt_symbol, 0)
+                delta_weight: float = abs(new_weight - old_weight)
+                if delta_weight <= 0:
+                    continue
+
+                symbol_turnover: float = balance * delta_weight
+                profile: dict[str, float | str] = profile_map.get(vt_symbol, {})
+                rate: float = float(profile.get("rate", 0) or 0)
+                slippage: float = float(profile.get("slippage", 0) or 0)
+
+                turnover += symbol_turnover
+                commission += symbol_turnover * rate
+                prev_price: float = prev_prices.get(vt_symbol, 0)
+                if prev_price > 0:
+                    slippage_cost += symbol_turnover / prev_price * slippage
+
+            portfolio_return: float = 0
+            for vt_symbol, weight in target_weights.items():
+                prev_price: float = prev_prices.get(vt_symbol, 0)
+                curr_price: float = curr_prices.get(vt_symbol, 0)
+                if prev_price <= 0 or curr_price <= 0:
+                    continue
+                symbol_return: float = curr_price / prev_price - 1
+                portfolio_return += weight * symbol_return
+
+            trading_pnl: float = balance * portfolio_return
+            net_pnl: float = trading_pnl - commission - slippage_cost
+            balance += net_pnl
+
+            records.append({
+                "date": dt.date(),
+                "turnover": turnover,
+                "commission": commission,
+                "slippage": slippage_cost,
+                "trading_pnl": trading_pnl,
+                "net_pnl": net_pnl,
+            })
+            prev_weights = target_weights
+
+        if not records:
+            self.write_log(_("组合回测失败，无有效收益记录"))
+            self.thread = None
+            return
+
+        df: DataFrame = DataFrame(records)
+        df = df.groupby("date", as_index=True).sum(numeric_only=True)
+        df["balance"] = df["net_pnl"].cumsum() + capital
+        df["highlevel"] = df["balance"].cummax()
+        df["drawdown"] = df["balance"] - df["highlevel"]
+        df["ddpercent"] = (df["balance"] / df["highlevel"] - 1) * 100
+        self.portfolio_result_df = df
+
+        self.thread = None
+        self.write_log(_("组合回测完成"))
+        self.event_engine.put(Event(EVENT_BACKTESTER_PORTFOLIO_FINISHED))
+
+    def start_portfolio_backtesting(
+        self,
+        vt_symbols: list[str],
+        interval: str,
+        start: datetime,
+        end: datetime,
+        capital: float,
+        top_n: int,
+        class_name: str,
+        setting: dict,
+        max_workers: int = 1
+    ) -> bool:
+        """
+        Start async portfolio backtesting task.
+        """
+        if self.thread:
+            self.write_log(_("已有任务在运行中，请等待完成"))
+            return False
+
+        self.write_log("-" * 40)
+        self.thread = Thread(
+            target=self.run_portfolio_backtesting,
+            args=(vt_symbols, interval, start, end, capital, top_n, class_name, setting, max_workers)
+        )
+        self.thread.start()
+        return True
+
+    def get_portfolio_result_df(self) -> DataFrame | None:
+        return self.portfolio_result_df
+
+    def get_portfolio_latest_weights(self) -> dict[str, float]:
+        return self.portfolio_latest_weights
+
+    def get_portfolio_history(self, vt_symbol: str) -> list[BarData]:
+        return self.portfolio_history.get(vt_symbol, [])
 
     def get_default_setting(self, class_name: str) -> dict:
         """"""
