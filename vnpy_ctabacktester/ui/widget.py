@@ -9,16 +9,22 @@ from typing import Any, cast
 import numpy as np
 import pyqtgraph as pg
 from pandas import DataFrame
+from matplotlib import rcParams
+from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.ticker import FuncFormatter
 
 from vnpy.trader.constant import Interval, Direction, Exchange, Offset
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
 from vnpy.event import Event, EventEngine
-from vnpy.chart import ChartWidget, CandleItem, VolumeItem
+from vnpy.chart.base import SAFE_CHART_RENDER
 from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.object import BarData, TradeData, OrderData
 from vnpy.trader.database import DB_TZ
+from vnpy.trader.setting import SETTINGS
 from vnpy_ctastrategy.backtesting import DailyResult
 
 from ..locale import _
@@ -33,6 +39,62 @@ from ..engine import (
     OptimizationSetting,
     BacktesterEngine
 )
+
+
+def _configure_matplotlib_font() -> None:
+    """Configure a robust CJK font fallback list for matplotlib on desktop."""
+    preferred: str = str(SETTINGS.get("font.family", "") or "").strip()
+    candidates: list[str] = [
+        preferred,
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "STHeiti",
+        "Songti SC",
+        "Arial Unicode MS",
+        "Noto Sans CJK SC",
+        "Microsoft YaHei",
+        "SimHei",
+        "WenQuanYi Zen Hei",
+    ]
+
+    fonts: list[str] = []
+    for name in candidates:
+        if name and name not in fonts:
+            fonts.append(name)
+
+    rcParams["font.family"] = "sans-serif"
+    rcParams["font.sans-serif"] = fonts
+    rcParams["axes.unicode_minus"] = False
+
+
+_configure_matplotlib_font()
+
+
+def _format_human_number(value: float, _: Any = None) -> str:
+    """Format ticks without scientific notation, using K/M suffix for large values."""
+    abs_value: float = abs(value)
+    sign: str = "-" if value < 0 else ""
+
+    if abs_value >= 1_000_000:
+        scaled = abs_value / 1_000_000
+        text = f"{scaled:.2f}".rstrip("0").rstrip(".")
+        return f"{sign}{text}M"
+
+    if abs_value >= 1_000:
+        scaled = abs_value / 1_000
+        text = f"{scaled:.2f}".rstrip("0").rstrip(".")
+        return f"{sign}{text}K"
+
+    if abs_value >= 100:
+        return f"{value:.0f}"
+    if abs_value >= 1:
+        return f"{value:.2f}".rstrip("0").rstrip(".")
+    if abs_value == 0:
+        return "0"
+    return f"{value:.4f}".rstrip("0").rstrip(".")
+
+
+HUMAN_TICK_FORMATTER: FuncFormatter = FuncFormatter(_format_human_number)
 
 
 class BacktesterManager(QtWidgets.QWidget):
@@ -378,12 +440,7 @@ class BacktesterManager(QtWidgets.QWidget):
         self.portfolio_symbol_list.itemSelectionChanged.connect(self.on_portfolio_symbol_selected)
 
         self.portfolio_chart: BacktesterChart = BacktesterChart()
-        self.portfolio_symbol_candle: ChartWidget = ChartWidget()
-        self.portfolio_symbol_candle.add_plot("candle", hide_x_axis=True)
-        self.portfolio_symbol_candle.add_plot("volume", maximum_height=180)
-        self.portfolio_symbol_candle.add_item(CandleItem, "candle", "candle")
-        self.portfolio_symbol_candle.add_item(VolumeItem, "volume", "volume")
-        self.portfolio_symbol_candle.add_cursor()
+        self.portfolio_symbol_candle: MplCandleChart = MplCandleChart(max_volume_height_ratio=0.25)
 
         form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
         form.addRow(_("渠道"), self.portfolio_gateway_combo)
@@ -1329,123 +1386,99 @@ class BacktestingSettingEditor(EscCloseDialog):
         return setting
 
 
-class BacktesterChart(pg.GraphicsLayoutWidget):
+class BacktesterChart(QtWidgets.QWidget):
     """"""
 
     def __init__(self) -> None:
-        """"""
-        super().__init__(title="Backtester Chart")
+        super().__init__()
 
-        self.dates: dict = {}
+        self.figure: Figure = Figure(figsize=(8, 6), tight_layout=True)
+        self.canvas: FigureCanvas = FigureCanvas(self.figure)
+        gs = self.figure.add_gridspec(4, 1, height_ratios=[2, 1, 1, 1])
+        self.ax_balance = self.figure.add_subplot(gs[0, 0])
+        self.ax_drawdown = self.figure.add_subplot(gs[1, 0], sharex=self.ax_balance)
+        self.ax_pnl = self.figure.add_subplot(gs[2, 0], sharex=self.ax_balance)
+        self.ax_dist = self.figure.add_subplot(gs[3, 0])
+        self.axes = [self.ax_balance, self.ax_drawdown, self.ax_pnl, self.ax_dist]
 
-        self.init_ui()
+        layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
 
-    def init_ui(self) -> None:
-        """"""
-        pg.setConfigOptions(antialias=True)
+        # Ensure dark theme is applied before first backtest result arrives.
+        self.clear_data()
 
-        # Create plot widgets
-        self.balance_plot = self.addPlot(
-            title=_("账户净值"),
-            axisItems={"bottom": DateAxis(self.dates, orientation="bottom")}
-        )
-        self.nextRow()
+    def _style_axes(self) -> None:
+        for ax in self.axes:
+            ax.grid(alpha=0.2)
+            ax.set_facecolor("#102638")
+            ax.tick_params(colors="#cfd8dc", labelsize=8)
+            ax.yaxis.set_major_formatter(HUMAN_TICK_FORMATTER)
+            for spine in ax.spines.values():
+                spine.set_color("#607d8b")
 
-        self.drawdown_plot = self.addPlot(
-            title=_("净值回撤"),
-            axisItems={"bottom": DateAxis(self.dates, orientation="bottom")}
-        )
-        self.nextRow()
-
-        self.pnl_plot = self.addPlot(
-            title=_("每日盈亏"),
-            axisItems={"bottom": DateAxis(self.dates, orientation="bottom")}
-        )
-        self.nextRow()
-
-        self.distribution_plot = self.addPlot(title=_("盈亏分布"))
-
-        # Add curves and bars on plot widgets
-        self.balance_curve = self.balance_plot.plot(
-            pen=pg.mkPen("#ffc107", width=3)
-        )
-
-        dd_color: str = "#303f9f"
-        self.drawdown_curve = self.drawdown_plot.plot(
-            fillLevel=-0.3, brush=dd_color, pen=dd_color
-        )
-
-        profit_color: str = 'r'
-        loss_color: str = 'g'
-        self.profit_pnl_bar = pg.BarGraphItem(
-            x=[], height=[], width=0.3, brush=profit_color, pen=profit_color
-        )
-        self.loss_pnl_bar = pg.BarGraphItem(
-            x=[], height=[], width=0.3, brush=loss_color, pen=loss_color
-        )
-        self.pnl_plot.addItem(self.profit_pnl_bar)
-        self.pnl_plot.addItem(self.loss_pnl_bar)
-
-        distribution_color: str = "#6d4c41"
-        self.distribution_curve = self.distribution_plot.plot(
-            fillLevel=-0.3, brush=distribution_color, pen=distribution_color
-        )
+        self.figure.set_facecolor("#102638")
 
     def clear_data(self) -> None:
-        """"""
-        self.balance_curve.setData([], [])
-        self.drawdown_curve.setData([], [])
-        self.profit_pnl_bar.setOpts(x=[], height=[])
-        self.loss_pnl_bar.setOpts(x=[], height=[])
-        self.distribution_curve.setData([], [])
+        for ax in self.axes:
+            ax.clear()
+        self._style_axes()
+        self.canvas.draw_idle()
 
     def set_data(self, df: DataFrame) -> None:
-        """"""
-        if df is None:
+        if df is None or df.empty:
+            self.clear_data()
             return
 
-        count: int = len(df)
+        ax_balance, ax_drawdown, ax_pnl, ax_dist = (
+            self.ax_balance,
+            self.ax_drawdown,
+            self.ax_pnl,
+            self.ax_dist,
+        )
+        for ax in self.axes:
+            ax.clear()
 
-        self.dates.clear()
-        for n, date in enumerate(df.index):
-            self.dates[n] = date
+        x = np.arange(len(df))
 
-        # Set data for curve of balance and drawdown
-        self.balance_curve.setData(df["balance"])
-        self.drawdown_curve.setData(df["drawdown"])
+        # Account balance
+        balance = df["balance"].to_numpy(dtype=float)
+        ax_balance.plot(x, balance, color="#ffc107", linewidth=1.8)
+        ax_balance.set_title(_("账户净值"), color="#cfd8dc", fontsize=10)
 
-        balance_series = df["balance"].dropna()
-        if not balance_series.empty:
-            min_balance = float(balance_series.min())
-            max_balance = float(balance_series.max())
-            padding = (max_balance - min_balance) * 0.02
-            if padding == 0:
-                padding = max(1.0, max_balance * 0.001)
-            self.balance_plot.setRange(
-                yRange=(min_balance - padding, max_balance + padding)
-            )
+        # Drawdown
+        drawdown = df["drawdown"].to_numpy(dtype=float)
+        ax_drawdown.fill_between(x, drawdown, 0.0, color="#303f9f", alpha=0.8)
+        ax_drawdown.set_title(_("净值回撤"), color="#cfd8dc", fontsize=10)
 
-        # Set data for daily pnl bar
-        profit_pnl_x: list = []
-        profit_pnl_height: list = []
-        loss_pnl_x: list = []
-        loss_pnl_height: list = []
+        # Daily pnl
+        net_pnl = df["net_pnl"].to_numpy(dtype=float)
+        colors = np.where(net_pnl >= 0, "#ff5252", "#00e676")
+        ax_pnl.bar(x, net_pnl, color=colors, width=0.8)
+        ax_pnl.set_title(_("每日盈亏"), color="#cfd8dc", fontsize=10)
 
-        for count, pnl in enumerate(df["net_pnl"]):
-            if pnl >= 0:
-                profit_pnl_height.append(pnl)
-                profit_pnl_x.append(count)
-            else:
-                loss_pnl_height.append(pnl)
-                loss_pnl_x.append(count)
+        # Distribution
+        hist, bins = np.histogram(net_pnl, bins="auto")
+        centers = (bins[:-1] + bins[1:]) / 2
+        widths = np.diff(bins)
+        ax_dist.bar(centers, hist, width=widths, color="#6d4c41", alpha=0.9)
+        ax_dist.set_title(_("盈亏分布"), color="#cfd8dc", fontsize=10)
 
-        self.profit_pnl_bar.setOpts(x=profit_pnl_x, height=profit_pnl_height)
-        self.loss_pnl_bar.setOpts(x=loss_pnl_x, height=loss_pnl_height)
+        # X labels for time series only
+        labels = [str(d)[:10] for d in df.index]
+        step = max(1, len(labels) // 8)
+        ticks = x[::step]
+        ax_pnl.set_xticks(ticks)
+        ax_pnl.set_xticklabels([labels[i] for i in ticks], rotation=20, ha="right")
+        ax_balance.tick_params(labelbottom=False)
+        ax_drawdown.tick_params(labelbottom=False)
 
-        # Set data for pnl distribution
-        hist, x = np.histogram(df["net_pnl"], bins="auto")
-        x = x[:-1]
-        self.distribution_curve.setData(x, hist)
+        # Keep time-series x-range independent from distribution subplot
+        ax_balance.set_xlim(-0.5, len(x) - 0.5)
+
+        self._style_axes()
+        self.canvas.draw_idle()
 
 
 class DateAxis(pg.AxisItem):
@@ -1458,6 +1491,9 @@ class DateAxis(pg.AxisItem):
 
     def tickStrings(self, values: list, scale: float, spacing: float) -> list:
         """"""
+        if SAFE_CHART_RENDER:
+            return ["" for _ in values]
+
         strings: list = []
         for v in values:
             dt = self.dates.get(v, "")
@@ -1811,6 +1847,320 @@ class BacktestingResultDialog(EscCloseDialog):
         return self.updated
 
 
+class MplCandleChart(QtWidgets.QWidget):
+    """"""
+
+    def __init__(self, max_volume_height_ratio: float = 0.3) -> None:
+        super().__init__()
+
+        self._history: list[BarData] = []
+        self._trade_pairs: list[dict] = []
+        self._max_volume_height_ratio: float = max_volume_height_ratio
+        self._view_left: float | None = None
+        self._view_right: float | None = None
+        self._is_dragging: bool = False
+        self._drag_last_x: float | None = None
+        self._render_mode: str = "candle"
+        self._line_mode_threshold: float = 900.0
+
+        self.figure: Figure = Figure(figsize=(10, 6), tight_layout=True)
+        self.canvas: FigureCanvas = FigureCanvas(self.figure)
+        self.ax_price, self.ax_volume = self.figure.subplots(
+            2,
+            1,
+            sharex=True,
+            gridspec_kw={"height_ratios": [1 - max_volume_height_ratio, max_volume_height_ratio]},
+        )
+
+        layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+
+        # Mouse interactions: wheel zoom + drag pan + double-click reset.
+        self.canvas.mpl_connect("scroll_event", self._on_scroll)
+        self.canvas.mpl_connect("button_press_event", self._on_press)
+        self.canvas.mpl_connect("button_release_event", self._on_release)
+        self.canvas.mpl_connect("motion_notify_event", self._on_motion)
+        self.canvas.mpl_connect("figure_leave_event", self._on_leave)
+
+    def clear_all(self) -> None:
+        self._history.clear()
+        self._trade_pairs.clear()
+        self._view_left = None
+        self._view_right = None
+        self._is_dragging = False
+        self._drag_last_x = None
+        self._redraw()
+
+    def update_history(self, history: list[BarData]) -> None:
+        self._history = list(history)
+        self._redraw()
+
+    def set_trade_pairs(self, trade_pairs: list[dict]) -> None:
+        self._trade_pairs = list(trade_pairs)
+        self._redraw()
+
+    def set_position_cost_map(self, __: dict[int, tuple[float, float, float]]) -> None:
+        """Reserved for API compatibility."""
+        return
+
+    def _apply_style(self) -> None:
+        for ax in (self.ax_price, self.ax_volume):
+            ax.grid(alpha=0.2)
+            ax.set_facecolor("#102638")
+            ax.tick_params(colors="#cfd8dc", labelsize=8)
+            ax.yaxis.set_major_formatter(HUMAN_TICK_FORMATTER)
+            for spine in ax.spines.values():
+                spine.set_color("#607d8b")
+
+        self.figure.set_facecolor("#102638")
+
+    def _redraw(self) -> None:
+        self.ax_price.clear()
+        self.ax_volume.clear()
+
+        if not self._history:
+            self._apply_style()
+            self.canvas.draw_idle()
+            return
+
+        x = np.arange(len(self._history), dtype=float)
+        body_width = 0.6
+        dt_ix_map: dict[datetime, int] = {}
+
+        full_left: float = -1.0
+        full_right: float = float(len(x))
+        if self._view_left is None or self._view_right is None:
+            self._view_left, self._view_right = full_left, full_right
+        else:
+            self._view_left, self._view_right = self._clamp_view(self._view_left, self._view_right)
+
+        span = self._view_right - self._view_left
+        self._render_mode = "line" if span > self._line_mode_threshold else "candle"
+        i0, i1 = self._visible_index_range(buffer=40)
+        render_history = self._history[i0:i1]
+        render_x = np.arange(i0, i1, dtype=float)
+        dates: list[str] = [bar.datetime.strftime("%Y-%m-%d") for bar in self._history]
+
+        for ix in range(i0, i1):
+            dt_ix_map[self._history[ix].datetime] = ix
+
+        if self._render_mode == "line":
+            closes = np.array([bar.close_price for bar in render_history], dtype=float)
+            volumes = np.array([bar.volume for bar in render_history], dtype=float)
+            self.ax_price.plot(render_x, closes, color="#ffcc00", linewidth=1.2, alpha=0.95)
+            self.ax_volume.fill_between(render_x, 0.0, volumes, color="#00e5ff", alpha=0.35)
+        else:
+            for ix, bar in zip(render_x, render_history):
+                up = bar.close_price >= bar.open_price
+                color = "#ff5252" if up else "#00e5ff"
+
+                # Wick
+                self.ax_price.vlines(ix, bar.low_price, bar.high_price, color=color, linewidth=1.0)
+
+                # Candle body
+                lower = min(bar.open_price, bar.close_price)
+                height = abs(bar.close_price - bar.open_price)
+                if height == 0:
+                    height = max(abs(bar.open_price) * 1e-6, 1e-10)
+                body = Rectangle(
+                    (ix - body_width / 2, lower),
+                    body_width,
+                    height,
+                    facecolor=color,
+                    edgecolor=color,
+                    linewidth=0.8,
+                    alpha=0.9,
+                )
+                self.ax_price.add_patch(body)
+
+                # Volume
+                self.ax_volume.bar(ix, bar.volume, width=body_width, color=color, alpha=0.9)
+
+        for pair in self._trade_pairs:
+            open_ix = dt_ix_map.get(pair["open_dt"])
+            close_ix = dt_ix_map.get(pair["close_dt"])
+            if open_ix is None or close_ix is None:
+                continue
+
+            open_price = pair["open_price"]
+            close_price = pair["close_price"]
+            if pair["direction"] == Direction.LONG and close_price >= open_price:
+                line_color = "#ff5252"
+            elif pair["direction"] == Direction.SHORT and close_price <= open_price:
+                line_color = "#ff5252"
+            else:
+                line_color = "#00e676"
+
+            self.ax_price.plot(
+                [open_ix, close_ix],
+                [open_price, close_price],
+                linestyle="--",
+                linewidth=1.1,
+                color=line_color,
+                alpha=0.95,
+            )
+
+            if pair["direction"] == Direction.LONG:
+                open_marker, close_marker, marker_color = "^", "v", "#ffeb3b"
+            else:
+                open_marker, close_marker, marker_color = "v", "^", "#ff00ff"
+
+            self.ax_price.scatter([open_ix], [open_price], marker=open_marker, color=marker_color, s=36, zorder=3)
+            self.ax_price.scatter([close_ix], [close_price], marker=close_marker, color=marker_color, s=36, zorder=3)
+
+        step = max(1, len(x) // 10)
+        ticks = x[::step]
+        self.ax_volume.set_xticks(ticks)
+        self.ax_volume.set_xticklabels([dates[int(i)] for i in ticks], rotation=20, ha="right")
+
+        self.ax_price.set_ylabel(_("价格"), color="#cfd8dc")
+        self.ax_volume.set_ylabel(_("成交量"), color="#cfd8dc")
+
+        self._apply_view_limits()
+
+        self._apply_style()
+        self.canvas.draw_idle()
+
+    def _full_range(self) -> tuple[float, float]:
+        if not self._history:
+            return -1.0, 1.0
+        return -1.0, float(len(self._history))
+
+    def _min_window(self) -> float:
+        left, right = self._full_range()
+        total = right - left
+        if total <= 0:
+            return 1.0
+        return min(total, max(8.0, total / 25.0))
+
+    def _clamp_view(self, left: float, right: float) -> tuple[float, float]:
+        full_left, full_right = self._full_range()
+        if full_right <= full_left:
+            return full_left, full_right
+
+        min_window = self._min_window()
+        span = right - left
+        if span < min_window:
+            center = (left + right) / 2
+            left = center - min_window / 2
+            right = center + min_window / 2
+
+        if left < full_left:
+            right += full_left - left
+            left = full_left
+        if right > full_right:
+            left -= right - full_right
+            right = full_right
+
+        if left < full_left:
+            left = full_left
+        if right > full_right:
+            right = full_right
+
+        return left, right
+
+    def _set_view(self, left: float, right: float) -> None:
+        if not self._history:
+            return
+        self._view_left, self._view_right = self._clamp_view(left, right)
+        span = self._view_right - self._view_left
+        new_mode = "line" if span > self._line_mode_threshold else "candle"
+        if new_mode != self._render_mode:
+            self._redraw()
+            return
+        self._apply_view_limits()
+        self.canvas.draw_idle()
+
+    def _visible_index_range(self, buffer: int = 0) -> tuple[int, int]:
+        if not self._history or self._view_left is None or self._view_right is None:
+            return 0, 0
+        count = len(self._history)
+        i0 = max(0, int(self._view_left) - buffer)
+        i1 = min(count, int(self._view_right) + buffer + 1)
+        if i1 <= i0:
+            i1 = min(count, i0 + 1)
+        return i0, i1
+
+    def _apply_view_limits(self) -> None:
+        if not self._history or self._view_left is None or self._view_right is None:
+            return
+
+        self.ax_price.set_xlim(self._view_left, self._view_right)
+        self.ax_volume.set_xlim(self._view_left, self._view_right)
+
+        i0, i1 = self._visible_index_range(buffer=2)
+        visible = self._history[i0:i1]
+        if not visible:
+            return
+
+        highs = [bar.high_price for bar in visible]
+        lows = [bar.low_price for bar in visible]
+        max_price = max(highs)
+        min_price = min(lows)
+        price_span = max_price - min_price
+        price_pad = price_span * 0.08 if price_span > 0 else max(abs(max_price) * 0.002, 1e-6)
+        self.ax_price.set_ylim(min_price - price_pad, max_price + price_pad)
+
+        volumes = [bar.volume for bar in visible]
+        max_vol = max(volumes) if volumes else 0.0
+        self.ax_volume.set_ylim(0, max_vol * 1.15 if max_vol > 0 else 1.0)
+
+    def _on_scroll(self, event: Any) -> None:
+        if not self._history or event.inaxes not in (self.ax_price, self.ax_volume):
+            return
+        if event.xdata is None:
+            return
+        if self._view_left is None or self._view_right is None:
+            return
+
+        factor = 0.9 if event.button == "up" else 1.1
+        left, right = self._view_left, self._view_right
+        anchor = float(event.xdata)
+        new_left = anchor - (anchor - left) * factor
+        new_right = anchor + (right - anchor) * factor
+        self._set_view(new_left, new_right)
+
+    def _on_press(self, event: Any) -> None:
+        if not self._history or event.inaxes not in (self.ax_price, self.ax_volume):
+            return
+        if event.button != 1:
+            return
+
+        if getattr(event, "dblclick", False):
+            full_left, full_right = self._full_range()
+            self._set_view(full_left, full_right)
+            return
+
+        if event.xdata is None:
+            return
+        self._is_dragging = True
+        self._drag_last_x = float(event.xdata)
+
+    def _on_motion(self, event: Any) -> None:
+        if not self._is_dragging or not self._history:
+            return
+        if event.inaxes not in (self.ax_price, self.ax_volume):
+            return
+        if event.xdata is None or self._drag_last_x is None:
+            return
+        if self._view_left is None or self._view_right is None:
+            return
+
+        dx = float(event.xdata) - self._drag_last_x
+        self._drag_last_x = float(event.xdata)
+        self._set_view(self._view_left - dx, self._view_right - dx)
+
+    def _on_release(self, _: Any) -> None:
+        self._is_dragging = False
+        self._drag_last_x = None
+
+    def _on_leave(self, _: Any) -> None:
+        self._is_dragging = False
+        self._drag_last_x = None
+
+
 class CandleChartDialog(EscCloseDialog):
     """"""
 
@@ -1827,7 +2177,6 @@ class CandleChartDialog(EscCloseDialog):
         self.low_price = 0
         self.price_range = 0
 
-        self.items: list = []
         self.position_cost_map: dict[int, tuple[float, float, float]] = {}
 
         self.init_ui()
@@ -1838,12 +2187,7 @@ class CandleChartDialog(EscCloseDialog):
         self.resize(1400, 800)
 
         # Create chart widget
-        self.chart: ChartWidget = ChartWidget()
-        self.chart.add_plot("candle", hide_x_axis=True)
-        self.chart.add_plot("volume", maximum_height=200)
-        self.chart.add_item(CandleItem, "candle", "candle")
-        self.chart.add_item(VolumeItem, "volume", "volume")
-        self.chart.add_cursor()
+        self.chart: MplCandleChart = MplCandleChart(max_volume_height_ratio=0.22)
 
         # Create help widget
         text1: str = _("红色虚线 —— 盈利交易")
@@ -1922,115 +2266,16 @@ class CandleChartDialog(EscCloseDialog):
         trade_pairs: list = generate_trade_pairs(trades)
 
         self.update_position_cost(trades)
-
-        candle_plot: pg.PlotItem = self.chart.get_plot("candle")
-
-        scatter_data: list = []
-
-        y_adjustment: float = self.price_range * 0.001
-
-        for d in trade_pairs:
-            open_ix = self.dt_ix_map[d["open_dt"]]
-            close_ix = self.dt_ix_map[d["close_dt"]]
-            open_price = d["open_price"]
-            close_price = d["close_price"]
-
-            # Trade Line
-            x: list = [open_ix, close_ix]
-            y: list = [open_price, close_price]
-
-            if d["direction"] == Direction.LONG and close_price >= open_price:
-                color: str = "r"
-            elif d["direction"] == Direction.SHORT and close_price <= open_price:
-                color = "r"
-            else:
-                color = "g"
-
-            pen: QtGui.QPen = pg.mkPen(color, width=1.5, style=QtCore.Qt.PenStyle.DashLine)
-            item: pg.PlotCurveItem = pg.PlotCurveItem(x, y, pen=pen)
-
-            self.items.append(item)
-            candle_plot.addItem(item)
-
-            # Trade Scatter
-            open_bar: BarData = self.ix_bar_map[open_ix]
-            close_bar: BarData = self.ix_bar_map[close_ix]
-
-            if d["direction"] == Direction.LONG:
-                scatter_color: str = "yellow"
-                open_symbol: str = "t1"
-                close_symbol: str = "t"
-                open_side: int = 1
-                close_side: int = -1
-                open_y: float = open_bar.low_price
-                close_y: float = close_bar.high_price
-            else:
-                scatter_color = "magenta"
-                open_symbol = "t"
-                close_symbol = "t1"
-                open_side = -1
-                close_side = 1
-                open_y = open_bar.high_price
-                close_y = close_bar.low_price
-
-            pen = pg.mkPen(QtGui.QColor(scatter_color))
-            brush: QtGui.QBrush = pg.mkBrush(QtGui.QColor(scatter_color))
-            size: int = 10
-
-            open_scatter: dict = {
-                "pos": (open_ix, open_y - open_side * y_adjustment),
-                "size": size,
-                "pen": pen,
-                "brush": brush,
-                "symbol": open_symbol
-            }
-
-            close_scatter: dict = {
-                "pos": (close_ix, close_y - close_side * y_adjustment),
-                "size": size,
-                "pen": pen,
-                "brush": brush,
-                "symbol": close_symbol
-            }
-
-            scatter_data.append(open_scatter)
-            scatter_data.append(close_scatter)
-
-            # Trade text
-            volume = d["volume"]
-            text_color: QtGui.QColor = QtGui.QColor(scatter_color)
-            open_text: pg.TextItem = pg.TextItem(f"[{volume}]", color=text_color, anchor=(0.5, 0.5))
-            close_text: pg.TextItem = pg.TextItem(f"[{volume}]", color=text_color, anchor=(0.5, 0.5))
-
-            open_text.setPos(open_ix, open_y - open_side * y_adjustment * 3)
-            close_text.setPos(close_ix, close_y - close_side * y_adjustment * 3)
-
-            self.items.append(open_text)
-            self.items.append(close_text)
-
-            candle_plot.addItem(open_text)
-            candle_plot.addItem(close_text)
-
-        trade_scatter: pg.ScatterPlotItem = pg.ScatterPlotItem(scatter_data)
-        self.items.append(trade_scatter)
-        candle_plot.addItem(trade_scatter)
+        self.chart.set_trade_pairs(trade_pairs)
 
     def clear_data(self) -> None:
         """"""
         self.updated = False
-
-        candle_plot: pg.PlotItem = self.chart.get_plot("candle")
-        for item in self.items:
-            candle_plot.removeItem(item)
-        self.items.clear()
-
         self.chart.clear_all()
 
         self.dt_ix_map.clear()
         self.ix_bar_map.clear()
         self.position_cost_map.clear()
-        if hasattr(self.chart, "_manager"):
-            self.chart._manager.extra_info_map = {}  # type: ignore[attr-defined]
 
     def is_updated(self) -> bool:
         """"""
@@ -2066,8 +2311,7 @@ class CandleChartDialog(EscCloseDialog):
                 round(float_pnl, 6)
             )
 
-        if hasattr(self.chart, "_manager"):
-            self.chart._manager.extra_info_map = self.position_cost_map  # type: ignore[attr-defined]
+        self.chart.set_position_cost_map(self.position_cost_map)
 
     def apply_trade_to_position(
         self,

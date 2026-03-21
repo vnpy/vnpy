@@ -1,3 +1,6 @@
+import os
+import platform
+
 from vnpy.trader.ui import QtGui
 
 
@@ -13,7 +16,21 @@ PEN_WIDTH = 1
 BAR_WIDTH = 0.3
 
 AXIS_WIDTH = 0.8
-NORMAL_FONT = QtGui.QFont("Arial", 9)
+NORMAL_FONT = QtGui.QFont("微软雅黑", 9)
+
+
+def _flag_enabled(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value not in {"0", "false", "False"}
+
+
+# Safe rendering mode for macOS to mitigate occasional Qt text drawing crashes.
+SAFE_CHART_RENDER = _flag_enabled(
+    "VNPY_SAFE_CHART_RENDER",
+    platform.system() == "Darwin"
+)
 
 
 def to_int(value: float) -> int:

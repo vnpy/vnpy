@@ -6,7 +6,11 @@ from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy_ctabacktester import CtaBacktesterApp
 from vnpy_ctastrategy import CtaStrategyApp
 
-from vnpy_okx import OkxGateway
+try:
+    from vnpy_okx import OkxGateway
+except (ImportError, AttributeError):
+    # Compatible with local nested source layout: vnpy_okx/vnpy_okx
+    from vnpy_okx.vnpy_okx import OkxGateway
 
 
 def main() -> None:

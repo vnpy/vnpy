@@ -1,4 +1,5 @@
 import ctypes
+import os
 import platform
 import sys
 import traceback
@@ -22,6 +23,14 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     """
     Create Qt Application.
     """
+    # Mitigate Qt text rendering crashes on some macOS/Metal driver combos.
+    if platform.system() == "Darwin":
+        force_sw = os.environ.get("VNPY_FORCE_SOFTWARE_OPENGL", "1")
+        if force_sw not in {"0", "false", "False"}:
+            QtWidgets.QApplication.setAttribute(
+                Qt.ApplicationAttribute.AA_UseSoftwareOpenGL
+            )
+
     # Set up dark stylesheet
     qapp: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     qapp.setStyleSheet(qdarkstyle.load_stylesheet(qt_api="pyside6"))

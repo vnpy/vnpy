@@ -446,6 +446,55 @@ class LogMonitor(BaseMonitor):
         "gateway_name": {"display": _("接口"), "cell": BaseCell, "update": False},
     }
 
+    def init_ui(self) -> None:
+        """
+        Enable click-to-expand for long log message rows.
+        """
+        super().init_ui()
+
+        self._default_row_height: int = self.verticalHeader().defaultSectionSize()
+        self._msg_column: int = list(self.headers.keys()).index("msg")
+        self.setWordWrap(True)
+        self.itemClicked.connect(self.toggle_message_row)
+
+    def toggle_message_row(self, cell: QtWidgets.QTableWidgetItem) -> None:
+        """
+        Expand or collapse a log row when clicking the message column.
+        """
+        if cell.column() != self._msg_column:
+            return
+
+        row: int = cell.row()
+        msg_item: QtWidgets.QTableWidgetItem | None = self.item(row, self._msg_column)
+        if not msg_item:
+            return
+
+        expanded: bool = bool(msg_item.data(QtCore.Qt.ItemDataRole.UserRole))
+        if expanded:
+            self.setRowHeight(row, self._default_row_height)
+            msg_item.setData(QtCore.Qt.ItemDataRole.UserRole, False)
+            return
+
+        text: str = msg_item.text()
+        if not text:
+            return
+
+        column_width: int = max(80, self.columnWidth(self._msg_column) - 12)
+        text_rect: QtCore.QRect = self.fontMetrics().boundingRect(
+            0,
+            0,
+            column_width,
+            10000,
+            int(
+                QtCore.Qt.TextFlag.TextWordWrap
+                | QtCore.Qt.TextFlag.TextExpandTabs
+            ),
+            text
+        )
+        row_height: int = max(self._default_row_height, text_rect.height() + 12)
+        self.setRowHeight(row, row_height)
+        msg_item.setData(QtCore.Qt.ItemDataRole.UserRole, True)
+
 
 class TradeMonitor(BaseMonitor):
     """

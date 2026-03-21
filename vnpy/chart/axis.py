@@ -4,7 +4,7 @@ from typing import Any
 import pyqtgraph as pg      # type: ignore
 
 from .manager import BarManager
-from .base import AXIS_WIDTH, NORMAL_FONT, QtGui
+from .base import AXIS_WIDTH, NORMAL_FONT, QtGui, SAFE_CHART_RENDER
 
 
 class DatetimeAxis(pg.AxisItem):
@@ -23,9 +23,12 @@ class DatetimeAxis(pg.AxisItem):
         """
         Convert original index to datetime string.
         """
+        if SAFE_CHART_RENDER:
+            return ["" for _ in values]
+
         # Show no axis string if spacing smaller than 1
         if spacing < 1:
-            return ["" for i in values]
+            return ["" for _ in values]
 
         strings: list = []
 

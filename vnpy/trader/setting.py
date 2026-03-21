@@ -2,14 +2,23 @@
 Global setting of the trading platform.
 """
 
+import platform
 from logging import INFO
 from tzlocal import get_localzone_name
 
 from .utility import load_json
 
 
+if platform.system() == "Darwin":
+    DEFAULT_FONT_FAMILY: str = "PingFang SC"
+elif platform.system() == "Windows":
+    DEFAULT_FONT_FAMILY = "微软雅黑"
+else:
+    DEFAULT_FONT_FAMILY = "DejaVu Sans"
+
+
 SETTINGS: dict = {
-    "font.family": "微软雅黑",
+    "font.family": DEFAULT_FONT_FAMILY,
     "font.size": 12,
 
     "log.active": True,

@@ -12,16 +12,13 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Office/Business :: Financial :: Investment",
     "Natural Language :: Chinese (Simplified)",
     "Typing :: Typed",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "tzlocal>=5.3.1",
     "PySide6==6.8.2.1",
@@ -84,7 +81,7 @@ path = "vnpy/trader/locale/build_hook.py"
 "vnpy/trader/locale/en/LC_MESSAGES/vnpy.mo" = "vnpy/trader/locale/en/LC_MESSAGES/vnpy.mo"
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 output-format = "full"
 
 [tool.ruff.lint]
@@ -98,7 +95,7 @@ select = [
 ignore = ["E501"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

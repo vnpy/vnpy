@@ -23,6 +23,7 @@ requires-python = ">=3.10"
 dependencies = [
     "vnpy>=4.0.0",
     "vnpy_ctastrategy @ file:../vnpy_ctastrategy",
+    "matplotlib>=3.8.0",
 ]
 keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 

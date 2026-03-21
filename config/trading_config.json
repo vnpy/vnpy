@@ -1,0 +1,35 @@
+{
+    "telegram": {
+        "bot_token": "8562753482:AAHVTckHvuH60HQ2DYQN-6rTnLxagqpKZGI",
+        "chat_id": "8420636030"
+    },
+    "strategy": {
+        "name": "DoubleMA",
+        "vt_symbol": "DOGEUSDT_SWAP_OKX.GLOBAL",
+        "setting": {
+            "fast_window": 18,
+            "slow_window": 20
+        }
+    },
+    "approval": {
+        "enabled": true,
+        "timeout_seconds": 300,
+        "auto_approve_after_hours": 0
+    },
+    "backtest": {
+        "interval": "1h",
+        "capital": 10000,
+        "rate": 0.0005,
+        "slippage": 0.001,
+        "size": 1,
+        "pricetick": 0.0001
+    },
+    "trading": {
+        "leverage": 1,
+        "position_ratio": 0.9,
+        "trade_quantity": 1,
+        "max_position": 100,
+        "stop_loss_pct": 5.0,
+        "take_profit_pct": 10.0
+    }
+}
