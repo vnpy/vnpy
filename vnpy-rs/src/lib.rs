@@ -412,6 +412,8 @@ impl DisruptorProducer {
     }
 
     pub fn is_active(&self) -> bool { self.active.load(Ordering::Acquire) }
+    pub fn buffer_size(&self) -> usize { self._buffer_size }
+    pub fn wait_strategy(&self) -> String { self._wait_strategy.clone() }
     pub fn get_metrics(&self, py: Python<'_>) -> PyResult<PyObject> {
         let dict = PyDict::new(py);
         dict.set_item("processed_count", self.processed_count.load(Ordering::Relaxed))?;
