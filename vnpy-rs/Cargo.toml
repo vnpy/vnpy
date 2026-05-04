@@ -1,6 +1,6 @@
 [package]
 name = "vnpy-disruptor"
-version = "4.3.0"
+version = "0.0.1"
 edition = "2021"
 description = "High-performance event system using disruptor-rs for vnpy"
 authors = ["vnpy team"]

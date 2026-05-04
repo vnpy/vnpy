@@ -1,6 +1,6 @@
 [project]
 name = "vnpy-disruptor"
-version = "4.3.0"
+version = "0.0.1"
 description = "High-performance event system using disruptor-rs for vnpy"
 requires-python = ">=3.10"
 license = {text = "MIT"}
