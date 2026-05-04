@@ -7,3 +7,4 @@
    info/index
    install/index
    app/index
+   disruptor/index
