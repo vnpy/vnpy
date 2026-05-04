@@ -3025,7 +3025,7 @@ provides-extras = ["alpha", "dev", "disruptor"]
 
 [[package]]
 name = "vnpy-disruptor"
-version = "4.3.0"
+version = "0.0.1"
 source = { editable = "vnpy-rs" }
 
 [[package]]
