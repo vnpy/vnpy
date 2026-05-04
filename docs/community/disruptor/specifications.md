@@ -61,7 +61,18 @@ The engine provides atomic metrics via `engine.get_metrics()`:
 2. **`yielding`**: Slightly lower latency (16µs) but higher CPU usage.
 3. **`busy_spin`**: Lowest theoretical latency jitter, consumes 100% of one core. Use only with dedicated CPU affinity.
 
-## 6. Audit Results
+## 6. Wait Strategy Performance Matrix
+
+| Strategy | P50 Latency (µs) | P99 Latency (µs) | TPS (Single) | TPS (Batch) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Standard Engine (Queue)** | 30.5 | 85.7 | 876,335 | N/A |
+| **Disruptor (busy_spin)** | 17.4 | 61.1 | 2,743,877 | 4,704,938 |
+| **Disruptor (busy_spin_hint)** | 17.7 | 43.6 | 2,308,771 | 5,004,671 |
+| **Disruptor (yielding)** | 16.1 | 33.5 | 2,716,762 | 3,421,132 |
+| **Disruptor (sleeping)** | 88.3 | 129.7 | 2,704,499 | 4,940,011 |
+| **Disruptor (blocking)** | **13.7** | **32.1** | **2,517,531** | **4,585,159** |
+
+## 7. Audit Results
 
 - **Memory Stability**: Pass (10M events, ~10MB baseline delta).
 - **Concurrency Safety**: Pass (No deadlocks under buffer overflow).

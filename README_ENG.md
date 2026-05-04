@@ -78,6 +78,17 @@ For institutional-grade trading requiring ultra-low latency and massive throughp
 * **Latency**: **13-18µs** (P50), significant reduction in tail latency compared to standard queues.
 * **Efficiency**: Zero-copy data transfer via native Rust extension; near-zero idle CPU in `blocking` strategy.
 
+### Performance Matrix
+
+| Strategy | P50 Latency (µs) | P99 Latency (µs) | TPS (Single) | TPS (Batch) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Standard Engine (Queue)** | 30.5 | 85.7 | 876,335 | N/A |
+| **Disruptor (busy_spin)** | 17.4 | 61.1 | 2,743,877 | 4,704,938 |
+| **Disruptor (busy_spin_hint)** | 17.7 | 43.6 | 2,308,771 | 5,004,671 |
+| **Disruptor (yielding)** | 16.1 | 33.5 | 2,716,762 | 3,421,132 |
+| **Disruptor (sleeping)** | 88.3 | 129.7 | 2,704,499 | 4,940,011 |
+| **Disruptor (blocking)** | **13.7** | **32.1** | **2,517,531** | **4,585,159** |
+
 ### Installation
 To enable the high-performance engine, install with the `disruptor` extra:
 
