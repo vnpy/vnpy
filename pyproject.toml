@@ -53,6 +53,10 @@ dev = [
     "pandas-stubs>=2.2.3.250308",
     "hatchling>=1.27.0",
     "babel>=2.17.0",
+    "maturin>=1.5,<2.0",
+]
+disruptor = [
+    "vnpy-disruptor",
 ]
 
 [project.urls]
@@ -63,13 +67,8 @@ dev = [
 "Forum" = "https://www.vnpy.com/forum"
 
 [build-system]
-requires = ["hatchling>=1.27.0", "babel>=2.17.0", "maturin>=1.5,<2.0"]
-build-backend = "maturin"
-
-[tool.maturin]
-manifest-path = "vnpy-rs/Cargo.toml"
-module-name = "vnpy_disruptor"
-features = ["pyo3/extension-module"]
+requires = ["hatchling>=1.27.0", "babel>=2.17.0"]
+build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = "vnpy/__init__.py"
@@ -123,3 +122,9 @@ module = [
     "hatchling.*"
 ]
 ignore_missing_imports = true
+
+[tool.uv]
+workspace = { members = ["vnpy-rs"] }
+
+[tool.uv.sources]
+vnpy-disruptor = { workspace = true }

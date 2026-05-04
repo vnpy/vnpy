@@ -1,0 +1,15 @@
+[project]
+name = "vnpy-disruptor"
+version = "4.3.0"
+description = "High-performance event system using disruptor-rs for vnpy"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "vnpy team"}]
+
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "vnpy_disruptor"
