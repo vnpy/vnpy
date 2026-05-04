@@ -59,8 +59,8 @@ class DisruptorEventEngine(EventEngine):
         super().__init__(interval)
         self._timer_thread: Thread | None = None
 
-        buffer_size: int = SETTINGS.get("event.buffer_size", 65536)
-        wait_strategy: str = SETTINGS.get("event.wait_strategy", "busy_spin")
+        self._buffer_size: int = SETTINGS.get("event.buffer_size", 65536)
+        self._wait_strategy: str = SETTINGS.get("event.wait_strategy", "busy_spin")
         self._core_id: int | None = SETTINGS.get("event.core_id", None)
 
         if not _RUST_AVAILABLE:
@@ -69,7 +69,7 @@ class DisruptorEventEngine(EventEngine):
                 "Ensure it is installed via: cd vnpy-rs && maturin develop"
             )
 
-        self._producer: _RustProducer = _RustProducer(buffer_size, wait_strategy)
+        self._producer: _RustProducer = _RustProducer(self._buffer_size, self._wait_strategy)
         self._local: threading.local = threading.local()
         self._pre_start_queue: list[Event] = []
         self._lock: threading.Lock = threading.Lock()

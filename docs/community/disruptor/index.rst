@@ -7,3 +7,5 @@
    requirements
    design
    specifications
+   configuration
+   audit_queue_patterns
