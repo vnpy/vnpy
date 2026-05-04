@@ -37,7 +37,7 @@ SETTINGS: dict = {
     "database.password": "",
 
     "event.use_arrow": False,
-    "event.use_disruptor": False,
+    "event.use_disruptor": True,
     "event.buffer_size": 65536,  # Institutional default, must be power of 2
     "event.wait_strategy": "blocking",  # production: blocking (0% CPU), hft: busy_spin
     "event.core_id": None,  # Optional CPU core ID to pin managed worker thread
