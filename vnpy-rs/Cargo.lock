@@ -297,7 +297,7 @@ checksum = "7264e107f553ccae879d21fbea1d6724ac785e8c3bfc762137959b5802826ef3"
 
 [[package]]
 name = "vnpy-disruptor"
-version = "0.1.0"
+version = "4.3.0"
 dependencies = [
  "disruptor",
  "parking_lot",
