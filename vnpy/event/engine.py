@@ -108,6 +108,18 @@ class EventEngine:
         """
         self._queue.put(event)
 
+    def try_put(self, event: Event) -> bool:
+        """
+        Try to put an event object into event queue.
+        Return True if successful, False if full.
+        """
+        from queue import Full
+        try:
+            self._queue.put(event, block=False)
+            return True
+        except Full:
+            return False
+
     def register(self, type: str, handler: HandlerType) -> None:
         """
         Register a new handler function for a specific event type. Every

@@ -1,0 +1,29 @@
+[package]
+name = "vnpy-disruptor"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance event system using disruptor-rs for vnpy"
+authors = ["vnpy team"]
+license = "MIT"
+
+[lib]
+name = "vnpy_disruptor"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+disruptor = "4.1"
+pyo3 = { version = "0.24", features = ["extension-module"] }
+parking_lot = "0.12.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+
+[package.metadata.maturin]
+features = ["pyo3/extension-module"]
+python-source = "."
+module-name = "vnpy_disruptor"
