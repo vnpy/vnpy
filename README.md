@@ -81,8 +81,13 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
 ### 安装方法
 通过安装 `disruptor` 可选依赖来启用：
+
 ```bash
-PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv pip install "vnpy[disruptor]"
+# 使用 uv (推荐)
+uv sync --extra disruptor
+
+# 或者使用 uv pip
+uv pip install -e ".[disruptor]"
 ```
 
 ### 使用方式

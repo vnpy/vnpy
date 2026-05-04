@@ -80,8 +80,13 @@ For institutional-grade trading requiring ultra-low latency and massive throughp
 
 ### Installation
 To enable the high-performance engine, install with the `disruptor` extra:
+
 ```bash
-PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv pip install "vnpy[disruptor]"
+# Using uv (workspace)
+uv sync --extra disruptor
+
+# Or using uv pip
+uv pip install -e ".[disruptor]"
 ```
 
 ### Usage

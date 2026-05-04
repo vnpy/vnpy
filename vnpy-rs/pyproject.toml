@@ -13,3 +13,6 @@ build-backend = "maturin"
 [tool.maturin]
 features = ["pyo3/extension-module"]
 module-name = "vnpy_disruptor"
+ 
+[tool.maturin.environment]
+PYO3_USE_ABI3_FORWARD_COMPATIBILITY = "1"

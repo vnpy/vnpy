@@ -2,8 +2,8 @@
 
 ## Build & Install
 - Standard Install: `uv sync`
-- Install with Disruptor: `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv pip install -e ".[disruptor]"`
-- Build Rust Extension (Manual): `cd vnpy-rs && PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv run maturin develop --release`
+- Install with Disruptor: `uv sync --extra disruptor` (or `uv pip install -e ".[disruptor]"`)
+- Build Rust Extension (Manual): `cd vnpy-rs && uv run maturin develop --release`
 
 ## Test Commands
 - Full Suite: `uv run pytest tests/`
