@@ -73,3 +73,16 @@ sequenceDiagram
 +### Producer-Consumer Analysis
 +- **Producers**: Multiple independent threads (Gateways, MainEngine, Timer) publish events simultaneously. Lock-free `MultiProducer` ensures non-blocking publication even under high contention.
 +- **Consumer**: A single managed worker thread dispatches events to Python handlers. This maintains the sequential consistency required by legacy trading logic while offloading the queue management to native Rust.
+
++## 6. Interface Parity: `try_put` vs. `put`
++
++The Disruptor implementation introduces a non-blocking `try_put()` method, which has been backported to the standard `EventEngine` for interface parity.
++
++### 6.1 Rationale: The "Log Sinking" Problem
++Standard `put()` operations block when the ring buffer (or queue) is full. This is desirable for market data (providing backpressure) but catastrophic for logging in two specific scenarios:
++
++1. **Self-Deadlock**: If a registered handler (running in the EventEngine worker thread) generates a log message while the buffer is saturated, a blocking `put()` will wait for space to be cleared. However, space can only be cleared by the worker thread itself, resulting in a permanent deadlock.
++2. **UI Responsiveness**: If the Main/GUI thread attempts to write a log during a high-volatility tick burst, a blocking `put()` will freeze the user interface until the engine catches up.
++
++### 6.2 Solution
++`try_put()` provides a non-blocking alternative that returns `False` if the buffer is full. Components like `MainEngine.write_log()` use this to safely drop non-critical logs or redirect them to `stderr`, ensuring the system remains responsive and deadlock-free under extreme load.
