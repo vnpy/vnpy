@@ -70,6 +70,32 @@ VeighNa发布十周年之际正式推出4.0版本，重磅新增面向AI量化�
 vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)项目的启发，在保持易用性的同时提供强大的AI量化能力，特此向Qlib开发团队致以诚挚感谢！
 
 
+## 高性能事件引擎 (Disruptor)
+
+针对机构级量化交易对极低延迟和高吞吐量的需求，VeighNa现已内置基于Rust编写的 **Disruptor 高性能事件引擎**（可选）。
+
+### 性能指标 (实测)
+* **吞吐量**: **~410万+ TPS** (端到端), **~2300万+ TPS** (批量发布)
+* **延迟**: **13-18µs** (P50)，相比标准 Python 队列显著降低了延迟抖动。
+* **效率**: 基于 Rust 原生扩展实现零拷贝数据传输；在 `blocking` 等待策略下几乎不占用多余 CPU。
+
+### 安装方法
+通过安装 `disruptor` 可选依赖来启用：
+```bash
+PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv pip install "vnpy[disruptor]"
+```
+
+### 使用方式
+在 `vt_setting.json` 或 `vnpy/trader/setting.py` 中启用：
+```json
+{
+    "event.disruptor": true,
+    "event.buffer_size": 65536,
+    "event.wait_strategy": "blocking"
+}
+```
+
+
 ## 功能特点
 
 带有 :arrow_up: 的模块代表已经完成4.0版本的升级适配测试，同时4.0核心框架采用了优先保证兼容性的升级方式，因此大多数模块也都可以直接使用（涉及到C++ API封装的接口必须升级后才能使用）。 
