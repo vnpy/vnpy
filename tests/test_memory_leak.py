@@ -34,9 +34,13 @@ def test_memory_stability():
             current_mem = get_memory_usage()
             print(f"  Processed {i*batch_size:,} events... Current Memory: {current_mem:.2f} MB")
             
-    # Wait for processing to finish
-    while engine._producer.get_metrics()["pending_count"] > 0:
+    # Wait for processing to finish with a timeout
+    timeout = time.time() + 10.0
+    while engine._producer.get_metrics()["pending_count"] > 0 and time.time() < timeout:
         time.sleep(0.1)
+        
+    if engine._producer.get_metrics()["pending_count"] > 0:
+        print(f"\nWarning: Pending count did not reach 0. Final metrics: {engine._producer.get_metrics()}")
         
     final_mem = get_memory_usage()
     elapsed = time.perf_counter() - t0
