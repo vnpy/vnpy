@@ -25,5 +25,4 @@ opt-level = 0
 
 [package.metadata.maturin]
 features = ["pyo3/extension-module"]
-python-source = "."
 module-name = "vnpy_disruptor"
