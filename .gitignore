@@ -44,6 +44,4 @@ lab/
 
 # Rust & Build Artifacts
 vnpy-rs/target/
-vnpy-rs/Cargo.lock
-uv.lock
 .venv/
