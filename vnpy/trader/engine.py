@@ -80,7 +80,8 @@ class MainEngine:
         if event_engine:
             self.event_engine: EventEngine = event_engine
         else:
-            self.event_engine = EventEngine()
+            from vnpy.event import create_engine
+            self.event_engine = create_engine()
         self.event_engine.start()
 
         self.gateways: dict[str, BaseGateway] = {}

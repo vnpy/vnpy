@@ -3,7 +3,7 @@ import sys
 from time import sleep
 from datetime import datetime, time
 
-from vnpy.event import EventEngine
+from vnpy.event import EventEngine, create_engine
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.engine import MainEngine, LogEngine
 from vnpy.trader.logger import INFO, logger
@@ -59,7 +59,7 @@ def run_child() -> None:
     """
     SETTINGS["log.file"] = True
 
-    event_engine: EventEngine = EventEngine()
+    event_engine: EventEngine = create_engine()
     main_engine: MainEngine = MainEngine(event_engine)
     main_engine.add_gateway(CtpGateway)
     cta_engine: CtaEngine = main_engine.add_app(CtaStrategyApp)

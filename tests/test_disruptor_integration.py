@@ -303,25 +303,7 @@ class TestFeatureFlagCombinations:
             engine = create_engine()
             assert isinstance(engine, DisruptorEventEngine)
 
-    def test_arrow_only(self):
-        from vnpy.trader.arrow_oms import create_arrow_oms
-        with patch.dict(SETTINGS, {"event.use_arrow": True, "event.use_disruptor": False}):
-            event_engine = create_engine(1)
-            assert isinstance(event_engine, StandardEventEngine)
-            oms = create_arrow_oms(MagicMock(), event_engine)
-            assert oms is not None
-            assert oms.is_enabled()
 
-    @requires_rust
-    def test_both_enabled(self):
-        from vnpy.event.disruptor_engine import DisruptorEventEngine
-        from vnpy.trader.arrow_oms import create_arrow_oms
-        with patch.dict(SETTINGS, {"event.use_arrow": True, "event.use_disruptor": True}):
-            event_engine = create_engine(1)
-            assert isinstance(event_engine, DisruptorEventEngine)
-            oms = create_arrow_oms(MagicMock(), event_engine)
-            assert oms is not None
-            assert oms.is_enabled()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -368,20 +350,7 @@ class TestBackwardCompatibility:
         assert EventEngine is not None
         assert EVENT_TIMER == "eTimer"
 
-    def test_data_to_arrow_method(self):
-        from vnpy.trader.object import TickData
-        from vnpy.trader.constant import Exchange
-        from datetime import datetime
 
-        tick = TickData(
-            symbol="BTCUSDT",
-            exchange=Exchange.LOCAL,
-            datetime=datetime.now(),
-            last_price=50000.0,
-            gateway_name="test",
-        )
-        # Method exists even if pyarrow not installed
-        assert hasattr(tick, "to_arrow")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

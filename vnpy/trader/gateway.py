@@ -142,7 +142,9 @@ class BaseGateway(ABC):
         """
         Log event push.
         """
-        self.on_event(EVENT_LOG, log)
+        event: Event = Event(EVENT_LOG, log)
+        # Use try_put for logs to avoid blocking gateway threads
+        self.event_engine.try_put(event)
 
     def on_contract(self, contract: ContractData) -> None:
         """

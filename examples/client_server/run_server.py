@@ -1,6 +1,6 @@
 from time import sleep
 
-from vnpy.event import EventEngine, Event
+from vnpy.event import EventEngine, create_engine, Event
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.trader.event import EVENT_LOG
@@ -14,7 +14,7 @@ def main_ui() -> None:
     """"""
     qapp = create_qapp()
 
-    event_engine = EventEngine()
+    event_engine = create_engine()
 
     main_engine = MainEngine(event_engine)
 
@@ -36,7 +36,7 @@ def process_log_event(event: Event) -> None:
 
 def main_terminal() -> None:
     """"""
-    event_engine: EventEngine = EventEngine()
+    event_engine: EventEngine = create_engine()
     event_engine.register(EVENT_LOG, process_log_event)
     event_engine.register(EVENT_RPC_LOG, process_log_event)
 

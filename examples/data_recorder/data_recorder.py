@@ -9,7 +9,7 @@ from logging import INFO
 from time import sleep
 
 # 加载VeighNa核心框架
-from vnpy.event import EventEngine, Event
+from vnpy.event import EventEngine, create_engine, Event
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.engine import MainEngine, LogEngine
 from vnpy.trader.object import ContractData
@@ -73,7 +73,7 @@ def run_recorder() -> None:
     4. 连接到交易所并开始录制数据
     """
     # 创建事件引擎，负责系统内各模块间的通信
-    event_engine: EventEngine = EventEngine()
+    event_engine: EventEngine = create_engine()
 
     # 创建主引擎，管理系统功能模块，包括底层接口、上层应用等
     main_engine: MainEngine = MainEngine(event_engine)
