@@ -82,12 +82,12 @@ For institutional-grade trading requiring ultra-low latency and massive throughp
 
 | Strategy | P50 Latency (µs) | P99 Latency (µs) | TPS (Single) | TPS (Batch) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Standard Engine (Queue)** | 30.5 | 85.7 | 876,335 | N/A |
-| **Disruptor (busy_spin)** | 17.4 | 61.1 | 2,743,877 | 4,704,938 |
-| **Disruptor (busy_spin_hint)** | 17.7 | 43.6 | 2,308,771 | 5,004,671 |
-| **Disruptor (yielding)** | 16.1 | 33.5 | 2,716,762 | 3,421,132 |
-| **Disruptor (sleeping)** | 88.3 | 129.7 | 2,704,499 | 4,940,011 |
-| **Disruptor (blocking)** | **13.7** | **32.1** | **2,517,531** | **4,585,159** |
+| **Standard Engine (Queue)** | 32.3 | 80.8 | 697,290 | N/A |
+| **Disruptor (busy_spin)** | 17.2 | 53.5 | 2,619,889 | 3,740,198 |
+| **Disruptor (busy_spin_hint)** | 20.0 | 59.8 | 2,423,649 | 4,819,276 |
+| **Disruptor (yielding)** | 19.3 | 79.3 | 1,975,972 | 4,470,095 |
+| **Disruptor (sleeping)** | 86.0 | 176.2 | 2,667,358 | 4,455,729 |
+| **Disruptor (blocking)** | **16.9** | **34.8** | **2,459,334** | **4,923,981** |
 
 ### Installation
 To enable the high-performance engine, install with the `disruptor` extra:
