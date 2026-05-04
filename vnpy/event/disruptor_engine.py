@@ -22,6 +22,7 @@ from .engine import Event, EventEngine, EVENT_TIMER
 
 try:
     from vnpy_disruptor import DisruptorProducer as _RustProducer
+
     _RUST_AVAILABLE = True
 except ImportError:
     _RUST_AVAILABLE = False
@@ -31,6 +32,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # DisruptorEventEngine
 # ---------------------------------------------------------------------------
+
 
 class DisruptorEventEngine(EventEngine):
     """
@@ -67,7 +69,7 @@ class DisruptorEventEngine(EventEngine):
                 "Ensure it is installed via: cd vnpy-rs && maturin develop"
             )
 
-        self._producer: "_RustProducer" = _RustProducer(buffer_size, wait_strategy)
+        self._producer: _RustProducer = _RustProducer(buffer_size, wait_strategy)
         self._local: threading.local = threading.local()
         self._pre_start_queue: list[Event] = []
         self._lock: threading.Lock = threading.Lock()
@@ -80,7 +82,7 @@ class DisruptorEventEngine(EventEngine):
         """
         Publish an event into the ring buffer.
 
-        Uses zero-copy PyObject passing so that Python objects survive the 
+        Uses zero-copy PyObject passing so that Python objects survive the
         Rust boundary faithfully without serialization overhead.
 
         Blocks (per wait strategy) if the ring buffer is full — provides
@@ -164,7 +166,7 @@ class DisruptorEventEngine(EventEngine):
             return
 
         self._active = True
-        
+
         # Spawn the managed Rust worker thread for event dispatch
         self._producer.start_worker(self._process_batch, self._core_id)
 
@@ -174,7 +176,9 @@ class DisruptorEventEngine(EventEngine):
                 self.put_batch(self._pre_start_queue)
                 self._pre_start_queue.clear()
 
-        self._timer_thread = Thread(target=self._run_timer, daemon=True, name="vnpy-disruptor-timer")
+        self._timer_thread = Thread(
+            target=self._run_timer, daemon=True, name="vnpy-disruptor-timer"
+        )
         self._timer_thread.start()
 
     def stop(self) -> None:
@@ -183,11 +187,11 @@ class DisruptorEventEngine(EventEngine):
             return
 
         self._active = False
-        
+
         # 1. Join timer thread first while producer is still potentially processing.
         if self._timer_thread and self._timer_thread.is_alive():
             self._timer_thread.join(timeout=0.1)
-        
+
         # 2. Shutdown the Rust producer and worker thread.
         self._producer.stop()
         self._timer_thread = None
@@ -204,10 +208,10 @@ class DisruptorEventEngine(EventEngine):
                 if not self._active:
                     return
                 sleep(self._interval / 10.0)
-            
+
             if not self._active:
                 break
-                
+
             try:
                 # Use try_put for timer events to avoid blocking during shutdown
                 self.try_put(Event(EVENT_TIMER))
@@ -229,7 +233,7 @@ class DisruptorEventEngine(EventEngine):
             if etype != last_type:
                 last_type = etype
                 handlers = self._handlers.get(etype, [])
-            
+
             if handlers:
                 for handler in handlers:
                     handler(event)

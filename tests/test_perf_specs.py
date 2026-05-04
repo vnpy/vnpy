@@ -31,11 +31,9 @@ Usage
 
 from __future__ import annotations
 
-import statistics
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -48,20 +46,22 @@ from vnpy.trader.setting import SETTINGS
 # Spec SLOs (docs/architecture/specifications.md §6)
 # ─────────────────────────────────────────────────────────────────────────────
 
-SLO_PUT_THROUGHPUT   = 500_000    # events/sec  NFR-1
-SLO_E2E_THROUGHPUT   = 300_000    # events/sec  NFR-2
-SLO_DELIVERY_PCT     = 99.0       # %           NFR-2
-SLO_P99_LATENCY_US   = 5_000      # µs (5 ms)   NFR-2
-BUFFER_SIZE          = 65_536
+SLO_PUT_THROUGHPUT = 500_000  # events/sec  NFR-1
+SLO_E2E_THROUGHPUT = 300_000  # events/sec  NFR-2
+SLO_DELIVERY_PCT = 99.0  # %           NFR-2
+SLO_P99_LATENCY_US = 5_000  # µs (5 ms)   NFR-2
+BUFFER_SIZE = 65_536
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Availability guard
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _has_rust() -> bool:
     try:
         from vnpy_disruptor import DisruptorProducer  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -74,22 +74,30 @@ requires_rust = pytest.mark.skipif(not _has_rust(), reason="Rust extension unava
 # Engine factories
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def std_engine(interval: int = 1) -> EventEngine:
     return EventEngine(interval)
 
 
-def dis_engine(buffer_size: int = BUFFER_SIZE, wait_strategy: str = "busy_spin", interval: int = 1):
+def dis_engine(
+    buffer_size: int = BUFFER_SIZE, wait_strategy: str = "busy_spin", interval: int = 1
+):
     from vnpy.event.disruptor_engine import DisruptorEventEngine
-    with patch.dict(SETTINGS, {
-        "event.buffer_size": buffer_size,
-        "event.wait_strategy": wait_strategy,
-    }):
+
+    with patch.dict(
+        SETTINGS,
+        {
+            "event.buffer_size": buffer_size,
+            "event.wait_strategy": wait_strategy,
+        },
+    ):
         return DisruptorEventEngine(interval)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Measurement helpers — ALL start the engine first
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def measure_put_rate_started(engine, n: int = 50_000) -> float:
     """
@@ -179,6 +187,7 @@ def pct(data: list[float], p: float) -> float:
 # Spec tests — pytest classes
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestPutThroughputSpec:
     """NFR-1: put() throughput ≥ 500k/s (both engines, engine running)."""
 
@@ -228,14 +237,14 @@ class TestLatencySpec:
     def test_standard_p99(self):
         lats = measure_latencies(std_engine(), n=100)
         p99 = pct(lats, 99)
-        print(f"\n[Standard]  P50={pct(lats,50):.0f}µs  P99={p99:.0f}µs")
+        print(f"\n[Standard]  P50={pct(lats, 50):.0f}µs  P99={p99:.0f}µs")
         assert p99 <= SLO_P99_LATENCY_US
 
     @requires_rust
     def test_disruptor_p99(self):
         lats = measure_latencies(dis_engine(), n=100)
         p99 = pct(lats, 99)
-        print(f"\n[Disruptor] P50={pct(lats,50):.0f}µs  P99={p99:.0f}µs")
+        print(f"\n[Disruptor] P50={pct(lats, 50):.0f}µs  P99={p99:.0f}µs")
         assert p99 <= SLO_P99_LATENCY_US
 
     @requires_rust
@@ -243,7 +252,7 @@ class TestLatencySpec:
         """Test the new Rust-side Blocking wait strategy."""
         lats = measure_latencies(dis_engine(wait_strategy="blocking"), n=100)
         p99 = pct(lats, 99)
-        print(f"\n[Disruptor-Blocking] P50={pct(lats,50):.0f}µs  P99={p99:.0f}µs")
+        print(f"\n[Disruptor-Blocking] P50={pct(lats, 50):.0f}µs  P99={p99:.0f}µs")
         assert p99 <= SLO_P99_LATENCY_US
 
 
@@ -260,12 +269,12 @@ class TestBatchThroughput:
         n = 50_000
         batch_size = 100
         events = [Event("bench", None) for _ in range(batch_size)]
-        
+
         t0 = time.perf_counter()
         for _ in range(n // batch_size):
             engine.put_batch(events)
         elapsed = time.perf_counter() - t0
-        
+
         rate = n / elapsed
         print(f"\n[Disruptor-Batch] put_rate={rate:>10,.0f}/s (batch={batch_size})")
         engine.stop()
@@ -284,13 +293,15 @@ class TestRustExtensionRawSpec:
     def test_raw_publish_exceeds_slo(self):
         """publish() rate into an empty, non-full buffer ≥ 500k/s."""
         from vnpy_disruptor import DisruptorProducer
+
         payload = {"price": 42.0}
         p = DisruptorProducer(BUFFER_SIZE, "busy_spin")
-        
+
         counts = [0]
+
         def handler(batch):
             counts[0] += len(batch)
-            
+
         p.start_worker(handler)
 
         n = 100_000
@@ -304,7 +315,7 @@ class TestRustExtensionRawSpec:
         deadline = time.time() + 2.0
         while counts[0] < n and time.time() < deadline:
             time.sleep(0.01)
-            
+
         p.stop()
 
         print(f"\n[Rust publish] {rate:>12,.0f}/s  n={n}  SLO≥{SLO_PUT_THROUGHPUT:,}")
@@ -314,28 +325,30 @@ class TestRustExtensionRawSpec:
     def test_raw_consume_exceeds_1m(self):
         """Consume rate ≥ 1M events/s."""
         from vnpy_disruptor import DisruptorProducer
+
         p = DisruptorProducer(BUFFER_SIZE, "busy_spin")
-        
+
         counts = [0]
+
         def handler(batch):
             counts[0] += len(batch)
-            
+
         # Start worker first
         p.start_worker(handler)
-        
+
         # We measure e2e rate here as a proxy for consume rate
         n = 100_000
         payload = {"price": 42.0}
-        
+
         t0 = time.perf_counter()
         for _ in range(n):
             p.publish(payload)
-            
+
         deadline = time.time() + 2.0
         while counts[0] < n and time.time() < deadline:
             time.sleep(0.01)
         elapsed = time.perf_counter() - t0
-        
+
         rate = n / elapsed
         p.stop()
 
@@ -347,6 +360,7 @@ class TestRustExtensionRawSpec:
 # Standalone comparison report (python tests/test_perf_specs.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class Result:
     name: str
@@ -357,18 +371,25 @@ class Result:
     lats: list[float] = field(default_factory=list)
 
     @property
-    def p50(self): return pct(self.lats, 50)
+    def p50(self):
+        return pct(self.lats, 50)
+
     @property
-    def p95(self): return pct(self.lats, 95)
+    def p95(self):
+        return pct(self.lats, 95)
+
     @property
-    def p99(self): return pct(self.lats, 99)
+    def p99(self):
+        return pct(self.lats, 99)
 
     def verdict(self) -> dict[str, bool]:
         return {
-            f"put ≥{SLO_PUT_THROUGHPUT//1000}k/s": self.put_rate >= SLO_PUT_THROUGHPUT,
-            f"e2e ≥{SLO_E2E_THROUGHPUT//1000}k/s": self.e2e_rate >= SLO_E2E_THROUGHPUT,
-            f"del ≥{SLO_DELIVERY_PCT}%":            self.delivery >= SLO_DELIVERY_PCT,
-            f"P99 ≤{SLO_P99_LATENCY_US//1000}ms":   self.p99 <= SLO_P99_LATENCY_US,
+            f"put ≥{SLO_PUT_THROUGHPUT // 1000}k/s": self.put_rate
+            >= SLO_PUT_THROUGHPUT,
+            f"e2e ≥{SLO_E2E_THROUGHPUT // 1000}k/s": self.e2e_rate
+            >= SLO_E2E_THROUGHPUT,
+            f"del ≥{SLO_DELIVERY_PCT}%": self.delivery >= SLO_DELIVERY_PCT,
+            f"P99 ≤{SLO_P99_LATENCY_US // 1000}ms": self.p99 <= SLO_P99_LATENCY_US,
         }
 
 
@@ -390,7 +411,7 @@ def _bench_engine(name: str, engine_fn, n_put=50_000, n_e2e=5_000, n_lat=100) ->
 def _print(r: Result) -> None:
     v = r.verdict()
     w = 62
-    print(f"\n{'─'*w}")
+    print(f"\n{'─' * w}")
     print(f"  {r.name}")
     print(f"  put/s    : {r.put_rate:>12,.0f}   {'✅' if v[list(v)[0]] else '❌'}")
     print(f"  e2e/s    : {r.e2e_rate:>12,.0f}   {'✅' if v[list(v)[1]] else '❌'}")
@@ -402,11 +423,13 @@ def _print(r: Result) -> None:
 
 def run_full_benchmark() -> None:
     w = 62
-    print("\n" + "═"*w)
+    print("\n" + "═" * w)
     print("  SPEC BENCHMARK: Standard EventEngine vs DisruptorEventEngine")
-    print(f"  SLOs: put≥{SLO_PUT_THROUGHPUT//1000}k/s  e2e≥{SLO_E2E_THROUGHPUT//1000}k/s"
-          f"  delivery≥{SLO_DELIVERY_PCT}%  P99≤{SLO_P99_LATENCY_US//1000}ms")
-    print("═"*w)
+    print(
+        f"  SLOs: put≥{SLO_PUT_THROUGHPUT // 1000}k/s  e2e≥{SLO_E2E_THROUGHPUT // 1000}k/s"
+        f"  delivery≥{SLO_DELIVERY_PCT}%  P99≤{SLO_P99_LATENCY_US // 1000}ms"
+    )
+    print("═" * w)
 
     results: list[Result] = []
 
@@ -426,10 +449,10 @@ def run_full_benchmark() -> None:
     # Comparison table
     if len(results) >= 2:
         std, dis = results[0], results[1]
-        print(f"\n{'═'*w}")
+        print(f"\n{'═' * w}")
         print("  COMPARISON")
         print(f"  {'Metric':<26} {'Standard':>12} {'Disruptor':>12}  {'Δ':>6}")
-        print(f"  {'─'*26} {'─'*12} {'─'*12}  {'─'*6}")
+        print(f"  {'─' * 26} {'─' * 12} {'─' * 12}  {'─' * 6}")
 
         def row(label, a, b):
             mult = b / a if a > 0 else float("inf")
@@ -443,18 +466,18 @@ def run_full_benchmark() -> None:
         print(f"  {'delivery %':<26} {std.delivery:>11.1f}% {dis.delivery:>11.1f}%")
 
     # Verdict
-    print(f"\n{'═'*w}")
+    print(f"\n{'═' * w}")
     print("  SPEC VERDICT (specifications.md §6)")
-    print(f"{'─'*w}")
+    print(f"{'─' * w}")
     all_pass = True
     for r in results:
         for slo, passed in r.verdict().items():
             icon = "✅ PASS" if passed else "❌ FAIL"
             print(f"  [{r.name:40}] {slo:<18} {icon}")
             all_pass = all_pass and passed
-    print(f"{'─'*w}")
+    print(f"{'─' * w}")
     print(f"  Overall: {'✅ ALL SPECS MET' if all_pass else '❌ SOME SPECS NOT MET'}")
-    print("═"*w + "\n")
+    print("═" * w + "\n")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import threading
 import time
 import signal
 from unittest.mock import MagicMock, patch
@@ -13,11 +12,13 @@ from vnpy.event import Event, EVENT_TIMER, create_engine
 from vnpy.event.engine import EventEngine as StandardEventEngine
 from vnpy.trader.setting import SETTINGS
 
+
 def timeout(seconds):
     def decorator(func):
         def wrapper(*args, **kwargs):
             def handler(signum, frame):
                 raise TimeoutError(f"Test timed out after {seconds} seconds")
+
             signal.signal(signal.SIGALRM, handler)
             signal.alarm(seconds)
             try:
@@ -25,7 +26,9 @@ def timeout(seconds):
             finally:
                 signal.alarm(0)
             return result
+
         return wrapper
+
     return decorator
 
 
@@ -33,21 +36,26 @@ def timeout(seconds):
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _has_rust() -> bool:
     try:
         from vnpy_disruptor import DisruptorProducer  # noqa: F401
+
         return True
     except ImportError:
         return False
 
 
 RUST_AVAILABLE = _has_rust()
-requires_rust = pytest.mark.skipif(not RUST_AVAILABLE, reason="Rust extension not available")
+requires_rust = pytest.mark.skipif(
+    not RUST_AVAILABLE, reason="Rust extension not available"
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Factory
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestEventEngineFactory:
     """Factory creates correct engine type based on settings."""
@@ -64,6 +72,7 @@ class TestEventEngineFactory:
     def test_enabled_creates_disruptor(self):
         """With feature flag enabled (and Rust available), should return DisruptorEventEngine."""
         from vnpy.event.disruptor_engine import DisruptorEventEngine
+
         with patch.dict(SETTINGS, {"event.use_disruptor": True}):
             engine = create_engine(1)
             assert isinstance(engine, DisruptorEventEngine)
@@ -73,12 +82,14 @@ class TestEventEngineFactory:
 # DisruptorEventEngine API surface
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 @requires_rust
 class TestDisruptorEventEngineAPI:
     """DisruptorEventEngine API must match standard EventEngine."""
 
     def setup_method(self):
         from vnpy.event.disruptor_engine import DisruptorEventEngine
+
         with patch.dict(SETTINGS, {"event.buffer_size": 256}):
             self.engine = DisruptorEventEngine(interval=1)
 
@@ -171,17 +182,19 @@ class TestDisruptorEventEngineAPI:
 
     def test_handler_exception_propagates(self):
         """Handler exceptions must propagate (Production Hardening)."""
+
         def bad_handler(event: Event):
             raise ValueError("test error")
 
         self.engine.register("test.event", bad_handler)
-        
+
         with pytest.raises(ValueError, match="test error"):
             self.engine._process(Event("test.event"))
 
     def test_timer_generation(self):
         """Timer events should be generated at the configured interval."""
         from vnpy.event.disruptor_engine import DisruptorEventEngine
+
         with patch.dict(SETTINGS, {"event.buffer_size": 256}):
             engine = DisruptorEventEngine(interval=0)
 
@@ -215,6 +228,7 @@ class TestDisruptorEventEngineAPI:
 # ─────────────────────────────────────────────────────────────────────────────
 # End-to-end throughput
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 @requires_rust
 class TestDisruptorPerformance:
@@ -288,33 +302,39 @@ class TestDisruptorPerformance:
 # Feature flag combinations
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestFeatureFlagCombinations:
     """All possible feature flag combinations."""
 
     def test_neither_enabled(self):
-        with patch.dict(SETTINGS, {"event.use_arrow": False, "event.use_disruptor": False}):
+        with patch.dict(
+            SETTINGS, {"event.use_arrow": False, "event.use_disruptor": False}
+        ):
             engine = create_engine()
             assert isinstance(engine, StandardEventEngine)
 
     @requires_rust
     def test_disruptor_only(self):
         from vnpy.event.disruptor_engine import DisruptorEventEngine
-        with patch.dict(SETTINGS, {"event.use_arrow": False, "event.use_disruptor": True}):
+
+        with patch.dict(
+            SETTINGS, {"event.use_arrow": False, "event.use_disruptor": True}
+        ):
             engine = create_engine()
             assert isinstance(engine, DisruptorEventEngine)
-
-
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Backward compatibility
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestBackwardCompatibility:
     """Existing downstream code must continue working unchanged."""
 
     def test_existing_gateway_works(self):
         from vnpy.trader.gateway import BaseGateway
+
         assert hasattr(BaseGateway, "on_tick")
         assert hasattr(BaseGateway, "on_order")
         assert hasattr(BaseGateway, "on_trade")
@@ -324,6 +344,7 @@ class TestBackwardCompatibility:
 
     def test_existing_oms_works(self):
         from vnpy.trader.engine import OmsEngine
+
         assert hasattr(OmsEngine, "process_tick_event")
         assert hasattr(OmsEngine, "process_order_event")
         assert hasattr(OmsEngine, "get_tick")
@@ -346,16 +367,16 @@ class TestBackwardCompatibility:
 
     def test_event_imports_unchanged(self):
         from vnpy.event import Event, EventEngine, EVENT_TIMER
+
         assert Event is not None
         assert EventEngine is not None
         assert EVENT_TIMER == "eTimer"
 
 
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Edge cases
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 @requires_rust
 class TestEdgeCases:
@@ -363,6 +384,7 @@ class TestEdgeCases:
 
     def _make_engine(self, buffer_size: int = 256):
         from vnpy.event.disruptor_engine import DisruptorEventEngine
+
         with patch.dict(SETTINGS, {"event.buffer_size": buffer_size}):
             return DisruptorEventEngine(interval=1)
 
@@ -383,6 +405,7 @@ class TestEdgeCases:
     def test_buffer_size_must_be_power_of_two(self):
         """Non-power-of-2 buffer_size raises ValueError from Rust."""
         from vnpy.event.disruptor_engine import DisruptorEventEngine
+
         with patch.dict(SETTINGS, {"event.buffer_size": 300}):
             with pytest.raises(ValueError, match="power of 2"):
                 DisruptorEventEngine(interval=1)
@@ -395,10 +418,14 @@ class TestEdgeCases:
 
     def test_unknown_wait_strategy_raises(self):
         from vnpy.event.disruptor_engine import DisruptorEventEngine
-        with patch.dict(SETTINGS, {
-            "event.buffer_size": 256,
-            "event.wait_strategy": "invalid_strategy",
-        }):
+
+        with patch.dict(
+            SETTINGS,
+            {
+                "event.buffer_size": 256,
+                "event.wait_strategy": "invalid_strategy",
+            },
+        ):
             with pytest.raises(ValueError, match="wait_strategy"):
                 DisruptorEventEngine(interval=1)
 
@@ -407,6 +434,7 @@ class TestEdgeCases:
 # Rust extension smoke tests (direct)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 @requires_rust
 class TestRustExtensionDirect:
     """Direct tests of the DisruptorProducer PyO3 bindings."""
@@ -414,19 +442,21 @@ class TestRustExtensionDirect:
     @timeout(5)
     def test_basic_publish_consume(self):
         from vnpy_disruptor import DisruptorProducer
+
         p = DisruptorProducer(1024, "busy_spin")
-        
+
         processed = []
+
         def callback(batch):
             processed.extend(batch)
-            
+
         p.start_worker(callback)
         p.publish({"event_type": "eTick", "data": {"price": 42.0}})
-        
+
         deadline = time.time() + 2.0
         while not processed and time.time() < deadline:
             time.sleep(0.01)
-            
+
         assert len(processed) == 1
         assert processed[0]["event_type"] == "eTick"
         assert processed[0]["data"] == {"price": 42.0}
@@ -435,33 +465,35 @@ class TestRustExtensionDirect:
     @timeout(5)
     def test_batch_consume_flow(self):
         from vnpy_disruptor import DisruptorProducer
+
         p = DisruptorProducer(1024, "busy_spin")
         processed = []
         p.start_worker(lambda b: processed.extend(b))
-        
+
         for i in range(50):
             p.publish({"t": i})
-            
+
         deadline = time.time() + 2.0
         while len(processed) < 50 and time.time() < deadline:
             time.sleep(0.01)
-            
+
         assert len(processed) == 50
         p.stop()
 
     @timeout(5)
     def test_none_data_round_trip(self):
         from vnpy_disruptor import DisruptorProducer
+
         p = DisruptorProducer(64, "busy_spin")
         processed = []
         p.start_worker(lambda b: processed.extend(b))
-        
+
         p.publish({"data": None})
-        
+
         deadline = time.time() + 2.0
         while not processed and time.time() < deadline:
             time.sleep(0.01)
-            
+
         assert len(processed) == 1
         assert processed[0]["data"] is None
         p.stop()
