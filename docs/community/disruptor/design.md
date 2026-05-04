@@ -86,3 +86,17 @@ sequenceDiagram
 +
 +### 6.2 Solution
 +`try_put()` provides a non-blocking alternative that returns `False` if the buffer is full. Components like `MainEngine.write_log()` use this to safely drop non-critical logs or redirect them to `stderr`, ensuring the system remains responsive and deadlock-free under extreme load.
+
++## 7. Comparative Analysis: Unbounded Queue vs. Bounded Ring Buffer
++
++A critical distinction between the standard `EventEngine` and the `DisruptorEventEngine` lies in how they handle buffer saturation.
++
++### 7.1 Standard Engine (`queue.Queue`)
++- **Behavior**: The standard engine uses an **unbounded queue** (`maxsize=0`).
++- **Why no `try_put` was needed**: Since the queue is unbounded, `put()` technically never blocks. It will continue to allocate memory dynamically until the system runs out of RAM.
++- **Risks**: Under high-frequency bursts, the queue can grow silently to millions of items, leading to extreme "buffer bloat" (latency increases to seconds or minutes) and eventual OOM (Out of Memory) crashes.
++
++### 7.2 Disruptor Engine (`disruptor-rs`)
++- **Behavior**: The Disruptor engine uses a **bounded ring buffer** (fixed size, e.g., 65,536).
++- **Why `try_put` is mandatory**: When the ring buffer is full, the producer **must block** until the consumer (worker thread) processes events. This "backpressure" is essential for system stability but requires an explicit non-blocking path (`try_put`) for non-critical telemetry (logs) to prevent the self-deadlock and UI freeze scenarios described above.
++- **Benefits**: Deterministic memory usage, hardware-level cache locality, and explicit visibility into system saturation.
