@@ -1,8 +1,9 @@
 # CLAUDE.md - Disruptor Engine Development
 
 ## Build & Install
-- Build Rust Extension: `cd vnpy-rs && PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv run maturin develop --release`
-- Install Dependencies: `uv sync`
+- Standard Install: `uv sync`
+- Install with Disruptor: `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv pip install -e ".[disruptor]"`
+- Build Rust Extension (Manual): `cd vnpy-rs && PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 uv run maturin develop --release`
 
 ## Test Commands
 - Full Suite: `uv run pytest tests/`
