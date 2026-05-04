@@ -110,8 +110,8 @@ class EventEngine:
 
     def try_put(self, event: Event) -> bool:
         """
-        Try to put an event object into event queue.
-        Return True if successful, False if full.
+        Put an event object into event queue without blocking.
+        Return True if successful, False if buffer is full.
         """
         from queue import Full
         try:
@@ -119,6 +119,7 @@ class EventEngine:
             return True
         except Full:
             return False
+
 
     def register(self, type: str, handler: HandlerType) -> None:
         """
