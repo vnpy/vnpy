@@ -164,7 +164,10 @@ class MainEngine:
         """
         log: LogData = LogData(msg=msg, gateway_name=source)
         event: Event = Event(EVENT_LOG, log)
-        self.event_engine.put(event)
+        # Use try_put for logs to avoid blocking the caller (potentially UI)
+        if not self.event_engine.try_put(event):
+            # Fallback for critical cases where buffer is full
+            print(f"CRITICAL: Event buffer full, dropped log: {msg}")
 
     def get_gateway(self, gateway_name: str) -> BaseGateway | None:
         """
