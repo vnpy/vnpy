@@ -62,3 +62,14 @@ sequenceDiagram
 ## 4. Concurrency & Sync
 - **GIL Management**: The worker thread only holds the GIL when calling back into Python handlers.
 - **Thread Pinning**: Supports optional CPU affinity for the worker thread to minimize context switching in high-performance scenarios.
+ 
++## 5. Queue Pattern & Concurrency Model
++
++| Pattern | Application in VeighNa | Rationale |
++| :--- | :---: | :--- |
++| **MPSC** | **Primary** | **Multi-Producer**: Gateways, Timer, and Apps. **Single-Consumer**: Sequential worker thread for state consistency. |
++| **MPMC** | **Capability** | Technically supported by the underlying Disruptor architecture, enabling future parallel consumption models. |
++
++### Producer-Consumer Analysis
++- **Producers**: Multiple independent threads (Gateways, MainEngine, Timer) publish events simultaneously. Lock-free `MultiProducer` ensures non-blocking publication even under high contention.
++- **Consumer**: A single managed worker thread dispatches events to Python handlers. This maintains the sequential consistency required by legacy trading logic while offloading the queue management to native Rust.

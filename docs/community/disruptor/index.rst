@@ -7,4 +7,3 @@
    requirements
    design
    specifications
-   audit_queue_patterns
