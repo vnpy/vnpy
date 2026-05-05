@@ -14,6 +14,8 @@
 
 ## 3. Reliability & Safety Requirements
 - **Memory Safety**: Zero memory leaks under continuous high-load stress tests (verified via 10M+ event audit).
+- **Deterministic Memory**: Use of a bounded ring buffer to prevent unbounded memory growth (OOM) during extreme volatility.
 - **Concurrency Safety**: Must not deadlock under buffer saturation.
+- **Deadlock Immunity for Telemetry**: Non-critical events (logs) must utilize non-blocking publication paths to ensure the system remains responsive even if the primary buffer is saturated.
 - **Error Propagation**: Exceptions in handlers must be captured and reported to the main engine without crashing the worker thread.
-- **Thread Safety**: Non-blocking `try_put()` must be provided for UI thread safety.
+- **Thread Safety**: Non-blocking `try_put()` must be provided for UI thread safety and for use within event handlers.

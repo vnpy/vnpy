@@ -48,12 +48,20 @@ from vnpy.event.disruptor_engine import DisruptorEventEngine
 event_engine = DisruptorEventEngine(buffer_size=65536, wait_strategy="busy_spin")
 ```
 
-## 4. Verification
+## 5. Non-Blocking Publication (`try_put`)
 
-To verify that your application is running on the Disruptor engine, you can check the instance type:
+For non-critical telemetry such as logging or when calling from within an event handler, it is highly recommended to use the non-blocking `try_put()` method:
 
 ```python
-from vnpy.event.disruptor_engine import DisruptorEventEngine
-if isinstance(event_engine, DisruptorEventEngine):
-    print("Running on High-Performance Disruptor Engine")
+from vnpy.event import Event
+
+# Standard blocking publication (with backpressure)
+event_engine.put(Event("TICK_DATA", data))
+
+# Safe non-blocking publication (for logs/telemetry)
+success = event_engine.try_put(Event("LOG", "Telemetry message"))
+if not success:
+    print("Buffer full, log dropped.")
 ```
+
+Using `try_put()` ensures that the system remains responsive even if the ring buffer is temporarily saturated, preventing UI freezes and self-deadlocks.
