@@ -12,6 +12,7 @@
 - Bindings: `pyo3`
 - Event Translation: Zero-copy via `Arc<PyObject>`
 - Main Producer: `InnerProducer` enum wrapping multiple wait strategies
+- **Non-Blocking**: Native `try_publish()` support for deadlock-free telemetry and recursive calls.
 
 ## Coding Standards
 - Style: Use `cargo fmt`

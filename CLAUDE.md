@@ -7,6 +7,7 @@
 
 ## Test Commands
 - Full Suite: `uv run pytest tests/`
+- Non-Blocking Guards: `uv run python tests/test_non_blocking_guards.py`
 - Disruptor Integration: `uv run pytest tests/test_disruptor_integration.py -v -s`
 - Performance Benchmarks: `uv run pytest tests/test_perf_specs.py -v -s`
 - Wait Strategy Bench: `uv run python tests/bench_wait_strategies.py`
