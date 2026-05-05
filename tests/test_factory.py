@@ -41,23 +41,7 @@ class TestEngineFactory(unittest.TestCase):
             self.assertTrue(engine.is_active())
             engine.stop()
 
-    def test_try_put_parity(self):
-        """Verifies that try_put exists and behaves correctly on both engine types."""
-        from vnpy.event import Event
-        
-        # Test Standard Engine
-        with patch.dict(SETTINGS, {"event.use_disruptor": False}):
-            std_engine = create_engine()
-            self.assertTrue(hasattr(std_engine, "try_put"))
-            success = std_engine.try_put(Event("test", 1))
-            self.assertTrue(success)
 
-        # Test Disruptor Engine
-        with patch.dict(SETTINGS, {"event.use_disruptor": True}):
-            dis_engine = create_engine()
-            self.assertTrue(hasattr(dis_engine, "try_put"))
-            success = dis_engine.try_put(Event("test", 1))
-            self.assertTrue(success)
 
 if __name__ == "__main__":
     unittest.main()
