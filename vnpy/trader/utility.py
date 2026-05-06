@@ -8,7 +8,7 @@ from datetime import datetime, time
 from pathlib import Path
 from collections.abc import Callable
 from decimal import Decimal
-from math import floor, ceil
+from math import floor, ceil, isfinite
 from typing import overload, Literal
 
 import numpy as np
@@ -211,6 +211,10 @@ class BarGenerator:
         if not tick.last_price:
             return
 
+        # Reject tick data with NaN or Infinity in price, volume, or turnover
+        if not isfinite(tick.last_price) or not isfinite(tick.volume) or not isfinite(tick.turnover):
+            return
+
         if not self.bar:
             new_minute = True
         elif (
@@ -263,6 +267,10 @@ class BarGenerator:
         """
         Update 1 minute bar into generator
         """
+        # Reject bar data with NaN or Infinity in price, volume, or turnover
+        if not isfinite(bar.close_price) or not isfinite(bar.volume) or not isfinite(bar.turnover):
+            return
+
         if self.interval == Interval.MINUTE:
             self.update_bar_minute_window(bar)
         elif self.interval == Interval.HOUR:
