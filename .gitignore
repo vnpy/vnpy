@@ -48,6 +48,8 @@ config/trading_config.local.json
 *secret*.yml
 cta_strategy_setting.json
 cta_strategy_data.json
+CLAUDE.md
+MVP_VERIFICATION_PLAN.md
 
 # Alpha
 lab/
