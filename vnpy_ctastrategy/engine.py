@@ -485,6 +485,28 @@ class CtaEngine(BaseEngine):
         price = round_to(price, contract.pricetick)
         volume = round_to(volume, contract.min_volume)
 
+        # RiskEngine veto: closing trades reduce exposure, so flag them so the daily
+        # halt only blocks new opens.
+        risk_engine = self.main_engine.engines.get("risk")
+        if risk_engine is not None:
+            is_close = (
+                (direction == Direction.LONG and strategy.pos < 0)
+                or (direction == Direction.SHORT and strategy.pos > 0)
+            )
+            if not risk_engine.check_order(
+                strategy,
+                direction,
+                price,
+                volume,
+                is_close,
+                contract,
+            ):
+                self.write_log(
+                    _("风控拒单: {}").format(risk_engine.last_rejection_reason),
+                    strategy,
+                )
+                return []
+
         if stop:
             if contract.stop_supported:
                 return self.send_server_stop_order(

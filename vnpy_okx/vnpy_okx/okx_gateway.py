@@ -528,8 +528,12 @@ class RestApi(RestClient):
         Returns:
             Request: Modified request with authentication parameters
         """
-        # Public API does not need to sign
+        # Public API does not need auth, but OKX demo instruments need the
+        # simulated-trading header so instIdCode matches demo WS order APIs.
         if "public" in request.path:
+            if self.simulated:
+                request.headers = request.headers or {}
+                request.headers["x-simulated-trading"] = "1"
             return request
 
         # Generate signature
@@ -752,10 +756,18 @@ class RestApi(RestClient):
                 case Product.SPOT:
                     symbol: str = name.replace("-", "") + "_SPOT_OKX"
                 case Product.SWAP:
-                    base, quote, _ = name.split("-")
+                    try:
+                        base, quote, _ = name.split("-")
+                    except ValueError:
+                        self.gateway.write_log(f"Skip malformed SWAP instrument: {name}")
+                        continue
                     symbol = base + quote + "_SWAP_OKX"
                 case Product.FUTURES:
-                    base, quote, expiry = name.split("-")
+                    try:
+                        base, quote, expiry = name.split("-")
+                    except ValueError:
+                        self.gateway.write_log(f"Skip malformed FUTURES instrument: {name}")
+                        continue
                     symbol = base + quote + "_" + expiry + "_OKX"
 
             if d["tickSz"]:
@@ -780,6 +792,8 @@ class RestApi(RestClient):
                 net_position=net_position,
                 gateway_name=self.gateway_name,
             )
+            if d.get("instIdCode"):
+                contract.extra = {"instIdCode": d["instIdCode"]}
 
             self.gateway.on_contract(contract)
 
@@ -1313,6 +1327,12 @@ class PrivateApi(WebsocketApi):
 
         self.reqid_order_map: dict[str, OrderData] = {}
 
+    def _get_inst_id_code(self, contract: ContractData) -> int | str:
+        """Return the OKX numeric instrument id used by WS order operations."""
+        extra = contract.extra or {}
+        inst_id_code = extra.get("instIdCode")
+        return inst_id_code if inst_id_code else ""
+
     def connect(
         self,
         key: str,
@@ -1627,6 +1647,12 @@ class PrivateApi(WebsocketApi):
         if not contract:
             self.gateway.write_log(f"Send order failed, symbol not found: {req.symbol}")
             return ""
+        inst_id_code = self._get_inst_id_code(contract)
+        if not inst_id_code:
+            self.gateway.write_log(
+                f"Send order failed, instIdCode missing for {contract.name}"
+            )
+            return ""
 
         # Generate unique local order ID
         self.order_count += 1
@@ -1642,7 +1668,7 @@ class PrivateApi(WebsocketApi):
 
         # Prepare order parameters for OKX API
         arg: dict = {
-            "instId": contract.name,
+            "instIdCode": inst_id_code,
             "clOrdId": orderid,
             "side": DIRECTION_VT2OKX[req.direction],
             "posSide": pos_side,
@@ -1686,9 +1712,15 @@ class PrivateApi(WebsocketApi):
         if not contract:
             self.gateway.write_log(f"Cancel order failed, symbol not found: {req.symbol}")
             return
+        inst_id_code = self._get_inst_id_code(contract)
+        if not inst_id_code:
+            self.gateway.write_log(
+                f"Cancel order failed, instIdCode missing for {contract.name}"
+            )
+            return
 
         # Initialize cancel parameters
-        arg: dict = {"instId": contract.name}
+        arg: dict = {"instIdCode": inst_id_code}
 
         # Determine the type of order ID to use for cancellation
         # OKX supports both client order ID and exchange order ID for cancellation

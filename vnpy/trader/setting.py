@@ -43,7 +43,21 @@ SETTINGS: dict = {
     "database.host": "",
     "database.port": 0,
     "database.user": "",
-    "database.password": ""
+    "database.password": "",
+
+    # Risk engine: hard circuit breakers enforced inside CtaEngine.send_order.
+    # max_daily_loss_pct: drawdown-from-UTC-day-open ratio that halts new opens today.
+    # max_drawdown_pct: drawdown-from-peak-equity ratio that halts all new opens.
+    # max_order_value_usdt: per-order notional cap; orders above this are rejected.
+    # account_currency: currency account used as equity baseline (OKX emits one account per currency).
+    # position_size_pct: reserved for strategy-side sizing helpers.
+    "risk.enabled": True,
+    "risk.account_currency": "USDT",
+    "risk.max_daily_loss_pct": 0.03,
+    "risk.max_drawdown_pct": 0.10,
+    "risk.max_order_value_usdt": 200.0,
+    "risk.max_order_value_pct": 0.0,
+    "risk.position_size_pct": 0.20,
 }
 
 

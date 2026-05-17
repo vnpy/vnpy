@@ -12,13 +12,14 @@ from pathlib import Path
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import SubscribeRequest
-from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.utility import extract_vt_symbol, get_file_path
 
 from vnpy_okx import OkxGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctastrategy.strategies.double_ma_strategy import DoubleMaStrategy
 
 from telegram_notifier import TelegramTradeBot
+from trading_config import load_trading_config, resolve_trading_config_path
 
 
 class SimpleAutoTradingSystem:
@@ -28,14 +29,13 @@ class SimpleAutoTradingSystem:
         """初始化系统"""
         # 确定配置文件路径
         script_dir = Path(__file__).parent.absolute()
-        config_path = script_dir / "config" / "trading_config.json"
+        config_path = resolve_trading_config_path(script_dir / "config" / "trading_config.json")
 
         print(f"📂 加载配置文件: {config_path}")
-        with open(config_path, "r") as f:
-            self.config = json.load(f)
+        self.config = load_trading_config(config_path)
 
         # 加载OKX配置
-        okx_config_path = "/Users/miaoyuhan/.vntrader/connect_okx.json"
+        okx_config_path = get_file_path("connect_okx.json")
         if Path(okx_config_path).exists():
             with open(okx_config_path, "r") as f:
                 self.okx_config = json.load(f)

@@ -40,6 +40,7 @@ _templates
 .worktrees/
 .env
 .env.*
+config/trading_config.local.json
 *.pem
 *.key
 *secret*.json

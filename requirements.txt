@@ -72,6 +72,7 @@ PySide6_Addons==6.8.2.1
 PySide6_Essentials==6.8.2.1
 pytest==9.0.2
 python-dateutil==2.9.0.post0
+python-telegram-bot==22.6
 pytz==2026.1.post1
 pyzmq==27.1.0
 QDarkStyle==3.2.3

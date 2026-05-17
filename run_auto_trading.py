@@ -5,22 +5,106 @@
 
 import asyncio
 import json
-import sys
+import os
+import signal
+import time
 import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from vnpy.event import EventEngine
+from vnpy.event import Event
 from vnpy.trader.engine import MainEngine
+from vnpy.trader.engine_risk import RiskEngine
 from vnpy.trader.object import SubscribeRequest
+from vnpy.trader.setting import SETTINGS
 from vnpy.trader.constant import Interval
-from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.event import EVENT_ACCOUNT, EVENT_LOG, EVENT_ORDER, EVENT_TICK, EVENT_TRADE
+from vnpy.trader.utility import extract_vt_symbol, get_file_path
 
 from vnpy_okx import OkxGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctastrategy.strategies.double_ma_strategy import DoubleMaStrategy
 
+from double_ma_telegram_strategy import DoubleMATelegramStrategy
 from telegram_notifier import TelegramTradeBot
+from trading_config import load_trading_config, resolve_trading_config_path
+
+
+TELEGRAM_STRATEGY_CLASS_NAME = "DoubleMATelegramStrategy"
+STRATEGY_NAME = "DoubleMA_Auto"
+GATEWAY_NAME = "OKX"
+STATE_FILENAME = "okx_auto_state.json"
+PID_FILENAME = "okx_auto_trading.pid"
+
+
+def apply_risk_settings(config: dict[str, Any]) -> None:
+    """Overlay trading-config risk keys into vn.py global runtime settings."""
+    for key, value in config.get("risk", {}).items():
+        SETTINGS[f"risk.{key}"] = value
+
+
+def build_okx_connect_config(
+    okx_config: dict[str, Any] | None,
+    app_config: dict[str, Any],
+) -> tuple[dict[str, Any], bool]:
+    """Build OkxGateway setting dict from private or app config."""
+    if okx_config:
+        server = okx_config.get("Server", "DEMO")
+        return (
+            {
+                "API Key": okx_config["API Key"],
+                "Secret Key": okx_config["Secret Key"],
+                "Passphrase": okx_config["Passphrase"],
+                "Server": server,
+                "Proxy Host": okx_config.get("Proxy Host", ""),
+                "Proxy Port": int(okx_config.get("Proxy Port", 0) or 0),
+                "Spread Trading": okx_config.get("Spread Trading", "False"),
+                "Margin Currency": okx_config.get("Margin Currency", ""),
+            },
+            server == "DEMO",
+        )
+
+    if "okx" not in app_config:
+        raise RuntimeError(
+            "OKX config missing: create ~/.vntrader/connect_okx.json or add okx settings"
+        )
+
+    cfg = app_config["okx"]
+    simulated = bool(cfg.get("use_simulated", True))
+    return (
+        {
+            "API Key": cfg["api_key"],
+            "Secret Key": cfg["api_secret"],
+            "Passphrase": cfg["passphrase"],
+            "Server": "DEMO" if simulated else "REAL",
+            "Proxy Host": cfg.get("proxy", ""),
+            "Proxy Port": int(cfg.get("proxy_port", 0) or 0),
+            "Spread Trading": cfg.get("spread_trading", "False"),
+            "Margin Currency": cfg.get("margin_currency", ""),
+        },
+        simulated,
+    )
+
+
+def is_strategy_config_match(
+    strategy: Any,
+    class_name: str,
+    vt_symbol: str,
+    setting: dict[str, Any],
+) -> bool:
+    """Return whether an existing CTA strategy matches desired runtime config."""
+    current_setting = (
+        strategy.get_parameters()
+        if hasattr(strategy, "get_parameters")
+        else getattr(strategy, "setting", setting)
+    )
+    return (
+        strategy.__class__.__name__ == class_name
+        and getattr(strategy, "vt_symbol", "") == vt_symbol
+        and current_setting == setting
+    )
 
 
 class AutoTradingSystem:
@@ -29,20 +113,24 @@ class AutoTradingSystem:
     def __init__(
         self,
         config_path: str = None,
-        okx_config_path: str = "/Users/miaoyuhan/.vntrader/connect_okx.json",
+        okx_config_path: str | Path | None = None,
     ):
         """初始化系统"""
+        if okx_config_path is None:
+            okx_config_path = get_file_path("connect_okx.json")
+
         if config_path is None:
             script_dir = Path(__file__).parent.absolute()
             config_path = script_dir / "config" / "trading_config.json"
         else:
             config_path = Path(config_path)
 
+        config_path = resolve_trading_config_path(config_path)
         print(f"📂 加载配置文件: {config_path}")
 
         # 加载配置
-        with open(config_path, "r") as f:
-            self.config = json.load(f)
+        self.config = load_trading_config(config_path)
+        apply_risk_settings(self.config)
 
         self.okx_config_path = okx_config_path
         if Path(okx_config_path).exists():
@@ -56,6 +144,33 @@ class AutoTradingSystem:
         # 初始化事件引擎
         self.event_engine = EventEngine()
         self.main_engine = MainEngine(self.event_engine)
+        self.state_path = get_file_path(STATE_FILENAME)
+        self.pid_path = get_file_path(PID_FILENAME)
+        self.contract_timeout = float(self.config.get("runtime", {}).get("contract_timeout", 30))
+        self.tick_timeout = float(self.config.get("runtime", {}).get("tick_timeout", 30))
+        self.init_timeout = float(self.config.get("runtime", {}).get("init_timeout", 60))
+        self.state: dict[str, Any] = {
+            "pid": os.getpid(),
+            "started_at": datetime.now().astimezone().isoformat(),
+            "okx_server": "",
+            "simulated": None,
+            "contract_ready": False,
+            "strategy_name": STRATEGY_NAME,
+            "strategy_inited": False,
+            "strategy_trading": False,
+            "latest_tick_ts": "",
+            "latest_order_ts": "",
+            "latest_trade_ts": "",
+            "latest_account_ts": "",
+            "latest_error": "",
+            "risk": {},
+        }
+        # 注册风控引擎（熔断）——必须在 CtaEngine 之前注册，保证 CtaEngine 能通过
+        # main_engine.engines["risk"] 查到。
+        self.risk_engine: RiskEngine = self.main_engine.add_engine(RiskEngine)
+        self.register_state_handlers()
+        self.pid_path.write_text(str(os.getpid()), encoding="utf-8")
+        self.write_state()
 
         # 初始化Telegram机器人
         self.telegram = TelegramTradeBot(config_path)
@@ -71,32 +186,13 @@ class AutoTradingSystem:
 
     def setup_gateway(self):
         """配置交易接口"""
-        if self.okx_config:
-            connect_config = {
-                "API Key": self.okx_config["API Key"],
-                "Secret Key": self.okx_config["Secret Key"],
-                "Passphrase": self.okx_config["Passphrase"],
-                "Server": self.okx_config.get("Server", "DEMO"),
-                "Proxy Host": self.okx_config.get("Proxy Host", ""),
-                "Proxy Port": self.okx_config.get("Proxy Port", 0),
-                "Spread Trading": self.okx_config.get("Spread Trading", "False"),
-                "Margin Currency": self.okx_config.get("Margin Currency", ""),
-            }
-            is_simulated = self.okx_config.get("Server", "DEMO") == "DEMO"
-        else:
-            okx_config = self.config["okx"]
-            connect_config = {
-                "API Key": okx_config["api_key"],
-                "API Secret": okx_config["api_secret"],
-                "Passphrase": okx_config["passphrase"],
-                "Server": "REAL" if not okx_config["use_simulated"] else "DEMO",
-                "Proxy Address": okx_config.get("proxy", ""),
-                "Proxy Port": okx_config.get("proxy_port", ""),
-            }
-            is_simulated = okx_config["use_simulated"]
+        connect_config, is_simulated = build_okx_connect_config(self.okx_config, self.config)
+        self.state["okx_server"] = connect_config["Server"]
+        self.state["simulated"] = is_simulated
+        self.write_state()
 
         self.main_engine.add_gateway(OkxGateway)
-        self.main_engine.connect(connect_config, "OKX")
+        self.main_engine.connect(connect_config, GATEWAY_NAME)
         print(f"✅ 已连接到OKX {'模拟盘' if is_simulated else '实盘'}")
 
     def setup_strategy(self):
@@ -106,30 +202,158 @@ class AutoTradingSystem:
 
         # 获取CTA引擎并初始化
         cta_engine = self.main_engine.get_engine("CtaStrategy")
+        cta_engine.telegram_notifier = self.telegram
+        cta_engine.classes[TELEGRAM_STRATEGY_CLASS_NAME] = DoubleMATelegramStrategy
         cta_engine.init_engine()
 
         # 策略配置 (配置文件中已使用正确的格式: DOGEUSDT_SWAP_OKX.GLOBAL)
         strategy_config = self.config["strategy"]
         vt_symbol = strategy_config["vt_symbol"]
+        self.wait_for_contract(vt_symbol, timeout=self.contract_timeout)
+        self.wait_for_gateway_api("public_api", timeout=self.contract_timeout)
 
-        # 订阅行情
+        self.upsert_strategy(cta_engine)
+
         symbol, exchange = extract_vt_symbol(vt_symbol)
         req = SubscribeRequest(symbol=symbol, exchange=exchange)
-        self.main_engine.subscribe(req, "OKX")
-
-        # 添加策略
-        cta_engine.add_strategy(
-            class_name="DoubleMaStrategy",
-            strategy_name="DoubleMA_Auto",
-            vt_symbol=vt_symbol,
-            setting=strategy_config["setting"],
-        )
+        self.main_engine.subscribe(req, GATEWAY_NAME)
 
         print(f"✅ 策略已添加: {vt_symbol}")
         print(
             f"   参数: 快线={strategy_config['setting']['fast_window']}, "
             f"慢线={strategy_config['setting']['slow_window']}"
         )
+
+    def register_state_handlers(self) -> None:
+        """Register handlers that persist process health state for schedulers."""
+        self.event_engine.register(EVENT_TICK, self.process_state_event)
+        self.event_engine.register(EVENT_ORDER, self.process_state_event)
+        self.event_engine.register(EVENT_TRADE, self.process_state_event)
+        self.event_engine.register(EVENT_ACCOUNT, self.process_state_event)
+        self.event_engine.register(EVENT_LOG, self.process_state_event)
+
+    def write_state(self) -> None:
+        """Persist runtime state atomically enough for local health checks."""
+        self.state_path.write_text(
+            json.dumps(self.state, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    def process_state_event(self, event: Event) -> None:
+        """Update health state from vn.py events."""
+        now = datetime.now().astimezone().isoformat()
+        data = event.data
+        if event.type.startswith(EVENT_TICK):
+            if getattr(data, "vt_symbol", "") == self.config["strategy"]["vt_symbol"]:
+                self.state["latest_tick_ts"] = now
+                self.state["latest_price"] = getattr(data, "last_price", 0)
+        elif event.type.startswith(EVENT_ORDER):
+            self.state["latest_order_ts"] = now
+            self.state["latest_order_status"] = getattr(getattr(data, "status", None), "value", "")
+        elif event.type.startswith(EVENT_TRADE):
+            self.state["latest_trade_ts"] = now
+        elif event.type.startswith(EVENT_ACCOUNT):
+            self.state["latest_account_ts"] = now
+        elif event.type == EVENT_LOG:
+            msg = getattr(data, "msg", "")
+            if any(pattern in msg for pattern in ["failed", "失败", "Exception", "拒单", "Wrong", "Insufficient"]):
+                self.state["latest_error"] = msg[:500]
+
+        self.state["risk"] = self.risk_engine.snapshot()
+        self.write_state()
+
+    def wait_for_contract(self, vt_symbol: str, timeout: float, interval: float = 0.2):
+        """Wait until OKX contract metadata is available."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            contract = self.main_engine.get_contract(vt_symbol)
+            if contract:
+                self.state["contract_ready"] = True
+                self.write_state()
+                return contract
+            time.sleep(interval)
+        self.state["latest_error"] = f"contract not ready: {vt_symbol}"
+        self.write_state()
+        raise TimeoutError(f"OKX contract not ready: {vt_symbol}")
+
+    def wait_for_tick(self, vt_symbol: str, timeout: float, interval: float = 0.2) -> None:
+        """Wait for first tick after subscription so startup is real, not cosmetic."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            tick = self.main_engine.get_tick(vt_symbol)
+            if tick:
+                return
+            time.sleep(interval)
+        self.state["latest_error"] = f"tick not received: {vt_symbol}"
+        self.write_state()
+        raise TimeoutError(f"OKX tick not received: {vt_symbol}")
+
+    def wait_for_gateway_api(
+        self,
+        api_name: str,
+        timeout: float,
+        interval: float = 0.2,
+    ) -> None:
+        """Wait until an OKX websocket API is connected before sending packets."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            gateway = self.main_engine.get_gateway(GATEWAY_NAME)
+            api = getattr(gateway, api_name, None) if gateway else None
+            if getattr(api, "connected", False):
+                return
+            time.sleep(interval)
+
+        self.state["latest_error"] = f"{api_name} not connected"
+        self.write_state()
+        raise TimeoutError(f"OKX {api_name} not connected")
+
+    def upsert_strategy(self, cta_engine) -> None:
+        """Create or replace the managed CTA strategy with desired settings."""
+        strategy_config = self.config["strategy"]
+        vt_symbol = strategy_config["vt_symbol"]
+        setting = strategy_config["setting"]
+        existing = cta_engine.strategies.get(STRATEGY_NAME)
+
+        if existing and not is_strategy_config_match(
+            existing,
+            TELEGRAM_STRATEGY_CLASS_NAME,
+            vt_symbol,
+            setting,
+        ):
+            if getattr(existing, "trading", False):
+                cta_engine.stop_strategy(STRATEGY_NAME)
+            if not cta_engine.remove_strategy(STRATEGY_NAME):
+                raise RuntimeError(f"failed to remove stale strategy {STRATEGY_NAME}")
+            existing = None
+
+        if not existing:
+            cta_engine.add_strategy(
+                class_name=TELEGRAM_STRATEGY_CLASS_NAME,
+                strategy_name=STRATEGY_NAME,
+                vt_symbol=vt_symbol,
+                setting=setting,
+            )
+
+        strategy = cta_engine.strategies[STRATEGY_NAME]
+        strategy.telegram = self.telegram
+
+    async def init_and_start_strategy(self) -> None:
+        """Initialize and start strategy with explicit readiness checks."""
+        cta_engine = self.main_engine.get_engine("CtaStrategy")
+        future = cta_engine.init_strategy(STRATEGY_NAME)
+        await asyncio.to_thread(future.result, self.init_timeout)
+
+        strategy = cta_engine.strategies[STRATEGY_NAME]
+        if not strategy.inited:
+            raise RuntimeError(f"{STRATEGY_NAME} init did not complete")
+        self.state["strategy_inited"] = True
+        self.write_state()
+
+        cta_engine.start_strategy(STRATEGY_NAME)
+        if not strategy.trading:
+            raise RuntimeError(f"{STRATEGY_NAME} did not start")
+        self.state["strategy_trading"] = True
+        self.write_state()
 
     async def run_backtest_report(self):
         """运行回测并生成报告"""
@@ -248,10 +472,8 @@ class AutoTradingSystem:
             self.setup_strategy()
 
             # 5. 启动策略
-            cta_engine = self.main_engine.get_engine("CtaStrategy")
-            cta_engine.init_strategy("DoubleMA_Auto")
-            await asyncio.sleep(2)  # 等待初始化
-            cta_engine.start_strategy("DoubleMA_Auto")
+            await self.init_and_start_strategy()
+            self.wait_for_tick(self.config["strategy"]["vt_symbol"], timeout=self.tick_timeout)
 
             print("\n✅ 系统启动完成！")
             print("📱 Telegram已连接，交易信号将推送到你的手机")
@@ -270,38 +492,47 @@ class AutoTradingSystem:
 
     async def stop(self):
         """停止系统"""
+        self.state["strategy_trading"] = False
+        self.write_state()
+
         # 发送每日报告
-        await self.telegram.send_daily_report(
-            {
-                "date": self.daily_stats["date"],
-                "initial_capital": self.daily_stats["initial_capital"],
-                "current_capital": self.daily_stats["current_capital"],
-                "daily_pnl": sum(t.get("pnl", 0) for t in self.daily_stats["trades"]),
-                "daily_return": 0,
-                "total_return": (
-                    (
-                        self.daily_stats["current_capital"]
-                        / self.daily_stats["initial_capital"]
+        try:
+            await self.telegram.send_daily_report(
+                {
+                    "date": self.daily_stats["date"],
+                    "initial_capital": self.daily_stats["initial_capital"],
+                    "current_capital": self.daily_stats["current_capital"],
+                    "daily_pnl": sum(t.get("pnl", 0) for t in self.daily_stats["trades"]),
+                    "daily_return": 0,
+                    "total_return": (
+                        (
+                            self.daily_stats["current_capital"]
+                            / self.daily_stats["initial_capital"]
+                        )
+                        - 1
                     )
-                    - 1
-                )
-                * 100,
-                "trade_count": len(self.daily_stats["trades"]),
-                "win_count": len(
-                    [t for t in self.daily_stats["trades"] if t.get("pnl", 0) > 0]
-                ),
-                "loss_count": len(
-                    [t for t in self.daily_stats["trades"] if t.get("pnl", 0) < 0]
-                ),
-                "win_rate": 0,
-                "positions": "无",
-                "strategy_running": False,
-                "report_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
+                    * 100,
+                    "trade_count": len(self.daily_stats["trades"]),
+                    "win_count": len(
+                        [t for t in self.daily_stats["trades"] if t.get("pnl", 0) > 0]
+                    ),
+                    "loss_count": len(
+                        [t for t in self.daily_stats["trades"] if t.get("pnl", 0) < 0]
+                    ),
+                    "win_rate": 0,
+                    "positions": "无",
+                    "strategy_running": False,
+                    "report_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"⚠️ 发送停止报告失败: {exc}")
 
         # 停止Telegram
-        await self.telegram.stop()
+        try:
+            await self.telegram.stop()
+        except Exception as exc:  # noqa: BLE001
+            print(f"⚠️ 停止Telegram失败: {exc}")
 
         # 关闭引擎
         self.main_engine.close()
@@ -309,8 +540,19 @@ class AutoTradingSystem:
 
     async def _run_loop(self):
         """主循环"""
-        while True:
-            await asyncio.sleep(1)
+        stop_event = asyncio.Event()
+        loop = asyncio.get_running_loop()
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                loop.add_signal_handler(sig, stop_event.set)
+            except NotImplementedError:
+                pass
+
+        while not stop_event.is_set():
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=1)
+            except asyncio.TimeoutError:
+                pass
 
             # 检查是否需要发送每日报告（每天晚上11点）
             now = datetime.now()

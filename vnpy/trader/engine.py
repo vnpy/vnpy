@@ -329,7 +329,7 @@ class LogEngine(BaseEngine):
 
         log: LogData = event.data
         level: str | int = self.level_map.get(log.level, log.level)
-        logger.log(level, log.msg, gateway_name=log.gateway_name)
+        logger.log(level, "{}", log.msg, gateway_name=log.gateway_name)
 
     def register_log(self, event_type: str) -> None:
         """Register log event handler"""

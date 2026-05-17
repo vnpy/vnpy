@@ -7,6 +7,9 @@ import json
 import asyncio
 from pathlib import Path
 from telegram import Bot
+from vnpy.trader.utility import get_file_path
+
+from trading_config import load_trading_config, resolve_trading_config_path
 
 
 def test_config_loading():
@@ -16,10 +19,9 @@ def test_config_loading():
     print("=" * 60)
 
     # 1. 加载交易配置
-    trading_config_path = Path("config/trading_config.json")
+    trading_config_path = resolve_trading_config_path("config/trading_config.json")
     if trading_config_path.exists():
-        with open(trading_config_path, "r") as f:
-            trading_config = json.load(f)
+        trading_config = load_trading_config(trading_config_path)
         print(f"✅ 交易配置已加载: {trading_config_path}")
         print(f"   交易对: {trading_config['strategy']['vt_symbol']}")
         print(f"   策略: {trading_config['strategy']['name']}")
@@ -31,7 +33,7 @@ def test_config_loading():
         return False
 
     # 2. 加载OKX配置
-    okx_config_path = Path("/Users/miaoyuhan/.vntrader/connect_okx.json")
+    okx_config_path = get_file_path("connect_okx.json")
     if okx_config_path.exists():
         with open(okx_config_path, "r") as f:
             okx_config = json.load(f)

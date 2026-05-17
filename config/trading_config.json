@@ -1,7 +1,7 @@
 {
     "telegram": {
-        "bot_token": "8562753482:AAHVTckHvuH60HQ2DYQN-6rTnLxagqpKZGI",
-        "chat_id": "8420636030"
+        "bot_token": "",
+        "chat_id": ""
     },
     "strategy": {
         "name": "DoubleMA",
@@ -16,6 +16,19 @@
         "timeout_seconds": 300,
         "auto_approve_after_hours": 0
     },
+    "notification": {
+        "mode": "notify_only"
+    },
+    "runtime": {
+        "contract_timeout": 60,
+        "init_timeout": 180,
+        "tick_timeout": 60,
+        "init_days": 3,
+        "signal_cooldown_seconds": 300,
+        "reversal_cooldown_seconds": 300,
+        "ma_cross_deadband_pct": 0.0002,
+        "ma_cross_deadband_abs": 0
+    },
     "backtest": {
         "interval": "1h",
         "capital": 10000,
@@ -25,11 +38,20 @@
         "pricetick": 0.0001
     },
     "trading": {
+        "sizing_mode": "available_percent",
         "leverage": 1,
-        "position_ratio": 0.9,
+        "position_ratio": 0.05,
         "trade_quantity": 1,
         "max_position": 100,
         "stop_loss_pct": 5.0,
         "take_profit_pct": 10.0
+    },
+    "risk": {
+        "enabled": true,
+        "account_currency": "USDT",
+        "max_daily_loss_pct": 0.03,
+        "max_drawdown_pct": 0.10,
+        "max_order_value_usdt": 1000.0,
+        "max_order_value_pct": 0.10
     }
 }

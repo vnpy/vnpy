@@ -5,9 +5,32 @@ echo "🧪 Telegram API 测试脚本"
 echo "============================================================"
 echo ""
 
-# 配置
-BOT_TOKEN="8562753482:AAHVTckHvuH60HQ2DYQN-6rTnLxagqpKZGI"
-CHAT_ID="8420636030"
+# 配置：优先使用环境变量；否则读取本地私有配置（已被 .gitignore 忽略）
+if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+    CONFIG_JSON=$(python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("config/trading_config.local.json")
+if not path.exists():
+    path = Path("config/trading_config.json")
+
+cfg = json.loads(path.read_text(encoding="utf-8"))
+telegram = cfg.get("telegram", {})
+print(json.dumps({
+    "bot_token": telegram.get("bot_token", ""),
+    "chat_id": telegram.get("chat_id", ""),
+}))
+PY
+)
+    BOT_TOKEN=${BOT_TOKEN:-$(echo "$CONFIG_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["bot_token"])')}
+    CHAT_ID=${CHAT_ID:-$(echo "$CONFIG_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["chat_id"])')}
+fi
+
+if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+    echo "❌ Telegram凭据未配置：请设置 BOT_TOKEN/CHAT_ID 或填写 config/trading_config.local.json"
+    exit 1
+fi
 
 # 1. 测试获取Bot信息
 echo "1️⃣ 测试获取Bot信息..."

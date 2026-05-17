@@ -32,7 +32,8 @@ dependencies = [
     "plotly>=6.0.0",
     "tqdm>=4.67.1",
     "loguru>=0.7.3",
-    "nbformat>=5.10.4"
+    "nbformat>=5.10.4",
+    "python-telegram-bot>=22.6"
 ]
 keywords = ["quant", "quantitative", "investment", "trading", "algotrading"]
 
@@ -93,6 +94,11 @@ select = [
     "W",  # pycodestyle warning
 ]
 ignore = ["E501"]
+
+[tool.pytest.ini_options]
+markers = [
+    "external: opt-in checks that contact real QMT, Telegram, or RD-Agent services",
+]
 
 [tool.mypy]
 python_version = "3.12"
