@@ -183,4 +183,4 @@ model = lab.load_model("lasso_demo")
 
 **处理后的因子表 -> `fit(dataset)` 训练模型 -> `predict(dataset, Segment.TEST)` 输出预测分数 -> 保存模型并进入信号环节**
 
-到这里，我们已经把因子表变成了模型预测值。**下一篇**将进入预测信号与回测衔接：信号表需要哪些字段，如何用 `save_signal` / `load_signal` 管理结果，`show_signal_performance` 与因子评价有什么不同，以及 `BacktestingEngine` 如何接收信号并完成历史回测。
+到这里，我们已经把因子表变成了模型预测值。**下一篇**将进入 **`AlphaStrategy` 策略开发**：信号表需要哪些字段，如何用 `save_signal` / `load_signal` 管理结果，`show_signal_performance` 与因子评价有什么不同，以及 `EquityDemoStrategy` 如何把预测分数变成目标持仓。

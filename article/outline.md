@@ -103,29 +103,32 @@
 
 ---
 
-## 第 5 篇：预测信号、信号评价、与回测衔接
+## 第 5 篇：`AlphaStrategy` 策略开发
 
 - 信号表字段：`datetime`、`vt_symbol`、`signal`。
 - `show_signal_performance`：对预测信号做 Alphalens 类分析；与第 3 篇因子评价并列说明差异。
 - `save_signal` / `load_signal`。
-- `BacktestingEngine`：`set_parameters`、`add_strategy`、传入 `signal_df`；`load_data`、`run_backtesting` 的推荐顺序。
-- 不涉及实盘；可一句说明成交与费用假设由回测引擎处理。
+- 重点强调：模型训练输出预测分数，策略开发负责把预测分数变成目标持仓；两者定位和评价结果不同。
+- `AlphaStrategy` 模板：`on_init`、`on_bars`、`on_trade`、`get_signal`、`set_target`、`execute_trading`。
+- `EquityDemoStrategy` 流水线：取信号 → 排序 → 更新持仓天数 → 生成卖出列表 → 生成买入列表 → 设置目标仓位 → 执行调仓。
+- 参数直觉：`top_k`、`n_drop`、`min_days`、`cash_ratio`、`min_volume`、`price_add` 对集中度、换手和成交假设的影响。
 
 ---
 
-## 第 6 篇：读懂 `EquityDemoStrategy`、参数与排错
+## 第 6 篇：事件驱动历史回测
 
-- 从 `on_bars` 读起：取信号 → 排序 → 换仓逻辑（面向基础读者）。
-- 参数直觉：`top_k`、`n_drop`、`min_days`、`cash_ratio`、`price_add` 对换手与稳定性的影响。
-- `set_target` 与 `execute_trading`：目标仓位与引擎撮合的关系（概念层）。
-- 回测结果：日志、净值与图表类输出（撰写时核对 `backtesting.py` 对外方法名）。
-- **常见问题**：contract 缺失、某标的无 bar、信号日期与 bar 日期对齐 — 各给一句排查方向。
+- `BacktestingEngine`：`set_parameters`、`add_strategy`、传入 `signal_df`；`load_data`、`run_backtesting`、`calculate_result`、`calculate_statistics`、`show_chart` 的推荐顺序。
+- 事件驱动流水线：按日期推进 K 线 → 撮合已有委托 → 触发 `strategy.on_bars` → 策略生成新委托 → 记录每日收盘。
+- 信号如何进入回测：`get_signal` 按当前回测日期过滤 `signal_df`；强调信号日期与行情日期必须对齐。
+- 撮合与成本假设：`price_add`、`contract.json` 中的费率/乘数/最小变动价位、涨跌停约束；说明历史回测不等于实盘。
+- 回测结果：`daily_df`、成交金额、手续费、净盈亏、资金曲线、回撤、Sharpe Ratio、`show_performance`。
+- **常见问题**：contract 缺失、某标的无 bar、信号日期与 bar 日期对齐、有信号但没有成交 — 各给一句排查方向。
 
 ---
 
 ## 若压缩篇数
 
-- **5 篇**：将第 6 篇缩入第 5 篇末尾（策略参数 + 读结果 + 排错），注意控制第 5 篇总字数。
+- **5 篇**：可将第 6 篇缩入第 5 篇末尾（回测引擎使用顺序 + 读结果 + 排错），注意控制第 5 篇总字数。
 - **4 篇**：通常需牺牲深度；可将「模型 + 信号 + 回测」合并为流程速览篇，或把第 1 篇缩短、环境与示例地图并入第 2 篇开头。
 
 ---
