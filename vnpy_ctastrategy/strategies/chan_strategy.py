@@ -30,6 +30,7 @@ class ChanStrategy(CtaTemplate):
     latest_signal_reason: str = ""
     active_stop_price: float = 0
     last_signal_key: str = ""
+    exit_order_sent: bool = False
 
     parameters = [
         "fixed_size",
@@ -47,6 +48,7 @@ class ChanStrategy(CtaTemplate):
         "latest_signal_reason",
         "active_stop_price",
         "last_signal_key",
+        "exit_order_sent",
     ]
 
     def on_init(self) -> None:
@@ -78,9 +80,10 @@ class ChanStrategy(CtaTemplate):
         self.cancel_all()
         snapshot = self.analyzer.update_bar(bar)
 
-        if self.pos > 0 and self.active_stop_price:
+        if self.pos > 0 and self.active_stop_price and not self.exit_order_sent:
             if bar.low_price <= self.active_stop_price:
                 self.sell(self.active_stop_price - self.price_add, abs(self.pos))
+                self.exit_order_sent = True
                 self.write_log(f"缠论止损触发: {self.active_stop_price}")
                 self.put_event()
                 return
@@ -94,6 +97,7 @@ class ChanStrategy(CtaTemplate):
                 self.latest_signal_reason = signal.reason
                 self.active_stop_price = signal.stop_price
                 self.last_signal_key = signal_key
+                self.exit_order_sent = False
                 self.write_log(
                     f"缠论买点触发: {signal.type.value}, "
                     f"stop={signal.stop_price}, reason={signal.reason}"
@@ -109,6 +113,9 @@ class ChanStrategy(CtaTemplate):
     def on_trade(self, trade: TradeData) -> None:
         """Handle trade updates."""
 
+        if self.pos == 0:
+            self.active_stop_price = 0
+            self.exit_order_sent = False
         self.put_event()
 
     def on_stop_order(self, stop_order: StopOrder) -> None:

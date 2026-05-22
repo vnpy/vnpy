@@ -130,3 +130,15 @@ def test_chan_strategy_sells_when_stop_is_touched() -> None:
     strategy.on_bar(_bar(0, 8.5))
 
     assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1)]
+
+
+def test_chan_strategy_does_not_repeat_exit_order_while_waiting_for_fill() -> None:
+    strategy, engine = _strategy()
+    strategy.pos = 1
+    strategy.active_stop_price = 8
+    strategy.analyzer = FakeAnalyzer([_snapshot()])
+
+    strategy.on_bar(_bar(0, 8.5))
+    strategy.on_bar(_bar(1, 8.3))
+
+    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1)]
