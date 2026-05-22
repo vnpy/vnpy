@@ -3,6 +3,7 @@ from __future__ import annotations
 from vnpy.chan import BuyPointType, ChanAnalyzer, ChanConfig
 from vnpy_ctastrategy import (
     BarData,
+    BarGenerator,
     CtaTemplate,
     OrderData,
     StopOrder,
@@ -61,6 +62,7 @@ class ChanStrategy(CtaTemplate):
         """Initialize strategy state."""
 
         self.write_log("缠论策略初始化")
+        self.bg: BarGenerator = BarGenerator(self.on_bar)
         self.analyzer = ChanAnalyzer(self._create_chan_config())
 
     def on_start(self) -> None:
@@ -76,9 +78,9 @@ class ChanStrategy(CtaTemplate):
         self.put_event()
 
     def on_tick(self, tick: TickData) -> None:
-        """Ignore tick data in the first prototype."""
+        """Update bar generator with live tick data."""
 
-        return
+        self.bg.update_tick(tick)
 
     def on_bar(self, bar: BarData) -> None:
         """Update Chan analyzer and trade confirmed buy signals."""

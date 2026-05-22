@@ -29,7 +29,7 @@ from vnpy_ctastrategy.strategies.double_ma_strategy import DoubleMaStrategy
 from vnpy_ctastrategy.strategies.chan_strategy import ChanStrategy
 
 from double_ma_telegram_strategy import DoubleMATelegramStrategy
-from telegram_notifier import TelegramTradeBot
+from telegram_notifier import TelegramTradeBot, format_strategy_signal_message
 from trading_config import load_trading_config, resolve_trading_config_path
 
 
@@ -102,6 +102,11 @@ def is_strategy_config_match(
         if hasattr(strategy, "get_parameters")
         else getattr(strategy, "setting", setting)
     )
+    return (
+        strategy.__class__.__name__ == class_name
+        and getattr(strategy, "vt_symbol", "") == vt_symbol
+        and current_setting == setting
+    )
 
 
 def get_strategy_spec(config: dict[str, Any]) -> dict[str, Any]:
@@ -146,10 +151,13 @@ def format_strategy_label(strategy_config: dict[str, Any]) -> str:
             f"慢线={setting.get('slow_window', '-')})"
         )
     return f"{class_name} ({setting})"
-    return (
-        strategy.__class__.__name__ == class_name
-        and getattr(strategy, "vt_symbol", "") == vt_symbol
-        and current_setting == setting
+
+
+def build_strategy_signal_key(signal: dict[str, Any]) -> str:
+    """Return a stable key for deduplicating strategy signal notifications."""
+    return ":".join(
+        str(signal.get(key, ""))
+        for key in ("type", "confirmed_index", "bar_datetime")
     )
 
 
@@ -225,6 +233,7 @@ class AutoTradingSystem:
 
         # 初始化Telegram机器人
         self.telegram = TelegramTradeBot(self.config_path)
+        self.last_notified_strategy_signal_key = ""
 
         # 交易计数器
         self.trade_counter = 0
@@ -317,7 +326,8 @@ class AutoTradingSystem:
         """Persist strategy-specific observable state."""
         try:
             cta_engine = self.main_engine.get_engine("CtaStrategy")
-            strategy_name = get_strategy_spec(self.config)["strategy_name"]
+            strategy_spec = get_strategy_spec(self.config)
+            strategy_name = strategy_spec["strategy_name"]
             strategy = cta_engine.strategies.get(strategy_name)
         except Exception:  # noqa: BLE001
             return
@@ -329,6 +339,29 @@ class AutoTradingSystem:
         latest_signal = getattr(strategy, "latest_chan_signal", None)
         if latest_signal:
             self.state["latest_chan_signal"] = latest_signal
+            self.notify_strategy_signal(
+                strategy_name,
+                strategy_spec["vt_symbol"],
+                latest_signal,
+            )
+
+    def notify_strategy_signal(
+        self,
+        strategy_name: str,
+        vt_symbol: str,
+        latest_signal: dict[str, Any],
+    ) -> None:
+        """Send a deduplicated strategy signal notification from runtime scope."""
+        signal_key = build_strategy_signal_key(latest_signal)
+        if not signal_key or signal_key == self.last_notified_strategy_signal_key:
+            return
+
+        self.last_notified_strategy_signal_key = signal_key
+        message = format_strategy_signal_message(strategy_name, vt_symbol, latest_signal)
+        try:
+            self.telegram.submit_message(message)
+        except Exception as exc:  # noqa: BLE001
+            self.state["latest_error"] = f"strategy signal notification failed: {exc}"
 
     def wait_for_contract(self, vt_symbol: str, timeout: float, interval: float = 0.2):
         """Wait until OKX contract metadata is available."""

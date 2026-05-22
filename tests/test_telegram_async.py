@@ -164,6 +164,30 @@ def test_trade_message_escapes_html_and_missing_backtest(tmp_path: Path) -> None
     assert "总收益: 0%" in msg
 
 
+def test_generic_strategy_signal_message_escapes_html() -> None:
+    from telegram_notifier import format_strategy_signal_message
+
+    msg = format_strategy_signal_message(
+        "Chan<Auto>",
+        "DOGEUSDT_SWAP_OKX.GLOBAL",
+        {
+            "type": "third_buy",
+            "candidate_index": 10,
+            "confirmed_index": 12,
+            "stop_price": 0.1,
+            "bar_datetime": "2026-05-22T12:00:00+08:00",
+            "bar_close_price": 0.12,
+            "trade_enabled": False,
+            "reason": "回踩 < 中枢上沿 > 后确认",
+        },
+    )
+
+    assert "Chan&lt;Auto&gt;" in msg
+    assert "信号模式" in msg
+    assert "third_buy" in msg
+    assert "回踩 &lt; 中枢上沿 &gt; 后确认" in msg
+
+
 def test_shared_notifier_submit_uses_running_loop(tmp_path: Path) -> None:
     bot = _make_bot(tmp_path, mode="notify_only")
 

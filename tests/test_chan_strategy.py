@@ -6,7 +6,7 @@ from typing import Any
 
 from vnpy.chan import BuyPointType, BuySignal, ChanSnapshot, TrendState
 from vnpy.trader.constant import Direction, Exchange, Interval, Offset
-from vnpy.trader.object import BarData
+from vnpy.trader.object import BarData, TickData
 from vnpy_ctastrategy.base import EngineType
 from vnpy_ctastrategy.strategies.chan_strategy import ChanStrategy
 
@@ -63,6 +63,17 @@ def _bar(index: int, close_price: float = 10) -> BarData:
         high_price=close_price + 1,
         low_price=close_price - 1,
         close_price=close_price,
+        gateway_name="TEST",
+    )
+
+
+def _tick(index: int, price: float = 10) -> TickData:
+    return TickData(
+        symbol="TEST",
+        exchange=Exchange.LOCAL,
+        datetime=datetime(2026, 1, 1, 9, 30) + timedelta(minutes=index),
+        last_price=price,
+        volume=index + 1,
         gateway_name="TEST",
     )
 
@@ -174,3 +185,19 @@ def test_chan_strategy_does_not_repeat_exit_order_while_waiting_for_fill() -> No
     strategy.on_bar(_bar(1, 8.3))
 
     assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1)]
+
+
+def test_chan_strategy_routes_ticks_into_bar_generator() -> None:
+    strategy, _engine = _strategy()
+    calls: list[TickData] = []
+
+    class FakeBarGenerator:
+        def update_tick(self, tick: TickData) -> None:
+            calls.append(tick)
+
+    strategy.bg = FakeBarGenerator()
+    tick = _tick(0, 10)
+
+    strategy.on_tick(tick)
+
+    assert calls == [tick]

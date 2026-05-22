@@ -17,6 +17,40 @@ from telegram.ext import (
 from trading_config import load_trading_config
 
 
+def format_strategy_signal_message(
+    strategy_name: str,
+    vt_symbol: str,
+    signal: dict,
+) -> str:
+    """Format a generic strategy signal notification."""
+    trade_mode = "自动交易" if signal.get("trade_enabled", True) else "信号模式"
+    signal_type = escape(str(signal.get("type", "-")))
+    reason = escape(str(signal.get("reason", "-")))
+    bar_datetime = escape(str(signal.get("bar_datetime", "-")))
+    stop_price = signal.get("stop_price", "-")
+    close_price = signal.get("bar_close_price", "-")
+
+    return f"""
+📡 <b>策略信号</b>
+
+📊 <b>策略信息</b>
+├ 策略: {escape(str(strategy_name))}
+├ 品种: {escape(str(vt_symbol))}
+├ 模式: {escape(trade_mode)}
+└ 时间: {bar_datetime}
+
+🎯 <b>信号详情</b>
+├ 类型: {signal_type}
+├ 确认K线: {escape(str(signal.get("confirmed_index", "-")))}
+├ 候选K线: {escape(str(signal.get("candidate_index", "-")))}
+├ 收盘价: {escape(str(close_price))}
+└ 止损价: {escape(str(stop_price))}
+
+💡 <b>策略原因</b>
+{reason}
+    """.strip()
+
+
 class TelegramTradeBot:
     """Telegram交易确认机器人"""
 

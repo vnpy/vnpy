@@ -11,6 +11,7 @@ from run_auto_trading import (
     STRATEGY_NAME,
     TELEGRAM_STRATEGY_CLASS_NAME,
     apply_risk_settings,
+    build_strategy_signal_key,
     build_okx_connect_config,
     format_strategy_label,
     get_strategy_spec,
@@ -116,6 +117,19 @@ def test_format_strategy_label_handles_chan_without_doublema_windows() -> None:
     )
 
     assert label == "ChanStrategy ({'trade_enabled': False, 'fixed_size': 1})"
+
+
+def test_build_strategy_signal_key_is_stable_for_deduplication() -> None:
+    key = build_strategy_signal_key(
+        {
+            "type": "third_buy",
+            "confirmed_index": 12,
+            "bar_datetime": "2026-05-22T12:00:00+08:00",
+            "reason": "ignored",
+        }
+    )
+
+    assert key == "third_buy:12:2026-05-22T12:00:00+08:00"
 
 
 def test_apply_risk_settings_overlays_runtime_settings(monkeypatch) -> None:
@@ -245,6 +259,35 @@ def test_setup_strategy_registers_configured_chan_strategy(monkeypatch, tmp_path
     assert "ChanStrategy" in fake_cta.classes
     assert fake_cta.added["class_name"] == "ChanStrategy"
     assert fake_cta.added["strategy_name"] == "Chan_Auto"
+
+
+def test_notify_strategy_signal_deduplicates_messages() -> None:
+    import run_auto_trading
+
+    messages: list[str] = []
+    system = run_auto_trading.AutoTradingSystem.__new__(
+        run_auto_trading.AutoTradingSystem
+    )
+    system.telegram = SimpleNamespace(submit_message=lambda msg: messages.append(msg))
+    system.state = {"latest_error": ""}
+    system.last_notified_strategy_signal_key = ""
+    signal = {
+        "type": "third_buy",
+        "candidate_index": 10,
+        "confirmed_index": 12,
+        "stop_price": 0.1,
+        "bar_datetime": "2026-05-22T12:00:00+08:00",
+        "bar_close_price": 0.12,
+        "trade_enabled": False,
+        "reason": "回踩确认",
+    }
+
+    system.notify_strategy_signal("Chan_Auto", "DOGEUSDT_SWAP_OKX.GLOBAL", signal)
+    system.notify_strategy_signal("Chan_Auto", "DOGEUSDT_SWAP_OKX.GLOBAL", signal)
+
+    assert len(messages) == 1
+    assert "Chan_Auto" in messages[0]
+    assert "third_buy" in messages[0]
 
 
 def test_build_okx_connect_config_accepts_private_connect_file() -> None:
