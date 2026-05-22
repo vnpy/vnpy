@@ -113,6 +113,27 @@ def get_strategy_spec(config: dict[str, Any]) -> dict[str, Any]:
         "vt_symbol": strategy_config["vt_symbol"],
         "setting": strategy_config.get("setting", {}),
     }
+
+
+def validate_strategy_safety(config: dict[str, Any]) -> None:
+    """Reject unsafe auto-trading strategy configurations."""
+    spec = get_strategy_spec(config)
+    if spec["class_name"] != CHAN_STRATEGY_CLASS_NAME:
+        return
+
+    setting = spec["setting"]
+    if not bool(setting.get("trade_enabled", True)):
+        return
+
+    risk_config = config.get("risk", {})
+    if not risk_config.get("enabled", False):
+        raise ValueError("ChanStrategy live trading requires risk.enabled=true")
+    if float(setting.get("max_position", 0) or 0) <= 0:
+        raise ValueError("ChanStrategy live trading requires setting.max_position")
+    if float(risk_config.get("max_order_value_usdt", 0) or 0) <= 0:
+        raise ValueError("ChanStrategy live trading requires risk.max_order_value_usdt")
+    if float(risk_config.get("max_daily_loss_pct", 0) or 0) <= 0:
+        raise ValueError("ChanStrategy live trading requires risk.max_daily_loss_pct")
     return (
         strategy.__class__.__name__ == class_name
         and getattr(strategy, "vt_symbol", "") == vt_symbol
@@ -143,6 +164,7 @@ class AutoTradingSystem:
 
         # 加载配置
         self.config = load_trading_config(config_path)
+        validate_strategy_safety(self.config)
         apply_risk_settings(self.config)
 
         self.okx_config_path = okx_config_path
@@ -172,6 +194,8 @@ class AutoTradingSystem:
             "strategy_class": get_strategy_spec(self.config)["class_name"],
             "strategy_inited": False,
             "strategy_trading": False,
+            "strategy_trade_enabled": get_strategy_spec(self.config)["setting"].get("trade_enabled", True),
+            "latest_chan_signal": {},
             "latest_tick_ts": "",
             "latest_order_ts": "",
             "latest_trade_ts": "",
@@ -273,7 +297,25 @@ class AutoTradingSystem:
                 self.state["latest_error"] = msg[:500]
 
         self.state["risk"] = self.risk_engine.snapshot()
+        self.capture_strategy_state()
         self.write_state()
+
+    def capture_strategy_state(self) -> None:
+        """Persist strategy-specific observable state."""
+        try:
+            cta_engine = self.main_engine.get_engine("CtaStrategy")
+            strategy_name = get_strategy_spec(self.config)["strategy_name"]
+            strategy = cta_engine.strategies.get(strategy_name)
+        except Exception:  # noqa: BLE001
+            return
+
+        if not strategy:
+            return
+
+        self.state["strategy_trade_enabled"] = getattr(strategy, "trade_enabled", True)
+        latest_signal = getattr(strategy, "latest_chan_signal", None)
+        if latest_signal:
+            self.state["latest_chan_signal"] = latest_signal
 
     def wait_for_contract(self, vt_symbol: str, timeout: float, interval: float = 0.2):
         """Wait until OKX contract metadata is available."""

@@ -108,6 +108,16 @@ def test_chan_strategy_sends_buy_on_confirmed_signal() -> None:
     assert engine.orders == [(Direction.LONG, Offset.OPEN, 10, 2)]
     assert strategy.latest_signal_type == BuyPointType.SECOND_BUY.value
     assert strategy.active_stop_price == 8
+    assert strategy.latest_chan_signal == {
+        "type": "second_buy",
+        "candidate_index": 1,
+        "confirmed_index": 2,
+        "stop_price": 8,
+        "reason": "test signal",
+        "bar_datetime": "2026-01-01T09:30:00",
+        "bar_close_price": 10,
+        "trade_enabled": True,
+    }
 
 
 def test_chan_strategy_can_run_in_signal_only_mode() -> None:
@@ -118,6 +128,7 @@ def test_chan_strategy_can_run_in_signal_only_mode() -> None:
 
     assert engine.orders == []
     assert strategy.latest_signal_type == BuyPointType.SECOND_BUY.value
+    assert strategy.latest_chan_signal["trade_enabled"] is False
     assert "信号模式" in engine.logs[-1]
 
 

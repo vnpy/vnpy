@@ -33,6 +33,7 @@ class ChanStrategy(CtaTemplate):
     active_stop_price: float = 0
     last_signal_key: str = ""
     exit_order_sent: bool = False
+    latest_chan_signal: dict = {}
 
     parameters = [
         "fixed_size",
@@ -53,6 +54,7 @@ class ChanStrategy(CtaTemplate):
         "active_stop_price",
         "last_signal_key",
         "exit_order_sent",
+        "latest_chan_signal",
     ]
 
     def on_init(self) -> None:
@@ -98,6 +100,16 @@ class ChanStrategy(CtaTemplate):
             if signal_key != self.last_signal_key:
                 self.latest_signal_type = signal.type.value
                 self.latest_signal_reason = signal.reason
+                self.latest_chan_signal = {
+                    "type": signal.type.value,
+                    "candidate_index": signal.candidate_index,
+                    "confirmed_index": signal.confirmed_index,
+                    "stop_price": signal.stop_price,
+                    "reason": signal.reason,
+                    "bar_datetime": bar.datetime.isoformat(),
+                    "bar_close_price": bar.close_price,
+                    "trade_enabled": self.trade_enabled,
+                }
                 if not self.trade_enabled:
                     self.last_signal_key = signal_key
                     self.write_log(

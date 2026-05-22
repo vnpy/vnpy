@@ -142,6 +142,12 @@ def evaluate_health(
 
     if state.get("latest_error"):
         reasons.append("latest error present")
+    if (
+        state.get("strategy_class") == "ChanStrategy"
+        and state.get("strategy_trade_enabled")
+        and not state.get("latest_chan_signal")
+    ):
+        reasons.append("Chan latest signal missing")
 
     status = "healthy" if not reasons else "degraded"
     if "process not alive" in reasons or "state file missing" in reasons:

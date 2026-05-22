@@ -14,6 +14,7 @@ from run_auto_trading import (
     build_okx_connect_config,
     get_strategy_spec,
     is_strategy_config_match,
+    validate_strategy_safety,
 )
 from vnpy.trader.setting import SETTINGS
 
@@ -58,6 +59,51 @@ def test_get_strategy_spec_accepts_chan_strategy_config() -> None:
         "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
         "setting": {"trade_enabled": False, "fixed_size": 1},
     }
+
+
+def test_validate_strategy_safety_allows_chan_signal_only_without_risk_caps() -> None:
+    validate_strategy_safety(
+        {
+            "strategy": {
+                "class_name": "ChanStrategy",
+                "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                "setting": {"trade_enabled": False},
+            },
+            "risk": {"enabled": False},
+        }
+    )
+
+
+def test_validate_strategy_safety_rejects_live_chan_without_risk_caps() -> None:
+    with pytest.raises(ValueError, match="ChanStrategy live trading requires risk.enabled=true"):
+        validate_strategy_safety(
+            {
+                "strategy": {
+                    "class_name": "ChanStrategy",
+                    "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                    "setting": {"trade_enabled": True},
+                },
+                "risk": {"enabled": False},
+            }
+        )
+
+
+def test_validate_strategy_safety_rejects_live_chan_without_position_cap() -> None:
+    with pytest.raises(ValueError, match="max_position"):
+        validate_strategy_safety(
+            {
+                "strategy": {
+                    "class_name": "ChanStrategy",
+                    "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                    "setting": {"trade_enabled": True},
+                },
+                "risk": {
+                    "enabled": True,
+                    "max_order_value_usdt": 100,
+                    "max_daily_loss_pct": 0.01,
+                },
+            }
+        )
 
 
 def test_apply_risk_settings_overlays_runtime_settings(monkeypatch) -> None:

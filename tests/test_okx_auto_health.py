@@ -140,3 +140,34 @@ def test_evaluate_health_warns_when_multiple_auto_trading_processes_run(tmp_path
     assert result["status"] == "degraded"
     assert result["auto_trading_pids"] == [123, 456]
     assert "multiple auto-trading processes: 123,456" in result["reasons"]
+
+
+def test_evaluate_health_warns_live_chan_without_latest_signal_state(tmp_path: Path) -> None:
+    state_path = tmp_path / "state.json"
+    state_path.write_text(
+        json.dumps(
+            {
+                "pid": 123,
+                "okx_server": "DEMO",
+                "contract_ready": True,
+                "strategy_class": "ChanStrategy",
+                "strategy_inited": True,
+                "strategy_trading": True,
+                "strategy_trade_enabled": True,
+                "latest_tick_ts": "2026-05-16T12:00:00+00:00",
+                "latest_error": "",
+            }
+        )
+    )
+    pid_path = tmp_path / "run.pid"
+    pid_path.write_text("123")
+
+    result = evaluate_health(
+        state_path=state_path,
+        pid_path=pid_path,
+        now_iso="2026-05-16T12:00:30+00:00",
+        process_alive=lambda _pid: True,
+    )
+
+    assert result["status"] == "degraded"
+    assert "Chan latest signal missing" in result["reasons"]
