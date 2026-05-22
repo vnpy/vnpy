@@ -12,6 +12,7 @@ from run_auto_trading import (
     TELEGRAM_STRATEGY_CLASS_NAME,
     apply_risk_settings,
     build_okx_connect_config,
+    format_strategy_label,
     get_strategy_spec,
     is_strategy_config_match,
     validate_strategy_safety,
@@ -104,6 +105,17 @@ def test_validate_strategy_safety_rejects_live_chan_without_position_cap() -> No
                 },
             }
         )
+
+
+def test_format_strategy_label_handles_chan_without_doublema_windows() -> None:
+    label = format_strategy_label(
+        {
+            "class_name": "ChanStrategy",
+            "setting": {"trade_enabled": False, "fixed_size": 1},
+        }
+    )
+
+    assert label == "ChanStrategy ({'trade_enabled': False, 'fixed_size': 1})"
 
 
 def test_apply_risk_settings_overlays_runtime_settings(monkeypatch) -> None:

@@ -134,6 +134,18 @@ def validate_strategy_safety(config: dict[str, Any]) -> None:
         raise ValueError("ChanStrategy live trading requires risk.max_order_value_usdt")
     if float(risk_config.get("max_daily_loss_pct", 0) or 0) <= 0:
         raise ValueError("ChanStrategy live trading requires risk.max_daily_loss_pct")
+
+
+def format_strategy_label(strategy_config: dict[str, Any]) -> str:
+    """Return a human-readable strategy label for reports."""
+    class_name = strategy_config.get("class_name", "DoubleMA")
+    setting = strategy_config.get("setting", {})
+    if class_name in {"DoubleMA", TELEGRAM_STRATEGY_CLASS_NAME}:
+        return (
+            f"DoubleMA (快线={setting.get('fast_window', '-')}, "
+            f"慢线={setting.get('slow_window', '-')})"
+        )
+    return f"{class_name} ({setting})"
     return (
         strategy.__class__.__name__ == class_name
         and getattr(strategy, "vt_symbol", "") == vt_symbol
@@ -485,10 +497,7 @@ class AutoTradingSystem:
             print(
                 f"回测周期: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
             )
-            print(
-                f"策略: DoubleMA (快线={strategy_config['setting']['fast_window']}, "
-                f"慢线={strategy_config['setting']['slow_window']})"
-            )
+            print(f"策略: {format_strategy_label(strategy_config)}")
             print("-" * 60)
             print(f"总收益率: {self.backtest_report['total_return']:+.2f}%")
             print(f"夏普比率: {self.backtest_report['sharpe_ratio']:.2f}")
