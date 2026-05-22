@@ -100,3 +100,19 @@ def test_build_segments_starts_new_segment_on_reversal() -> None:
     ]
     assert segments[1].start_stroke_id == 2
     assert segments[1].end_stroke_id == 5
+
+
+def test_build_segments_does_not_reverse_without_breaking_extreme() -> None:
+    strokes = [
+        _stroke(0, ChanDirection.UP, 9, 13),
+        _stroke(1, ChanDirection.DOWN, 13, 10),
+        _stroke(2, ChanDirection.UP, 10, 14),
+        _stroke(3, ChanDirection.DOWN, 14, 9.2),
+        _stroke(4, ChanDirection.UP, 9.2, 13),
+        _stroke(5, ChanDirection.DOWN, 13, 9.1),
+    ]
+
+    segments = build_segments(strokes, ChanConfig())
+
+    assert len(segments) == 1
+    assert segments[0].direction is ChanDirection.UP

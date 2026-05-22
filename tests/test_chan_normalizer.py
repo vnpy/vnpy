@@ -51,3 +51,28 @@ def test_normalize_bars_keeps_non_included_bars() -> None:
     normalized = normalize_bars(bars)
 
     assert normalized == bars
+
+
+def test_normalize_bars_does_not_mutate_input_bars() -> None:
+    bars = make_inclusion_case()
+    original = tuple(bars)
+
+    normalize_bars(bars)
+
+    assert tuple(bars) == original
+
+
+def test_normalize_bars_merges_multiple_bars_into_same_standard_bar() -> None:
+    bars = [
+        ChanBar(0, make_inclusion_case()[0].datetime, 10, 11, 9, 10.5, (0,)),
+        ChanBar(1, make_inclusion_case()[1].datetime, 10.5, 12, 10, 11.5, (1,)),
+        ChanBar(2, make_inclusion_case()[2].datetime, 11.5, 11.8, 10.4, 11, (2,)),
+        ChanBar(3, make_inclusion_case()[3].datetime, 11, 11.7, 10.6, 11.2, (3,)),
+    ]
+
+    normalized = normalize_bars(bars)
+
+    assert len(normalized) == 2
+    assert normalized[1].source_indexes == (1, 2, 3)
+    assert normalized[1].high_price == 12
+    assert normalized[1].low_price == 10.6
