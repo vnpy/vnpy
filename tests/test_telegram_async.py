@@ -175,3 +175,25 @@ def test_shared_notifier_submit_uses_running_loop(tmp_path: Path) -> None:
     asyncio.run(scenario())
 
     bot.send_message.assert_awaited_with("hello")
+
+
+def test_notifier_noops_without_telegram_credentials(tmp_path: Path) -> None:
+    cfg = {
+        "telegram": {"bot_token": "", "chat_id": ""},
+        "approval": {"enabled": False, "timeout_seconds": 1},
+        "notification": {"mode": "notify_only"},
+    }
+    cfg_path = tmp_path / "cfg.json"
+    cfg_path.write_text(json.dumps(cfg))
+
+    from telegram_notifier import TelegramTradeBot
+
+    bot = TelegramTradeBot(str(cfg_path))
+
+    async def scenario() -> None:
+        await bot.start()
+        await bot.send_message("hello")
+        await bot.stop()
+
+    asyncio.run(scenario())
+    assert bot.enabled is False

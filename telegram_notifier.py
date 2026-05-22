@@ -32,7 +32,8 @@ class TelegramTradeBot:
             self.mode = "approval_required" if self.approval_enabled else "notify_only"
         self.timeout = config["approval"]["timeout_seconds"]
 
-        self.bot = Bot(token=self.bot_token)
+        self.enabled = bool(self.bot_token and self.chat_id)
+        self.bot = Bot(token=self.bot_token) if self.enabled else None
         self.pending_approvals: dict[str, dict] = {}
         # Per-trade asyncio.Event so handlers resolve approvals instantly instead
         # of polling once per second.
@@ -47,6 +48,8 @@ class TelegramTradeBot:
     async def start(self):
         """启动机器人"""
         self.loop = asyncio.get_running_loop()
+        if not self.enabled:
+            return
 
         self.application = Application.builder().token(self.bot_token).build()
 
@@ -74,6 +77,8 @@ class TelegramTradeBot:
 
     async def stop(self):
         """停止机器人"""
+        if not self.enabled:
+            return
         if self.application:
             await self.send_message("🛑 自动交易系统已停止")
             if self.polling and self.application.updater:
@@ -173,6 +178,8 @@ class TelegramTradeBot:
 
     async def send_message(self, message: str):
         """发送消息"""
+        if not self.enabled or not self.bot:
+            return
         try:
             await self.bot.send_message(
                 chat_id=self.chat_id, text=message, parse_mode="HTML"
