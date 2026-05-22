@@ -1,3 +1,4 @@
+from .analyzer import ChanAnalyzer
 from .config import ChanConfig
 from .object import (
     BuyPointType,
@@ -16,6 +17,7 @@ from .object import (
 __all__ = [
     "BuyPointType",
     "BuySignal",
+    "ChanAnalyzer",
     "ChanBar",
     "ChanConfig",
     "ChanDirection",
