@@ -23,7 +23,7 @@ def detect_buy_signals(
 
     signals: list[BuySignal] = []
 
-    second_buy = _detect_second_buy(segments, config)
+    second_buy = _detect_second_buy(segments, pivots, config)
     if second_buy:
         signals.append(second_buy)
 
@@ -47,6 +47,7 @@ def detect_buy_signals(
 
 def _detect_second_buy(
     segments: Sequence[Segment],
+    pivots: Sequence[Pivot],
     config: ChanConfig,
 ) -> BuySignal | None:
     if len(segments) < 4:
@@ -64,6 +65,8 @@ def _detect_second_buy(
     if pullback.low_price < down.low_price - config.second_buy_low_tolerance:
         return None
     if confirm.high_price <= rebound.high_price:
+        return None
+    if _segments_are_inside_latest_pivot((down, rebound, pullback, confirm), pivots):
         return None
 
     return BuySignal(
@@ -83,7 +86,11 @@ def _detect_third_buy(
     trend: TrendState,
     config: ChanConfig,
 ) -> BuySignal | None:
-    if len(segments) < 3 or not pivots or trend is TrendState.DOWN:
+    if (
+        len(segments) < 3
+        or not pivots
+        or trend in {TrendState.DOWN, TrendState.UNKNOWN}
+    ):
         return None
 
     pivot = pivots[-1]
@@ -95,9 +102,11 @@ def _detect_third_buy(
         or confirm.direction is not ChanDirection.UP
     ):
         return None
+    if leave.id <= pivot.end_segment_id:
+        return None
     if leave.high_price <= pivot.high_price:
         return None
-    if pullback.low_price <= pivot.high_price - config.third_buy_pullback_tolerance:
+    if pullback.low_price < pivot.high_price - config.third_buy_pullback_tolerance:
         return None
     if confirm.high_price <= leave.high_price:
         return None
@@ -111,4 +120,21 @@ def _detect_third_buy(
         reason="confirmed third buy: pullback stays above pivot and turns up",
         segment_id=confirm.id,
         pivot_id=pivot.id,
+    )
+
+
+def _segments_are_inside_latest_pivot(
+    segments: Sequence[Segment],
+    pivots: Sequence[Pivot],
+) -> bool:
+    if not pivots:
+        return False
+
+    pivot = pivots[-1]
+    return all(
+        segment.id >= pivot.start_segment_id
+        and segment.id <= pivot.end_segment_id
+        and segment.low_price >= pivot.low_price
+        and segment.high_price <= pivot.high_price
+        for segment in segments
     )

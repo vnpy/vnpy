@@ -72,6 +72,42 @@ def test_detect_buy_signals_rejects_second_buy_when_low_breaks() -> None:
     assert [signal.type for signal in signals] == []
 
 
+def test_detect_buy_signals_rejects_second_buy_inside_same_pivot_range() -> None:
+    pivot = _pivot(0, 0, 3, 7.5, 12.5)
+    segments = [
+        _segment(0, ChanDirection.DOWN, 8, 12),
+        _segment(1, ChanDirection.UP, 8, 10.5),
+        _segment(2, ChanDirection.DOWN, 8.5, 10),
+        _segment(3, ChanDirection.UP, 8.5, 11),
+    ]
+
+    signals = detect_buy_signals(segments, [pivot], TrendState.RANGE, ChanConfig())
+
+    assert [signal.type for signal in signals] == []
+
+
+def test_detect_buy_signals_applies_second_buy_tolerance_boundary() -> None:
+    config = ChanConfig(second_buy_low_tolerance=0.2)
+    boundary_segments = [
+        _segment(0, ChanDirection.DOWN, 8, 13),
+        _segment(1, ChanDirection.UP, 8, 11),
+        _segment(2, ChanDirection.DOWN, 7.8, 10),
+        _segment(3, ChanDirection.UP, 7.8, 12),
+    ]
+    broken_segments = [
+        _segment(0, ChanDirection.DOWN, 8, 13),
+        _segment(1, ChanDirection.UP, 8, 11),
+        _segment(2, ChanDirection.DOWN, 7.79, 10),
+        _segment(3, ChanDirection.UP, 7.79, 12),
+    ]
+
+    boundary = detect_buy_signals(boundary_segments, [], TrendState.RANGE, config)
+    broken = detect_buy_signals(broken_segments, [], TrendState.RANGE, config)
+
+    assert [signal.type for signal in boundary] == [BuyPointType.SECOND_BUY]
+    assert [signal.type for signal in broken] == []
+
+
 def test_detect_buy_signals_confirms_third_buy() -> None:
     pivot = _pivot(0, 0, 2, 10, 12)
     segments = [
@@ -103,6 +139,81 @@ def test_detect_buy_signals_rejects_third_buy_when_pullback_reenters_pivot() -> 
         _segment(3, ChanDirection.UP, 12.2, 14),
         _segment(4, ChanDirection.DOWN, 11.9, 13),
         _segment(5, ChanDirection.UP, 11.9, 15),
+    ]
+
+    signals = detect_buy_signals(segments, [pivot], TrendState.UP, ChanConfig())
+
+    assert [signal.type for signal in signals] == []
+
+
+def test_detect_buy_signals_rejects_third_buy_when_trend_is_unknown() -> None:
+    pivot = _pivot(0, 0, 2, 10, 12)
+    segments = [
+        _segment(0, ChanDirection.UP, 9, 13),
+        _segment(1, ChanDirection.DOWN, 10, 12),
+        _segment(2, ChanDirection.UP, 10.5, 13),
+        _segment(3, ChanDirection.UP, 12.2, 14),
+        _segment(4, ChanDirection.DOWN, 12.1, 13),
+        _segment(5, ChanDirection.UP, 12.1, 15),
+    ]
+
+    signals = detect_buy_signals(segments, [pivot], TrendState.UNKNOWN, ChanConfig())
+
+    assert [signal.type for signal in signals] == []
+
+
+def test_detect_buy_signals_requires_third_buy_leave_after_pivot() -> None:
+    pivot = _pivot(0, 0, 4, 10, 12)
+    segments = [
+        _segment(0, ChanDirection.UP, 9, 13),
+        _segment(1, ChanDirection.DOWN, 10, 12),
+        _segment(2, ChanDirection.UP, 10.5, 13),
+        _segment(3, ChanDirection.UP, 12.2, 14),
+        _segment(4, ChanDirection.DOWN, 12.1, 13),
+        _segment(5, ChanDirection.UP, 12.1, 15),
+    ]
+
+    signals = detect_buy_signals(segments, [pivot], TrendState.UP, ChanConfig())
+
+    assert [signal.type for signal in signals] == []
+
+
+def test_detect_buy_signals_applies_third_buy_tolerance_boundary() -> None:
+    pivot = _pivot(0, 0, 2, 10, 12)
+    config = ChanConfig(third_buy_pullback_tolerance=0.2)
+    boundary_segments = [
+        _segment(0, ChanDirection.UP, 9, 13),
+        _segment(1, ChanDirection.DOWN, 10, 12),
+        _segment(2, ChanDirection.UP, 10.5, 13),
+        _segment(3, ChanDirection.UP, 12.2, 14),
+        _segment(4, ChanDirection.DOWN, 11.8, 13),
+        _segment(5, ChanDirection.UP, 11.8, 15),
+    ]
+    broken_segments = [
+        _segment(0, ChanDirection.UP, 9, 13),
+        _segment(1, ChanDirection.DOWN, 10, 12),
+        _segment(2, ChanDirection.UP, 10.5, 13),
+        _segment(3, ChanDirection.UP, 12.2, 14),
+        _segment(4, ChanDirection.DOWN, 11.79, 13),
+        _segment(5, ChanDirection.UP, 11.79, 15),
+    ]
+
+    boundary = detect_buy_signals(boundary_segments, [pivot], TrendState.UP, config)
+    broken = detect_buy_signals(broken_segments, [pivot], TrendState.UP, config)
+
+    assert [signal.type for signal in boundary] == [BuyPointType.THIRD_BUY]
+    assert [signal.type for signal in broken] == []
+
+
+def test_detect_buy_signals_uses_strong_third_buy_confirmation() -> None:
+    pivot = _pivot(0, 0, 2, 10, 12)
+    segments = [
+        _segment(0, ChanDirection.UP, 9, 13),
+        _segment(1, ChanDirection.DOWN, 10, 12),
+        _segment(2, ChanDirection.UP, 10.5, 13),
+        _segment(3, ChanDirection.UP, 12.2, 14),
+        _segment(4, ChanDirection.DOWN, 12.1, 13),
+        _segment(5, ChanDirection.UP, 12.1, 14),
     ]
 
     signals = detect_buy_signals(segments, [pivot], TrendState.UP, ChanConfig())
