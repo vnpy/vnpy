@@ -159,7 +159,8 @@ class AutoTradingSystem:
         else:
             config_path = Path(config_path)
 
-        config_path = resolve_trading_config_path(config_path)
+        config_path = resolve_trading_config_path(config_path).resolve()
+        self.config_path = config_path
         print(f"📂 加载配置文件: {config_path}")
 
         # 加载配置
@@ -211,7 +212,7 @@ class AutoTradingSystem:
         self.write_state()
 
         # 初始化Telegram机器人
-        self.telegram = TelegramTradeBot(config_path)
+        self.telegram = TelegramTradeBot(self.config_path)
 
         # 交易计数器
         self.trade_counter = 0
