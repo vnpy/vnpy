@@ -12,6 +12,7 @@ from run_auto_trading import (
     TELEGRAM_STRATEGY_CLASS_NAME,
     apply_risk_settings,
     build_okx_connect_config,
+    get_strategy_spec,
     is_strategy_config_match,
 )
 from vnpy.trader.setting import SETTINGS
@@ -19,6 +20,44 @@ from vnpy.trader.setting import SETTINGS
 
 def test_auto_trading_uses_telegram_strategy_class() -> None:
     assert TELEGRAM_STRATEGY_CLASS_NAME == "DoubleMATelegramStrategy"
+
+
+def test_get_strategy_spec_defaults_to_legacy_doublema() -> None:
+    spec = get_strategy_spec(
+        {
+            "strategy": {
+                "vt_symbol": "DOGEUSDT_SWAP_OKX.GLOBAL",
+                "setting": {"fast_window": 10, "slow_window": 20},
+            }
+        }
+    )
+
+    assert spec == {
+        "class_name": TELEGRAM_STRATEGY_CLASS_NAME,
+        "strategy_name": STRATEGY_NAME,
+        "vt_symbol": "DOGEUSDT_SWAP_OKX.GLOBAL",
+        "setting": {"fast_window": 10, "slow_window": 20},
+    }
+
+
+def test_get_strategy_spec_accepts_chan_strategy_config() -> None:
+    spec = get_strategy_spec(
+        {
+            "strategy": {
+                "class_name": "ChanStrategy",
+                "strategy_name": "Chan_Auto",
+                "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                "setting": {"trade_enabled": False, "fixed_size": 1},
+            }
+        }
+    )
+
+    assert spec == {
+        "class_name": "ChanStrategy",
+        "strategy_name": "Chan_Auto",
+        "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+        "setting": {"trade_enabled": False, "fixed_size": 1},
+    }
 
 
 def test_apply_risk_settings_overlays_runtime_settings(monkeypatch) -> None:
@@ -89,7 +128,65 @@ def test_setup_strategy_registers_telegram_strategy_class(monkeypatch, tmp_path)
         system.event_engine.stop()
 
     assert "DoubleMATelegramStrategy" in fake_cta.classes
+    assert "ChanStrategy" in fake_cta.classes
     assert fake_cta.added["class_name"] == "DoubleMATelegramStrategy"
+
+
+def test_setup_strategy_registers_configured_chan_strategy(monkeypatch, tmp_path) -> None:
+    import run_auto_trading
+
+    cfg = {
+        "telegram": {"bot_token": "", "chat_id": ""},
+        "strategy": {
+            "class_name": "ChanStrategy",
+            "strategy_name": "Chan_Auto",
+            "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+            "setting": {"trade_enabled": False, "fixed_size": 1},
+        },
+        "backtest": {"capital": 10000},
+    }
+    cfg_path = tmp_path / "trading_config.json"
+    cfg_path.write_text(json.dumps(cfg), encoding="utf-8")
+
+    class FakeCtaEngine:
+        def __init__(self) -> None:
+            self.classes = {}
+            self.added = None
+            self.strategies = {}
+
+        def init_engine(self) -> None:
+            pass
+
+        def add_strategy(self, **kwargs) -> None:
+            self.added = kwargs
+            self.strategies[kwargs["strategy_name"]] = SimpleNamespace(
+                vt_symbol=kwargs["vt_symbol"],
+                trading=False,
+                telegram=None,
+                get_parameters=lambda: kwargs["setting"],
+            )
+
+    fake_cta = FakeCtaEngine()
+    fake_main = SimpleNamespace(
+        add_app=lambda _app: None,
+        get_engine=lambda _name: fake_cta,
+        get_contract=lambda _vt_symbol: object(),
+        get_gateway=lambda _gateway: SimpleNamespace(public_api=SimpleNamespace(connected=True)),
+        subscribe=lambda _req, _gateway: None,
+    )
+
+    monkeypatch.setattr(run_auto_trading, "TelegramTradeBot", lambda _path: object())
+    system = run_auto_trading.AutoTradingSystem(config_path=str(cfg_path))
+    system.main_engine = fake_main
+
+    try:
+        system.setup_strategy()
+    finally:
+        system.event_engine.stop()
+
+    assert "ChanStrategy" in fake_cta.classes
+    assert fake_cta.added["class_name"] == "ChanStrategy"
+    assert fake_cta.added["strategy_name"] == "Chan_Auto"
 
 
 def test_build_okx_connect_config_accepts_private_connect_file() -> None:

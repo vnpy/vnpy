@@ -25,6 +25,8 @@ class ChanStrategy(CtaTemplate):
     second_buy_low_tolerance: float = 0
     max_bars: int = 300
     price_add: float = 0
+    trade_enabled: bool = True
+    max_position: float = 100
 
     latest_signal_type: str = ""
     latest_signal_reason: str = ""
@@ -42,6 +44,8 @@ class ChanStrategy(CtaTemplate):
         "second_buy_low_tolerance",
         "max_bars",
         "price_add",
+        "trade_enabled",
+        "max_position",
     ]
     variables = [
         "latest_signal_type",
@@ -92,9 +96,26 @@ class ChanStrategy(CtaTemplate):
             signal = snapshot.signals[-1]
             signal_key = f"{signal.type.value}:{signal.confirmed_index}"
             if signal_key != self.last_signal_key:
-                self.buy(bar.close_price + self.price_add, self.fixed_size)
                 self.latest_signal_type = signal.type.value
                 self.latest_signal_reason = signal.reason
+                if not self.trade_enabled:
+                    self.last_signal_key = signal_key
+                    self.write_log(
+                        f"缠论买点触发（信号模式，不下单）: {signal.type.value}, "
+                        f"stop={signal.stop_price}, reason={signal.reason}"
+                    )
+                    self.put_event()
+                    return
+
+                if self.fixed_size > self.max_position:
+                    self.last_signal_key = signal_key
+                    self.write_log(
+                        f"缠论买点跳过: 下单数量 {self.fixed_size} 超过最大仓位 {self.max_position}"
+                    )
+                    self.put_event()
+                    return
+
+                self.buy(bar.close_price + self.price_add, self.fixed_size)
                 self.active_stop_price = signal.stop_price
                 self.last_signal_key = signal_key
                 self.exit_order_sent = False

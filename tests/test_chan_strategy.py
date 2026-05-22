@@ -110,6 +110,27 @@ def test_chan_strategy_sends_buy_on_confirmed_signal() -> None:
     assert strategy.active_stop_price == 8
 
 
+def test_chan_strategy_can_run_in_signal_only_mode() -> None:
+    strategy, engine = _strategy({"trade_enabled": False})
+    strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
+
+    strategy.on_bar(_bar(0, 10))
+
+    assert engine.orders == []
+    assert strategy.latest_signal_type == BuyPointType.SECOND_BUY.value
+    assert "信号模式" in engine.logs[-1]
+
+
+def test_chan_strategy_respects_max_position() -> None:
+    strategy, engine = _strategy({"fixed_size": 2, "max_position": 1})
+    strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
+
+    strategy.on_bar(_bar(0, 10))
+
+    assert engine.orders == []
+    assert "超过最大仓位" in engine.logs[-1]
+
+
 def test_chan_strategy_does_not_duplicate_same_signal() -> None:
     strategy, engine = _strategy()
     strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])

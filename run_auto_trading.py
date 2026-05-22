@@ -26,6 +26,7 @@ from vnpy.trader.utility import extract_vt_symbol, get_file_path
 from vnpy_okx import OkxGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctastrategy.strategies.double_ma_strategy import DoubleMaStrategy
+from vnpy_ctastrategy.strategies.chan_strategy import ChanStrategy
 
 from double_ma_telegram_strategy import DoubleMATelegramStrategy
 from telegram_notifier import TelegramTradeBot
@@ -33,6 +34,7 @@ from trading_config import load_trading_config, resolve_trading_config_path
 
 
 TELEGRAM_STRATEGY_CLASS_NAME = "DoubleMATelegramStrategy"
+CHAN_STRATEGY_CLASS_NAME = "ChanStrategy"
 STRATEGY_NAME = "DoubleMA_Auto"
 GATEWAY_NAME = "OKX"
 STATE_FILENAME = "okx_auto_state.json"
@@ -100,6 +102,17 @@ def is_strategy_config_match(
         if hasattr(strategy, "get_parameters")
         else getattr(strategy, "setting", setting)
     )
+
+
+def get_strategy_spec(config: dict[str, Any]) -> dict[str, Any]:
+    """Return normalized managed strategy config."""
+    strategy_config = config["strategy"]
+    return {
+        "class_name": strategy_config.get("class_name", TELEGRAM_STRATEGY_CLASS_NAME),
+        "strategy_name": strategy_config.get("strategy_name", STRATEGY_NAME),
+        "vt_symbol": strategy_config["vt_symbol"],
+        "setting": strategy_config.get("setting", {}),
+    }
     return (
         strategy.__class__.__name__ == class_name
         and getattr(strategy, "vt_symbol", "") == vt_symbol
@@ -155,7 +168,8 @@ class AutoTradingSystem:
             "okx_server": "",
             "simulated": None,
             "contract_ready": False,
-            "strategy_name": STRATEGY_NAME,
+            "strategy_name": get_strategy_spec(self.config)["strategy_name"],
+            "strategy_class": get_strategy_spec(self.config)["class_name"],
             "strategy_inited": False,
             "strategy_trading": False,
             "latest_tick_ts": "",
@@ -204,11 +218,12 @@ class AutoTradingSystem:
         cta_engine = self.main_engine.get_engine("CtaStrategy")
         cta_engine.telegram_notifier = self.telegram
         cta_engine.classes[TELEGRAM_STRATEGY_CLASS_NAME] = DoubleMATelegramStrategy
+        cta_engine.classes[CHAN_STRATEGY_CLASS_NAME] = ChanStrategy
         cta_engine.init_engine()
 
         # 策略配置 (配置文件中已使用正确的格式: DOGEUSDT_SWAP_OKX.GLOBAL)
-        strategy_config = self.config["strategy"]
-        vt_symbol = strategy_config["vt_symbol"]
+        strategy_spec = get_strategy_spec(self.config)
+        vt_symbol = strategy_spec["vt_symbol"]
         self.wait_for_contract(vt_symbol, timeout=self.contract_timeout)
         self.wait_for_gateway_api("public_api", timeout=self.contract_timeout)
 
@@ -219,10 +234,8 @@ class AutoTradingSystem:
         self.main_engine.subscribe(req, GATEWAY_NAME)
 
         print(f"✅ 策略已添加: {vt_symbol}")
-        print(
-            f"   参数: 快线={strategy_config['setting']['fast_window']}, "
-            f"慢线={strategy_config['setting']['slow_window']}"
-        )
+        print(f"   策略: {strategy_spec['strategy_name']} ({strategy_spec['class_name']})")
+        print(f"   参数: {strategy_spec['setting']}")
 
     def register_state_handlers(self) -> None:
         """Register handlers that persist process health state for schedulers."""
@@ -244,7 +257,7 @@ class AutoTradingSystem:
         now = datetime.now().astimezone().isoformat()
         data = event.data
         if event.type.startswith(EVENT_TICK):
-            if getattr(data, "vt_symbol", "") == self.config["strategy"]["vt_symbol"]:
+            if getattr(data, "vt_symbol", "") == get_strategy_spec(self.config)["vt_symbol"]:
                 self.state["latest_tick_ts"] = now
                 self.state["latest_price"] = getattr(data, "last_price", 0)
         elif event.type.startswith(EVENT_ORDER):
@@ -309,49 +322,53 @@ class AutoTradingSystem:
 
     def upsert_strategy(self, cta_engine) -> None:
         """Create or replace the managed CTA strategy with desired settings."""
-        strategy_config = self.config["strategy"]
-        vt_symbol = strategy_config["vt_symbol"]
-        setting = strategy_config["setting"]
-        existing = cta_engine.strategies.get(STRATEGY_NAME)
+        strategy_spec = get_strategy_spec(self.config)
+        strategy_name = strategy_spec["strategy_name"]
+        class_name = strategy_spec["class_name"]
+        vt_symbol = strategy_spec["vt_symbol"]
+        setting = strategy_spec["setting"]
+        existing = cta_engine.strategies.get(strategy_name)
 
         if existing and not is_strategy_config_match(
             existing,
-            TELEGRAM_STRATEGY_CLASS_NAME,
+            class_name,
             vt_symbol,
             setting,
         ):
             if getattr(existing, "trading", False):
-                cta_engine.stop_strategy(STRATEGY_NAME)
-            if not cta_engine.remove_strategy(STRATEGY_NAME):
-                raise RuntimeError(f"failed to remove stale strategy {STRATEGY_NAME}")
+                cta_engine.stop_strategy(strategy_name)
+            if not cta_engine.remove_strategy(strategy_name):
+                raise RuntimeError(f"failed to remove stale strategy {strategy_name}")
             existing = None
 
         if not existing:
             cta_engine.add_strategy(
-                class_name=TELEGRAM_STRATEGY_CLASS_NAME,
-                strategy_name=STRATEGY_NAME,
+                class_name=class_name,
+                strategy_name=strategy_name,
                 vt_symbol=vt_symbol,
                 setting=setting,
             )
 
-        strategy = cta_engine.strategies[STRATEGY_NAME]
-        strategy.telegram = self.telegram
+        strategy = cta_engine.strategies[strategy_name]
+        if hasattr(strategy, "telegram"):
+            strategy.telegram = self.telegram
 
     async def init_and_start_strategy(self) -> None:
         """Initialize and start strategy with explicit readiness checks."""
         cta_engine = self.main_engine.get_engine("CtaStrategy")
-        future = cta_engine.init_strategy(STRATEGY_NAME)
+        strategy_name = get_strategy_spec(self.config)["strategy_name"]
+        future = cta_engine.init_strategy(strategy_name)
         await asyncio.to_thread(future.result, self.init_timeout)
 
-        strategy = cta_engine.strategies[STRATEGY_NAME]
+        strategy = cta_engine.strategies[strategy_name]
         if not strategy.inited:
-            raise RuntimeError(f"{STRATEGY_NAME} init did not complete")
+            raise RuntimeError(f"{strategy_name} init did not complete")
         self.state["strategy_inited"] = True
         self.write_state()
 
-        cta_engine.start_strategy(STRATEGY_NAME)
+        cta_engine.start_strategy(strategy_name)
         if not strategy.trading:
-            raise RuntimeError(f"{STRATEGY_NAME} did not start")
+            raise RuntimeError(f"{strategy_name} did not start")
         self.state["strategy_trading"] = True
         self.write_state()
 
@@ -390,8 +407,13 @@ class AutoTradingSystem:
             )
 
             # 添加策略
+            strategy_class = (
+                ChanStrategy
+                if strategy_config.get("class_name") == CHAN_STRATEGY_CLASS_NAME
+                else DoubleMaStrategy
+            )
             engine.add_strategy(
-                strategy_class=DoubleMaStrategy,
+                strategy_class=strategy_class,
                 setting=strategy_config["setting"],
             )
 
@@ -473,7 +495,7 @@ class AutoTradingSystem:
 
             # 5. 启动策略
             await self.init_and_start_strategy()
-            self.wait_for_tick(self.config["strategy"]["vt_symbol"], timeout=self.tick_timeout)
+            self.wait_for_tick(get_strategy_spec(self.config)["vt_symbol"], timeout=self.tick_timeout)
 
             print("\n✅ 系统启动完成！")
             print("📱 Telegram已连接，交易信号将推送到你的手机")
