@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
@@ -10,11 +11,13 @@ import pytest
 from run_auto_trading import (
     STRATEGY_NAME,
     TELEGRAM_STRATEGY_CLASS_NAME,
+    build_backtest_strategy_setting,
     apply_risk_settings,
     build_strategy_signal_key,
     build_okx_connect_config,
     format_strategy_label,
     get_strategy_spec,
+    get_backtest_period,
     is_strategy_config_match,
     validate_strategy_safety,
 )
@@ -108,6 +111,51 @@ def test_validate_strategy_safety_rejects_live_chan_without_position_cap() -> No
         )
 
 
+def test_validate_strategy_safety_rejects_live_risk_per_trade_without_order_cap() -> None:
+    with pytest.raises(ValueError, match="max_order"):
+        validate_strategy_safety(
+            {
+                "strategy": {
+                    "class_name": "ChanStrategy",
+                    "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                    "setting": {
+                        "trade_enabled": True,
+                        "sizing_mode": "risk_per_trade",
+                        "risk_per_trade": 0.01,
+                        "max_position": 0.05,
+                    },
+                },
+                "risk": {
+                    "enabled": True,
+                    "max_daily_loss_pct": 0.01,
+                },
+            }
+        )
+
+
+def test_validate_strategy_safety_rejects_live_risk_per_trade_without_risk_ratio() -> None:
+    with pytest.raises(ValueError, match="risk_per_trade"):
+        validate_strategy_safety(
+            {
+                "strategy": {
+                    "class_name": "ChanStrategy",
+                    "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                    "setting": {
+                        "trade_enabled": True,
+                        "sizing_mode": "risk_per_trade",
+                        "risk_per_trade": 0,
+                        "max_position": 0.05,
+                    },
+                },
+                "risk": {
+                    "enabled": True,
+                    "max_order_value_usdt": 100,
+                    "max_daily_loss_pct": 0.01,
+                },
+            }
+        )
+
+
 def test_format_strategy_label_handles_chan_without_doublema_windows() -> None:
     label = format_strategy_label(
         {
@@ -122,6 +170,7 @@ def test_format_strategy_label_handles_chan_without_doublema_windows() -> None:
 def test_build_strategy_signal_key_is_stable_for_deduplication() -> None:
     key = build_strategy_signal_key(
         {
+            "signal_key": "second_buy:62975.6:confirmed",
             "type": "third_buy",
             "confirmed_index": 12,
             "bar_datetime": "2026-05-22T12:00:00+08:00",
@@ -129,7 +178,43 @@ def test_build_strategy_signal_key_is_stable_for_deduplication() -> None:
         }
     )
 
-    assert key == "third_buy:12:2026-05-22T12:00:00+08:00"
+    assert key == "second_buy:62975.6:confirmed"
+
+
+def test_backtest_strategy_setting_enables_trades_without_changing_runtime_setting() -> None:
+    strategy_config = {
+        "setting": {
+            "trade_enabled": False,
+            "fixed_size": 1,
+        }
+    }
+
+    setting = build_backtest_strategy_setting(
+        strategy_config,
+        {"trade_enabled": True},
+    )
+
+    assert setting["trade_enabled"] is True
+    assert strategy_config["setting"]["trade_enabled"] is False
+
+
+def test_backtest_strategy_setting_can_disable_trades_for_signal_reports() -> None:
+    setting = build_backtest_strategy_setting(
+        {"setting": {"trade_enabled": True, "fixed_size": 1}},
+        {"trade_enabled": False},
+    )
+
+    assert setting["trade_enabled"] is False
+
+
+def test_get_backtest_period_uses_configured_days() -> None:
+    start, end = get_backtest_period(
+        {"days": 365},
+        end=datetime(2026, 5, 23),
+    )
+
+    assert start == datetime(2025, 5, 23)
+    assert end == datetime(2026, 5, 23)
 
 
 def test_apply_risk_settings_overlays_runtime_settings(monkeypatch) -> None:

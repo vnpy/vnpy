@@ -73,8 +73,10 @@ def test_chan_snapshot_is_immutable_container() -> None:
         strokes=(),
         segments=(),
         pivots=(),
+        segment_metrics=(),
         trend=TrendState.UNKNOWN,
         signals=(),
+        sell_signals=(),
     )
 
     assert snapshot.bars == (bar,)

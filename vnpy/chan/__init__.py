@@ -10,6 +10,9 @@ from .object import (
     FractalType,
     Pivot,
     Segment,
+    SegmentMetric,
+    SellPointType,
+    SellSignal,
     Stroke,
     TrendState,
 )
@@ -26,6 +29,9 @@ __all__ = [
     "FractalType",
     "Pivot",
     "Segment",
+    "SegmentMetric",
+    "SellPointType",
+    "SellSignal",
     "Stroke",
     "TrendState",
 ]

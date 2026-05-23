@@ -4,16 +4,16 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
-from vnpy.chan import BuyPointType, BuySignal, ChanSnapshot, TrendState
+from vnpy.chan import BuyPointType, BuySignal, ChanSnapshot, SellPointType, SellSignal, TrendState
 from vnpy.trader.constant import Direction, Exchange, Interval, Offset
-from vnpy.trader.object import BarData, TickData
+from vnpy.trader.object import BarData, TickData, TradeData
 from vnpy_ctastrategy.base import EngineType
 from vnpy_ctastrategy.strategies.chan_strategy import ChanStrategy
 
 
 class DummyEngine:
     def __init__(self) -> None:
-        self.orders: list[tuple[Direction, Offset, float, float]] = []
+        self.orders: list[tuple[Direction, Offset, float, float, bool]] = []
         self.logs: list[str] = []
 
     def send_order(
@@ -27,7 +27,7 @@ class DummyEngine:
         lock: bool,
         net: bool,
     ) -> list[str]:
-        self.orders.append((direction, offset, price, volume))
+        self.orders.append((direction, offset, price, volume, stop))
         return [str(len(self.orders))]
 
     def cancel_all(self, strategy: ChanStrategy) -> None:
@@ -78,6 +78,21 @@ def _tick(index: int, price: float = 10) -> TickData:
     )
 
 
+def _trade(index: int, price: float = 10, volume: float = 1) -> TradeData:
+    return TradeData(
+        symbol="TEST",
+        exchange=Exchange.LOCAL,
+        orderid=str(index),
+        tradeid=str(index),
+        direction=Direction.LONG,
+        offset=Offset.OPEN,
+        price=price,
+        volume=volume,
+        datetime=datetime(2026, 1, 1, 9, 30) + timedelta(minutes=index),
+        gateway_name="TEST",
+    )
+
+
 def _snapshot(signal: BuySignal | None = None) -> ChanSnapshot:
     signals = (signal,) if signal else ()
     return ChanSnapshot(
@@ -86,8 +101,10 @@ def _snapshot(signal: BuySignal | None = None) -> ChanSnapshot:
         strokes=(),
         segments=(),
         pivots=(),
+        segment_metrics=(),
         trend=TrendState.UNKNOWN,
         signals=signals,
+        sell_signals=(),
     )
 
 
@@ -99,6 +116,32 @@ def _signal(type: BuyPointType = BuyPointType.SECOND_BUY) -> BuySignal:
         confirmed_index=2,
         stop_price=8,
         reason="test signal",
+    )
+
+
+def _sell_signal(type: SellPointType = SellPointType.THIRD_SELL) -> SellSignal:
+    return SellSignal(
+        id=0,
+        type=type,
+        candidate_index=1,
+        confirmed_index=2,
+        stop_price=12,
+        reason="test sell signal",
+    )
+
+
+def _sell_snapshot(signal: SellSignal | None = None) -> ChanSnapshot:
+    sell_signals = (signal,) if signal else ()
+    return ChanSnapshot(
+        bars=(),
+        fractals=(),
+        strokes=(),
+        segments=(),
+        pivots=(),
+        segment_metrics=(),
+        trend=TrendState.UNKNOWN,
+        signals=(),
+        sell_signals=sell_signals,
     )
 
 
@@ -116,17 +159,23 @@ def test_chan_strategy_sends_buy_on_confirmed_signal() -> None:
 
     strategy.on_bar(_bar(0, 10))
 
-    assert engine.orders == [(Direction.LONG, Offset.OPEN, 10, 2)]
+    assert engine.orders == [(Direction.LONG, Offset.OPEN, 10, 2, False)]
     assert strategy.latest_signal_type == BuyPointType.SECOND_BUY.value
     assert strategy.active_stop_price == 8
+    assert strategy.active_stop_orderid == ""
     assert strategy.latest_chan_signal == {
+        "signal_key": "second_buy:2:8",
         "type": "second_buy",
+        "sizing_mode": "fixed",
+        "target_ratio": 0.05,
+        "risk_per_trade": 0.01,
         "candidate_index": 1,
         "confirmed_index": 2,
         "stop_price": 8,
         "reason": "test signal",
         "bar_datetime": "2026-01-01T09:30:00",
         "bar_close_price": 10,
+        "sizing": {},
         "trade_enabled": True,
     }
 
@@ -153,6 +202,63 @@ def test_chan_strategy_respects_max_position() -> None:
     assert "超过最大仓位" in engine.logs[-1]
 
 
+def test_chan_strategy_uses_risk_per_trade_sizing_for_buy() -> None:
+    strategy, engine = _strategy(
+        {
+            "sizing_mode": "risk_per_trade",
+            "risk_per_trade": 0.01,
+            "capital": 10_000,
+            "max_position": 0.05,
+            "min_volume": 0.001,
+            "volume_step": 0.001,
+        }
+    )
+    strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
+
+    strategy.on_bar(_bar(0, 100_000))
+
+    assert engine.orders == [(Direction.LONG, Offset.OPEN, 100_000, 0.001, False)]
+    assert strategy.latest_chan_signal["sizing_mode"] == "risk_per_trade"
+    assert strategy.latest_chan_signal["risk_per_trade"] == 0.01
+    assert strategy.latest_chan_signal["sizing"]["unit_risk"] == 99_992
+
+
+def test_chan_strategy_risk_per_trade_signal_only_records_sizing_without_order() -> None:
+    strategy, engine = _strategy(
+        {
+            "trade_enabled": False,
+            "sizing_mode": "risk_per_trade",
+            "risk_per_trade": 0.01,
+            "capital": 10_000,
+            "volume_step": 0.001,
+        }
+    )
+    strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
+
+    strategy.on_bar(_bar(0, 100_000))
+
+    assert engine.orders == []
+    assert strategy.latest_chan_signal["sizing"]["risk_amount"] == 100
+
+
+def test_chan_strategy_target_ratio_mode_is_available() -> None:
+    strategy, engine = _strategy(
+        {
+            "sizing_mode": "target_ratio",
+            "target_long_ratio": 0.05,
+            "capital": 10_000,
+            "max_position": 0.05,
+            "volume_step": 0.001,
+        }
+    )
+    strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
+
+    strategy.on_bar(_bar(0, 100_000))
+
+    assert engine.orders == [(Direction.LONG, Offset.OPEN, 100_000, 0.005, False)]
+    assert strategy.latest_chan_signal["target_ratio"] == 0.05
+
+
 def test_chan_strategy_does_not_duplicate_same_signal() -> None:
     strategy, engine = _strategy()
     strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
@@ -164,6 +270,26 @@ def test_chan_strategy_does_not_duplicate_same_signal() -> None:
     assert len(engine.orders) == 1
 
 
+def test_chan_strategy_distinguishes_different_confirmed_signals() -> None:
+    strategy, engine = _strategy({"trade_enabled": False})
+    first = _signal()
+    next_signal = BuySignal(
+        id=0,
+        type=first.type,
+        candidate_index=3,
+        confirmed_index=4,
+        stop_price=first.stop_price,
+        reason=first.reason,
+    )
+    strategy.analyzer = FakeAnalyzer([_snapshot(first), _snapshot(next_signal)])
+
+    strategy.on_bar(_bar(0, 10))
+    strategy.on_bar(_bar(1, 10))
+
+    assert engine.orders == []
+    assert sum("缠论买点触发" in log for log in engine.logs) == 2
+
+
 def test_chan_strategy_sells_when_stop_is_touched() -> None:
     strategy, engine = _strategy()
     strategy.pos = 1
@@ -172,7 +298,7 @@ def test_chan_strategy_sells_when_stop_is_touched() -> None:
 
     strategy.on_bar(_bar(0, 8.5))
 
-    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1)]
+    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1, True)]
 
 
 def test_chan_strategy_does_not_repeat_exit_order_while_waiting_for_fill() -> None:
@@ -184,7 +310,42 @@ def test_chan_strategy_does_not_repeat_exit_order_while_waiting_for_fill() -> No
     strategy.on_bar(_bar(0, 8.5))
     strategy.on_bar(_bar(1, 8.3))
 
-    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1)]
+    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 8, 1, True)]
+
+
+def test_chan_strategy_places_stop_order_after_entry_trade() -> None:
+    strategy, engine = _strategy({"fixed_size": 2})
+    strategy.analyzer = FakeAnalyzer([_snapshot(_signal())])
+
+    strategy.on_bar(_bar(0, 10))
+    strategy.pos = 2
+    strategy.on_trade(_trade(0, 10, 2))
+
+    assert engine.orders[-1] == (Direction.SHORT, Offset.CLOSE, 8, 2, True)
+
+
+def test_chan_strategy_exits_on_sell_signal() -> None:
+    strategy, engine = _strategy()
+    strategy.pos = 1
+    strategy.active_stop_orderid = "STOP.1"
+    strategy.analyzer = FakeAnalyzer([_sell_snapshot(_sell_signal())])
+
+    strategy.on_bar(_bar(0, 10))
+
+    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 10, 1, False)]
+    assert strategy.latest_signal_type == SellPointType.THIRD_SELL.value
+    assert "卖点清仓" in engine.logs[-1]
+
+
+def test_chan_strategy_risk_per_trade_sell_signal_clears_position() -> None:
+    strategy, engine = _strategy({"sizing_mode": "risk_per_trade", "capital": 10_000})
+    strategy.pos = 0.005
+    strategy.active_stop_orderid = "STOP.1"
+    strategy.analyzer = FakeAnalyzer([_sell_snapshot(_sell_signal())])
+
+    strategy.on_bar(_bar(0, 100_000))
+
+    assert engine.orders == [(Direction.SHORT, Offset.CLOSE, 100_000, 0.005, False)]
 
 
 def test_chan_strategy_routes_ticks_into_bar_generator() -> None:

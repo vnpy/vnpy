@@ -8,8 +8,15 @@
         "strategy_name": "Chan_Auto",
         "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
         "setting": {
-            "fixed_size": 1,
-            "max_position": 1,
+            "sizing_mode": "risk_per_trade",
+            "risk_per_trade": 0.01,
+            "atr_multiplier": 1.0,
+            "target_long_ratio": 0.05,
+            "capital": 10000,
+            "max_position": 0.05,
+            "min_volume": 0.001,
+            "volume_step": 0.001,
+            "max_order_value": 1000,
             "trade_enabled": false,
             "min_stroke_gap": 1,
             "strict_stroke": false,
@@ -35,12 +42,14 @@
         "tick_timeout": 60
     },
     "backtest": {
+        "days": 365,
         "interval": "1h",
         "capital": 10000,
         "rate": 0.0005,
         "slippage": 0,
         "size": 1,
-        "pricetick": 0.000001
+        "pricetick": 0.000001,
+        "trade_enabled": true
     },
     "risk": {
         "enabled": true,

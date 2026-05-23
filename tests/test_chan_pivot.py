@@ -67,3 +67,19 @@ def test_build_pivots_extends_existing_overlap() -> None:
     assert pivots[0].end_segment_id == 3
     assert pivots[0].low_price == 12.5
     assert pivots[0].high_price == 13.2
+
+
+def test_build_pivots_stops_before_upward_leave_segment() -> None:
+    segments = [
+        _segment(0, ChanDirection.UP, 10, 14),
+        _segment(1, ChanDirection.DOWN, 11, 13),
+        _segment(2, ChanDirection.UP, 12, 13.5),
+        _segment(3, ChanDirection.UP, 12.2, 15),
+    ]
+
+    pivots = build_pivots(segments, ChanConfig(pivot_min_segments=3))
+
+    assert len(pivots) == 1
+    assert pivots[0].end_segment_id == 2
+    assert pivots[0].low_price == 12
+    assert pivots[0].high_price == 13

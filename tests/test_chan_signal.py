@@ -3,10 +3,12 @@ from vnpy.chan import (
     ChanConfig,
     ChanDirection,
     Pivot,
+    SellPointType,
     Segment,
+    SegmentMetric,
     TrendState,
 )
-from vnpy.chan.signal import detect_buy_signals
+from vnpy.chan.signal import detect_buy_signals, detect_sell_signals
 
 
 def _segment(
@@ -25,6 +27,37 @@ def _segment(
     )
 
 
+def _metric(
+    segment: Segment,
+    change_per_stroke: float | None = None,
+) -> SegmentMetric:
+    price_change = segment.high_price - segment.low_price
+    stroke_count = segment.end_stroke_id - segment.start_stroke_id + 1
+    return SegmentMetric(
+        segment_id=segment.id,
+        direction=segment.direction,
+        price_change=price_change,
+        amplitude=price_change,
+        stroke_count=stroke_count,
+        change_per_stroke=(
+            change_per_stroke
+            if change_per_stroke is not None
+            else price_change / stroke_count
+        ),
+    )
+
+
+def _metrics(
+    segments: list[Segment],
+    overrides: dict[int, float] | None = None,
+) -> list[SegmentMetric]:
+    overrides = overrides or {}
+    return [
+        _metric(segment, overrides.get(segment.id))
+        for segment in segments
+    ]
+
+
 def _pivot(
     id: int,
     start_segment_id: int,
@@ -39,6 +72,49 @@ def _pivot(
         high_price=high_price,
         low_price=low_price,
     )
+
+
+def test_detect_buy_signals_confirms_first_buy_on_weaker_lower_low() -> None:
+    segments = [
+        _segment(0, ChanDirection.DOWN, 8, 13),
+        _segment(1, ChanDirection.UP, 8, 11),
+        _segment(2, ChanDirection.DOWN, 7.5, 10),
+        _segment(3, ChanDirection.UP, 7.5, 12),
+    ]
+
+    signals = detect_buy_signals(
+        segments,
+        [],
+        TrendState.DOWN,
+        ChanConfig(),
+        _metrics(segments, {0: 5, 2: 2}),
+    )
+
+    assert len(signals) == 1
+    assert signals[0].type is BuyPointType.FIRST_BUY
+    assert signals[0].candidate_index == 2
+    assert signals[0].confirmed_index == 3
+    assert signals[0].stop_price == 7.5
+    assert "first buy" in signals[0].reason
+
+
+def test_detect_buy_signals_rejects_first_buy_without_divergence() -> None:
+    segments = [
+        _segment(0, ChanDirection.DOWN, 8, 13),
+        _segment(1, ChanDirection.UP, 8, 11),
+        _segment(2, ChanDirection.DOWN, 7.5, 10),
+        _segment(3, ChanDirection.UP, 7.5, 12),
+    ]
+
+    signals = detect_buy_signals(
+        segments,
+        [],
+        TrendState.DOWN,
+        ChanConfig(),
+        _metrics(segments, {0: 3, 2: 4}),
+    )
+
+    assert [signal.type for signal in signals] == []
 
 
 def test_detect_buy_signals_confirms_second_buy() -> None:
@@ -128,6 +204,44 @@ def test_detect_buy_signals_confirms_third_buy() -> None:
     assert signals[0].pivot_id == 0
     assert signals[0].stop_price == 12.1
     assert "third buy" in signals[0].reason
+
+
+def test_detect_sell_signals_confirms_third_sell() -> None:
+    pivot = _pivot(0, 0, 2, 10, 12)
+    segments = [
+        _segment(0, ChanDirection.DOWN, 9, 13),
+        _segment(1, ChanDirection.UP, 10, 12),
+        _segment(2, ChanDirection.DOWN, 9, 11.5),
+        _segment(3, ChanDirection.DOWN, 8, 9.8),
+        _segment(4, ChanDirection.UP, 8.5, 9.9),
+        _segment(5, ChanDirection.DOWN, 7, 9.8),
+    ]
+
+    signals = detect_sell_signals(segments, [pivot], TrendState.DOWN, ChanConfig())
+
+    assert len(signals) == 1
+    assert signals[0].type is SellPointType.THIRD_SELL
+    assert signals[0].candidate_index == 4
+    assert signals[0].confirmed_index == 5
+    assert signals[0].pivot_id == 0
+    assert signals[0].stop_price == 9.9
+    assert "third sell" in signals[0].reason
+
+
+def test_detect_sell_signals_rejects_third_sell_when_pullback_reenters_pivot() -> None:
+    pivot = _pivot(0, 0, 2, 10, 12)
+    segments = [
+        _segment(0, ChanDirection.DOWN, 9, 13),
+        _segment(1, ChanDirection.UP, 10, 12),
+        _segment(2, ChanDirection.DOWN, 9, 11.5),
+        _segment(3, ChanDirection.DOWN, 8, 9.8),
+        _segment(4, ChanDirection.UP, 8.5, 10.1),
+        _segment(5, ChanDirection.DOWN, 7, 9.8),
+    ]
+
+    signals = detect_sell_signals(segments, [pivot], TrendState.DOWN, ChanConfig())
+
+    assert signals == []
 
 
 def test_detect_buy_signals_rejects_third_buy_when_pullback_reenters_pivot() -> None:

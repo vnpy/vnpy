@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from .config import ChanConfig
-from .object import Pivot, Segment
+from .object import ChanDirection, Pivot, Segment
 
 
 def build_pivots(segments: Sequence[Segment], config: ChanConfig) -> list[Pivot]:
@@ -30,6 +30,8 @@ def build_pivots(segments: Sequence[Segment], config: ChanConfig) -> list[Pivot]
 
         while end_position + 1 < len(segments):
             next_segment = segments[end_position + 1]
+            if _is_leave_segment(low_price, high_price, next_segment):
+                break
             next_low = max(low_price, next_segment.low_price)
             next_high = min(high_price, next_segment.high_price)
             if next_low > next_high + config.pivot_tolerance:
@@ -50,3 +52,22 @@ def build_pivots(segments: Sequence[Segment], config: ChanConfig) -> list[Pivot]
         position = end_position + 1
 
     return pivots
+
+
+def _is_leave_segment(
+    low_price: float,
+    high_price: float,
+    segment: Segment,
+) -> bool:
+    """Return whether an overlapping segment should be treated as leaving pivot."""
+    upward_leave = (
+        segment.direction is ChanDirection.UP
+        and segment.high_price > high_price
+        and segment.low_price >= low_price
+    )
+    downward_leave = (
+        segment.direction is ChanDirection.DOWN
+        and segment.low_price < low_price
+        and segment.high_price <= high_price
+    )
+    return upward_leave or downward_leave

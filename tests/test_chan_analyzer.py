@@ -51,6 +51,18 @@ def test_analyzer_respects_max_bars_window() -> None:
     assert all(source_index >= len(bars) - 5 for bar in snapshot.bars for source_index in bar.source_indexes)
 
 
+def test_analyzer_update_bar_preserves_indexes_after_max_bars_rolls() -> None:
+    bars = make_third_buy_case() * 40
+    analyzer = ChanAnalyzer(ChanConfig(max_bars=10))
+
+    for bar in bars:
+        analyzer.update_bar(bar)
+
+    indexes = [bar.index for bar in analyzer.raw_bars]
+
+    assert indexes == list(range(len(bars) - 10, len(bars)))
+
+
 def test_analyzer_snapshot_contains_buy_signals() -> None:
     bars = make_third_buy_case()
     analyzer = ChanAnalyzer(ChanConfig(strict_stroke=False))
@@ -58,3 +70,20 @@ def test_analyzer_snapshot_contains_buy_signals() -> None:
     snapshot = analyzer.calculate(bars)
 
     assert all(signal.type in {BuyPointType.SECOND_BUY, BuyPointType.THIRD_BUY} for signal in snapshot.signals)
+
+
+def test_analyzer_snapshot_contains_segment_metrics_for_first_buy_research() -> None:
+    analyzer = ChanAnalyzer(ChanConfig(strict_stroke=False))
+
+    snapshot = analyzer.calculate(make_third_buy_case())
+
+    assert len(snapshot.segment_metrics) == len(snapshot.segments)
+    assert snapshot.segment_metrics
+    metric = snapshot.segment_metrics[-1]
+    segment = snapshot.segments[-1]
+    assert metric.segment_id == segment.id
+    assert metric.direction == segment.direction
+    assert metric.price_change > 0
+    assert metric.amplitude >= metric.price_change
+    assert metric.stroke_count >= 1
+    assert metric.change_per_stroke == metric.price_change / metric.stroke_count

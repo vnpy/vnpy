@@ -140,6 +140,14 @@ def validate_strategy_safety(config: dict[str, Any]) -> None:
     if float(risk_config.get("max_daily_loss_pct", 0) or 0) <= 0:
         raise ValueError("ChanStrategy live trading requires risk.max_daily_loss_pct")
 
+    sizing_mode = str(setting.get("sizing_mode", "fixed"))
+    if sizing_mode == "risk_per_trade":
+        if float(setting.get("risk_per_trade", 0) or 0) <= 0:
+            raise ValueError("ChanStrategy risk_per_trade sizing requires setting.risk_per_trade")
+    elif sizing_mode == "target_ratio":
+        if float(setting.get("target_long_ratio", 0) or 0) <= 0:
+            raise ValueError("ChanStrategy target_ratio sizing requires setting.target_long_ratio")
+
 
 def format_strategy_label(strategy_config: dict[str, Any]) -> str:
     """Return a human-readable strategy label for reports."""
@@ -155,10 +163,34 @@ def format_strategy_label(strategy_config: dict[str, Any]) -> str:
 
 def build_strategy_signal_key(signal: dict[str, Any]) -> str:
     """Return a stable key for deduplicating strategy signal notifications."""
+    if signal.get("signal_key"):
+        return str(signal["signal_key"])
+
     return ":".join(
         str(signal.get(key, ""))
         for key in ("type", "confirmed_index", "bar_datetime")
     )
+
+
+def build_backtest_strategy_setting(
+    strategy_config: dict[str, Any],
+    backtest_config: dict[str, Any],
+) -> dict[str, Any]:
+    """Return strategy settings for backtest without weakening runtime safety."""
+    setting = dict(strategy_config.get("setting", {}))
+    if "trade_enabled" in setting:
+        setting["trade_enabled"] = bool(backtest_config.get("trade_enabled", True))
+    return setting
+
+
+def get_backtest_period(
+    backtest_config: dict[str, Any],
+    end: datetime | None = None,
+) -> tuple[datetime, datetime]:
+    """Return configured backtest start and end datetimes."""
+    end_dt = end or datetime.now()
+    days = int(backtest_config.get("days", 90))
+    return end_dt - timedelta(days=days), end_dt
 
 
 class AutoTradingSystem:
@@ -472,9 +504,12 @@ class AutoTradingSystem:
 
             strategy_config = self.config["strategy"]
             backtest_config = self.config["backtest"]
+            backtest_strategy_setting = build_backtest_strategy_setting(
+                strategy_config,
+                backtest_config,
+            )
 
-            end_date = datetime.now()
-            start_date = end_date - timedelta(days=90)
+            start_date, end_date = get_backtest_period(backtest_config)
             print(
                 f"   回测周期: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
             )
@@ -502,7 +537,7 @@ class AutoTradingSystem:
             )
             engine.add_strategy(
                 strategy_class=strategy_class,
-                setting=strategy_config["setting"],
+                setting=backtest_strategy_setting,
             )
 
             # 运行回测
@@ -513,7 +548,7 @@ class AutoTradingSystem:
 
             # 保存回测结果
             self.backtest_report = {
-                "total_return": stats.get("return_pct", 0),
+                "total_return": stats.get("total_return", 0),
                 "sharpe_ratio": stats.get("sharpe_ratio", 0),
                 "max_drawdown": stats.get("max_ddpercent", 0),
                 "win_rate": stats.get("win_pct", 0),
@@ -530,7 +565,10 @@ class AutoTradingSystem:
             print(
                 f"回测周期: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}"
             )
-            print(f"策略: {format_strategy_label(strategy_config)}")
+            print(
+                "策略: "
+                f"{format_strategy_label({**strategy_config, 'setting': backtest_strategy_setting})}"
+            )
             print("-" * 60)
             print(f"总收益率: {self.backtest_report['total_return']:+.2f}%")
             print(f"夏普比率: {self.backtest_report['sharpe_ratio']:.2f}")
