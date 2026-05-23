@@ -220,6 +220,102 @@ rg -n "系统错误|Traceback|Telegram确认失败|发送Telegram消息失败|so
 - `ruff` may not be installed in the local `.venv`; report that explicitly
   instead of claiming lint passed.
 
+## Strategy Production And Chan Acceptance Notes
+
+Use these notes when maintaining the strategy-production workflow, Chan strategy,
+position sizing infra, or acceptance pipeline.
+
+### Strategy Acceptance Pipeline
+- The repeatable local gate is `tools/strategy_acceptance.py`. Prefer it over
+  ad hoc backtest commands when deciding whether a strategy can move to the next
+  delivery level.
+- The default full commands are:
+```bash
+/Users/miaoyuhan/Project/vnpy/.venv/bin/python tools/strategy_acceptance.py --strategy chan --gate all
+/Users/miaoyuhan/Project/vnpy/.venv/bin/python tools/strategy_acceptance.py --strategy double_ma --gate all
+```
+- `chan --gate all` covers Chan structure/signal tests, Chan CTA shell tests,
+  auto-trading runtime safety tests, and a side-effect-light BacktestingEngine
+  historical backtest.
+- `double_ma --gate all` keeps the existing DoubleMA path as a compatibility
+  canary; it should continue to pass while new sizing infra is added.
+- Acceptance backtests must not instantiate `AutoTradingSystem`; that runtime
+  writes pid/state files and can initialize notification paths. Use the
+  backtesting engine or pure research runner directly.
+- Acceptance reports should include strategy, symbol, interval, date range, bar
+  count, signal counts, order count, trade count, return, drawdown, final
+  position, sizing mode, and risk sizing fields when available.
+
+### Position Sizing Infra
+- Shared sizing lives in `vnpy/trader/position_sizing.py`.
+- Supported modes are:
+  - `fixed`: legacy absolute volume.
+  - `target_ratio`: target notional exposure as a fraction of equity.
+  - `risk_per_trade`: risk-normalized sizing using stop distance first and ATR
+    fallback only when no structural stop is available.
+- Strategies should express signal intent, target exposure, or target risk.
+  Strategy shells/backtesters should convert that intent into absolute order
+  volume and then apply risk caps.
+- For `risk_per_trade`, expected formula is:
+```text
+risk_amount = equity * risk_per_trade
+unit_risk = abs(entry_price - stop_price) * contract_size
+order_volume = risk_amount / unit_risk
+```
+- `max_order_value`, `max_position`, `min_volume`, and `volume_step` can clip or
+  round the final order. Check the sizing result reason before assuming a signal
+  should have produced a larger fill.
+
+### Chan Strategy Current Baseline
+- Current Chan config is `config/trading_config_chan_signal_only.example.json`.
+- Runtime default remains `trade_enabled=false`; backtests can override to
+  `trade_enabled=true`.
+- Current Chan sizing defaults:
+  - `sizing_mode=risk_per_trade`
+  - `risk_per_trade=0.01`
+  - `capital=10000`
+  - `max_position=0.05`
+  - `max_order_value=1000`
+  - `min_volume=0.001`
+  - `volume_step=0.001`
+- Last verified Chan acceptance baseline from 2026-05-24:
+  - symbol `BTCUSDT_SWAP_OKX.GLOBAL`
+  - interval `1h`
+  - bars `8724`
+  - buy signals: `first_buy=353`, `second_buy=826`
+  - sell signals: none in that BTC 1h window
+  - orders `7`
+  - trades `7`
+  - final position `0.014`
+  - total return about `-1.47%`
+  - max drawdown about `-3.83%`
+- Last inspected Chan risk-sized fills included buy volumes `0.009`, `0.009`,
+  `0.010`, and `0.014` BTC. The latest inspected signal had `entry=68411.4`,
+  `stop=62400.0`, `unit_risk=6011.4`, `risk_amount=100`, raw size about
+  `0.0166`, and final order `0.014` after `max_order_value=1000` and volume
+  step clipping.
+
+### Chan Automation Readiness
+- Passing acceptance means Chan is a backtest/paper candidate, not automatically
+  live-ready.
+- Before enabling order automation, verify:
+  - OKX private config uses DEMO.
+  - `trade_enabled=true` is intentional.
+  - `risk.enabled=true`, `max_position`, `max_order_value_usdt`, and
+    `max_daily_loss_pct` are configured.
+  - Health exposes latest tick, latest strategy signal, latest error, risk
+    snapshot, and fresh account timestamps.
+  - Telegram notification mode is understood; first run should be notify-only
+    unless approval polling is intentionally enabled.
+  - A signal-only DEMO session has been reviewed before tiny DEMO orders.
+- Known Chan gaps:
+  - First-buy and second-buy fire in current BTC 1h history, but third-buy and
+    third-sell have weak/no natural-history evidence in the latest one-year BTC
+    1h acceptance window.
+  - First-sell and second-sell are not implemented yet.
+  - The latest BTC 1h acceptance run ended with an open long position; exit
+    behavior still needs more natural sell-signal evidence.
+
 ## Real External Test Workflow
 
 Use this workflow after changing auto trading, QMT bridge, Telegram approval, rebalance pipeline, or risk/order routing code. These checks contact real external systems and are skipped by default unless explicitly enabled.
