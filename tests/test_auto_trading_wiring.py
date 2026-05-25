@@ -111,6 +111,28 @@ def test_validate_strategy_safety_rejects_live_chan_without_position_cap() -> No
         )
 
 
+def test_validate_strategy_safety_accepts_live_chan_with_position_ratio_cap() -> None:
+    validate_strategy_safety(
+        {
+            "strategy": {
+                "class_name": "ChanStrategy",
+                "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                "setting": {
+                    "trade_enabled": True,
+                    "sizing_mode": "risk_per_trade",
+                    "risk_per_trade": 0.01,
+                    "max_position_ratio": 0.5,
+                },
+            },
+            "risk": {
+                "enabled": True,
+                "max_order_value_usdt": 100,
+                "max_daily_loss_pct": 0.01,
+            },
+        }
+    )
+
+
 def test_validate_strategy_safety_rejects_live_risk_per_trade_without_order_cap() -> None:
     with pytest.raises(ValueError, match="max_order"):
         validate_strategy_safety(
@@ -196,6 +218,38 @@ def test_backtest_strategy_setting_enables_trades_without_changing_runtime_setti
 
     assert setting["trade_enabled"] is True
     assert strategy_config["setting"]["trade_enabled"] is False
+
+
+def test_get_strategy_spec_injects_runtime_init_days_for_chan_strategy() -> None:
+    spec = get_strategy_spec(
+        {
+            "strategy": {
+                "class_name": "ChanStrategy",
+                "strategy_name": "Chan_Auto",
+                "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                "setting": {"trade_enabled": True},
+            },
+            "runtime": {"init_days": 3},
+        }
+    )
+
+    assert spec["setting"]["init_days"] == 3
+
+
+def test_get_strategy_spec_does_not_override_explicit_chan_init_days() -> None:
+    spec = get_strategy_spec(
+        {
+            "strategy": {
+                "class_name": "ChanStrategy",
+                "strategy_name": "Chan_Auto",
+                "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
+                "setting": {"trade_enabled": True, "init_days": 1},
+            },
+            "runtime": {"init_days": 3},
+        }
+    )
+
+    assert spec["setting"]["init_days"] == 1
 
 
 def test_backtest_strategy_setting_can_disable_trades_for_signal_reports() -> None:

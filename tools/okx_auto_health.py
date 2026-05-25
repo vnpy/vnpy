@@ -6,9 +6,10 @@ import argparse
 import json
 import os
 import subprocess
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from vnpy.trader.utility import get_file_path
 
@@ -57,7 +58,7 @@ def list_auto_trading_pids() -> list[int]:
         stripped = line.strip()
         if "run_auto_trading.py" not in stripped:
             continue
-        if "rg " in stripped or "pytest" in stripped:
+        if "rg " in stripped or "pytest" in stripped or "tmux " in stripped:
             continue
         pid_text = stripped.split(maxsplit=1)[0]
         try:
@@ -145,7 +146,7 @@ def evaluate_health(
     if (
         state.get("strategy_class") == "ChanStrategy"
         and state.get("strategy_trade_enabled")
-        and not state.get("latest_chan_signal")
+        and "latest_chan_signal" not in state
     ):
         reasons.append("Chan latest signal missing")
 

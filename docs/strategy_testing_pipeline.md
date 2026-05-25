@@ -41,6 +41,7 @@ Required evidence:
 Required evidence:
 
 - signal-only mode
+- historical warmup feeds signal state without submitting orders
 - one entry per logical signal
 - no accidental de-duplication of different signals
 - protective stops
@@ -68,6 +69,8 @@ Required evidence:
 - risk caps
 - health fields
 - notification state
+- initialization history window, when the live strategy depends on bar-derived
+  state
 
 ### 6. Paper And DEMO Review
 
@@ -110,20 +113,27 @@ Chan baseline:
 - canonical symbol: `BTCUSDT_SWAP_OKX.GLOBAL`
 - canonical interval: `1h`
 - sizing mode: `risk_per_trade`
-- risk per trade: `0.01`
+- risk per trade: `0.10`
 - ATR multiplier: `1.0`
-- max position: `0.05`
-- max order value: `1000`
+- max position: `0`
+- max position ratio: `0.5`
+- max order value: `5000`
+- runtime initialization history: `runtime.init_days=3`, injected into
+  `ChanStrategy.init_days` for live automation only
 - backtest range: `2025-05-24` to `2026-05-24`
-- bar count: `8725`
-- signal counts: `first_buy=357`, `second_buy=826`, sells empty
-- order count: `7`
-- trade count: `7`
-- total return: about `-1.47%`
-- max drawdown: about `-3.83%`
-- final position: `0.014`
-- known gap: third-sell has synthetic coverage but no natural BTC 1h one-year
-  trigger has been confirmed yet
+- bar count: `8708`
+- signal counts: `first_buy=357`, `second_buy=802`, `third_buy=24`,
+  `first_sell=435`, `second_sell=561`, `third_sell=10`
+- order count: `5`
+- trade count: `5`
+- total return: about `0.20%`
+- max drawdown: about `-3.71%`
+- final position: approximately `0.001`
+- debugging note: third-buy/third-sell require the nearest pivot completed
+  before the leave segment; if `pivots[-1]` is an active pivot that includes the
+  leave segment, the third-point signal is masked. Third-point signals also
+  take priority over second-point signals when both share the same confirmation
+  segment.
 
 DoubleMA baseline:
 
@@ -136,12 +146,42 @@ DoubleMA baseline:
 - canonical interval: `1h`
 - sizing mode: `fixed`
 - backtest range: `2026-02-23` to `2026-05-24`
-- bar count: `1003`
-- order count: `161`
-- trade count: `155`
+- bar count: `986`
+- order count: `163`
+- trade count: `157`
 - total return: about `-0.00%`
 - max drawdown: about `-0.00%`
 - final position: `-1.0`
+
+Additional Chan cross-symbol probe:
+
+- symbol: `DOGEUSDT_SWAP_OKX.GLOBAL`
+- interval: `1h`
+- backtest range: `2025-05-24` to `2026-05-24`
+- bar count: `2318`
+- risk per trade: `0.10`
+- signal counts: `first_buy=95`, `second_buy=170`, `first_sell=58`,
+  `second_sell=285`
+- order count: `20`
+- trade count: `20`
+- total return: about `-0.00003%`
+- max drawdown: about `-0.00003%`
+- final position: `0`
+- note: this local DOGE window did not naturally trigger third-buy or
+  third-sell, while the BTC acceptance window did.
+
+Additional Chan 15m/30d position-ratio probe:
+
+- config: `risk_per_trade=0.10`, `max_position=0`, `max_position_ratio=0.5`,
+  `max_order_value=5000`
+- BTC 15m: `2802` bars, `3` trades, max notional about `4948`, total return
+  about `0.84%`, max drawdown about `-1.17%`, final position approximately `0`
+- DOGE 15m: `2802` bars, `3` trades, max notional about `5000`, total return
+  about `4.84%`, max drawdown about `-1.86%`, final position approximately
+  `0.001`
+- lesson: unit-based `max_position` is not cross-symbol comparable. Low-price
+  symbols such as DOGE need notional caps through `max_position_ratio` or
+  `max_position_value`.
 
 Known improvement:
 

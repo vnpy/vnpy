@@ -112,11 +112,18 @@ def is_strategy_config_match(
 def get_strategy_spec(config: dict[str, Any]) -> dict[str, Any]:
     """Return normalized managed strategy config."""
     strategy_config = config["strategy"]
+    class_name = strategy_config.get("class_name", TELEGRAM_STRATEGY_CLASS_NAME)
+    setting = dict(strategy_config.get("setting", {}))
+    if class_name == CHAN_STRATEGY_CLASS_NAME and "init_days" not in setting:
+        runtime_init_days = config.get("runtime", {}).get("init_days")
+        if runtime_init_days is not None:
+            setting["init_days"] = int(runtime_init_days)
+
     return {
-        "class_name": strategy_config.get("class_name", TELEGRAM_STRATEGY_CLASS_NAME),
+        "class_name": class_name,
         "strategy_name": strategy_config.get("strategy_name", STRATEGY_NAME),
         "vt_symbol": strategy_config["vt_symbol"],
-        "setting": strategy_config.get("setting", {}),
+        "setting": setting,
     }
 
 
@@ -133,8 +140,15 @@ def validate_strategy_safety(config: dict[str, Any]) -> None:
     risk_config = config.get("risk", {})
     if not risk_config.get("enabled", False):
         raise ValueError("ChanStrategy live trading requires risk.enabled=true")
-    if float(setting.get("max_position", 0) or 0) <= 0:
-        raise ValueError("ChanStrategy live trading requires setting.max_position")
+    has_position_cap = any(
+        float(setting.get(key, 0) or 0) > 0
+        for key in ("max_position", "max_position_value", "max_position_ratio")
+    )
+    if not has_position_cap:
+        raise ValueError(
+            "ChanStrategy live trading requires setting.max_position, "
+            "setting.max_position_value, or setting.max_position_ratio"
+        )
     if float(risk_config.get("max_order_value_usdt", 0) or 0) <= 0:
         raise ValueError("ChanStrategy live trading requires risk.max_order_value_usdt")
     if float(risk_config.get("max_daily_loss_pct", 0) or 0) <= 0:
@@ -222,7 +236,7 @@ class AutoTradingSystem:
 
         self.okx_config_path = okx_config_path
         if Path(okx_config_path).exists():
-            with open(okx_config_path, "r") as f:
+            with open(okx_config_path) as f:
                 self.okx_config = json.load(f)
             print(f"✅ 已从 {okx_config_path} 加载OKX配置")
         else:
@@ -543,7 +557,7 @@ class AutoTradingSystem:
             # 运行回测
             engine.load_data()
             engine.run_backtesting()
-            df = engine.calculate_result()
+            engine.calculate_result()
             stats = engine.calculate_statistics()
 
             # 保存回测结果
@@ -621,7 +635,10 @@ class AutoTradingSystem:
             self.wait_for_tick(get_strategy_spec(self.config)["vt_symbol"], timeout=self.tick_timeout)
 
             print("\n✅ 系统启动完成！")
-            print("📱 Telegram已连接，交易信号将推送到你的手机")
+            if self.telegram.enabled:
+                print("📱 Telegram已连接，交易信号将推送到你的手机")
+            else:
+                print("📵 Telegram未启用，交易信号不会推送")
             print("⏳ 正在监听市场...\n")
 
             # 6. 保持运行
@@ -696,7 +713,7 @@ class AutoTradingSystem:
         while not stop_event.is_set():
             try:
                 await asyncio.wait_for(stop_event.wait(), timeout=1)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 pass
 
             # 检查是否需要发送每日报告（每天晚上11点）

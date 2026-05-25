@@ -22,6 +22,8 @@ class PositionSizingRequest:
     min_volume: float = 0
     volume_step: float = 0
     max_position: float = 0
+    max_position_value: float = 0
+    max_position_ratio: float = 0
     max_order_value: float = 0
 
 
@@ -74,6 +76,26 @@ def calculate_position_size(request: PositionSizingRequest) -> PositionSizingRes
         target_volume = _copy_sign(request.max_position, target_volume)
         clipped = True
         reasons.append("max_position")
+
+    max_position_value = request.max_position_value
+    if request.max_position_ratio > 0:
+        ratio_value = request.equity * request.max_position_ratio
+        max_position_value = (
+            min(max_position_value, ratio_value)
+            if max_position_value > 0
+            else ratio_value
+        )
+    target_value = abs(target_volume * request.price * request.contract_size)
+    if max_position_value > 0 and target_value > max_position_value:
+        clipped_volume = max_position_value / (request.price * request.contract_size)
+        target_volume = _copy_sign(clipped_volume, target_volume)
+        clipped = True
+        reasons.append(
+            "max_position_ratio"
+            if request.max_position_ratio > 0
+            and max_position_value == request.equity * request.max_position_ratio
+            else "max_position_value"
+        )
 
     target_volume = _round_toward_zero(target_volume, request.volume_step)
     order_volume = target_volume - request.current_volume

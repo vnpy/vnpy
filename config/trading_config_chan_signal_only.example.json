@@ -9,14 +9,15 @@
         "vt_symbol": "BTCUSDT_SWAP_OKX.GLOBAL",
         "setting": {
             "sizing_mode": "risk_per_trade",
-            "risk_per_trade": 0.01,
+            "risk_per_trade": 0.10,
             "atr_multiplier": 1.0,
             "target_long_ratio": 0.05,
             "capital": 10000,
-            "max_position": 0.05,
+            "max_position": 0,
+            "max_position_ratio": 0.5,
             "min_volume": 0.001,
             "volume_step": 0.001,
-            "max_order_value": 1000,
+            "max_order_value": 5000,
             "trade_enabled": false,
             "min_stroke_gap": 1,
             "strict_stroke": false,
@@ -39,7 +40,8 @@
     "runtime": {
         "contract_timeout": 60,
         "init_timeout": 180,
-        "tick_timeout": 60
+        "tick_timeout": 60,
+        "init_days": 3
     },
     "backtest": {
         "days": 365,
@@ -56,7 +58,7 @@
         "account_currency": "USDT",
         "max_daily_loss_pct": 0.01,
         "max_drawdown_pct": 0.05,
-        "max_order_value_usdt": 100.0,
-        "max_order_value_pct": 0.01
+        "max_order_value_usdt": 5000.0,
+        "max_order_value_pct": 0.50
     }
 }

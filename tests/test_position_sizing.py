@@ -91,6 +91,46 @@ def test_clips_target_by_max_position() -> None:
     assert "max_position" in result.reason
 
 
+def test_clips_target_by_max_position_value() -> None:
+    result = calculate_position_size(
+        PositionSizingRequest(
+            mode="target_ratio",
+            target_ratio=1,
+            risk_per_trade=0,
+            price=0.1,
+            current_volume=0,
+            equity=10_000,
+            max_position_value=5_000,
+        )
+    )
+
+    assert result.target_volume == 50_000
+    assert result.order_volume == 50_000
+    assert result.order_value == 5_000
+    assert result.clipped is True
+    assert "max_position_value" in result.reason
+
+
+def test_clips_target_by_max_position_ratio() -> None:
+    result = calculate_position_size(
+        PositionSizingRequest(
+            mode="target_ratio",
+            target_ratio=1,
+            risk_per_trade=0,
+            price=0.1,
+            current_volume=0,
+            equity=10_000,
+            max_position_ratio=0.5,
+        )
+    )
+
+    assert result.target_volume == 50_000
+    assert result.order_volume == 50_000
+    assert result.order_value == 5_000
+    assert result.clipped is True
+    assert "max_position_ratio" in result.reason
+
+
 def test_clips_order_by_max_order_value() -> None:
     result = calculate_position_size(
         PositionSizingRequest(

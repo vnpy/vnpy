@@ -153,8 +153,15 @@ def test_backtest_evidence_includes_sizing_fields() -> None:
         sharpe_ratio=0.5,
         max_drawdown=-0.3,
         final_position=0.005,
-        strategy_setting={"sizing_mode": "risk_per_trade", "risk_per_trade": 0.01},
+        strategy_setting={
+            "sizing_mode": "risk_per_trade",
+            "risk_per_trade": 0.01,
+            "max_position_value": 5_000,
+            "max_position_ratio": 0.5,
+        },
     )
 
     assert report["sizing_mode"] == "risk_per_trade"
     assert report["risk_per_trade"] == 0.01
+    assert report["max_position_value"] == 5_000
+    assert report["max_position_ratio"] == 0.5

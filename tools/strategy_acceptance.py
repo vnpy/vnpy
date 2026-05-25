@@ -298,6 +298,8 @@ def build_backtest_evidence(
         "risk_per_trade": strategy_setting.get("risk_per_trade", 0),
         "atr_multiplier": strategy_setting.get("atr_multiplier", 0),
         "max_position": strategy_setting.get("max_position", 0),
+        "max_position_value": strategy_setting.get("max_position_value", 0),
+        "max_position_ratio": strategy_setting.get("max_position_ratio", 0),
         "max_order_value": strategy_setting.get("max_order_value", 0),
     }
 

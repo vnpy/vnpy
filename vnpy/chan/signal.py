@@ -31,10 +31,6 @@ def detect_buy_signals(
     if first_buy:
         signals.append(first_buy)
 
-    second_buy = _detect_second_buy(segments, pivots, config)
-    if second_buy and all(signal.confirmed_index != second_buy.confirmed_index for signal in signals):
-        signals.append(second_buy)
-
     third_buy = _detect_third_buy(segments, pivots, trend, config)
     if third_buy and all(signal.confirmed_index != third_buy.confirmed_index for signal in signals):
         third_buy = BuySignal(
@@ -50,6 +46,21 @@ def detect_buy_signals(
         )
         signals.append(third_buy)
 
+    second_buy = _detect_second_buy(segments, pivots, config)
+    if second_buy and all(signal.confirmed_index != second_buy.confirmed_index for signal in signals):
+        second_buy = BuySignal(
+            id=len(signals),
+            type=second_buy.type,
+            candidate_index=second_buy.candidate_index,
+            confirmed_index=second_buy.confirmed_index,
+            stop_price=second_buy.stop_price,
+            reason=second_buy.reason,
+            stroke_id=second_buy.stroke_id,
+            segment_id=second_buy.segment_id,
+            pivot_id=second_buy.pivot_id,
+        )
+        signals.append(second_buy)
+
     return signals
 
 
@@ -60,14 +71,43 @@ def detect_sell_signals(
     config: ChanConfig,
     segment_metrics: Sequence[SegmentMetric] | None = None,
 ) -> list[SellSignal]:
-    """Detect confirmed sell signals."""
+    """Detect confirmed first-sell, second-sell and third-sell signals."""
 
-    del segment_metrics
     signals: list[SellSignal] = []
 
+    first_sell = _detect_first_sell(segments, segment_metrics or ())
+    if first_sell:
+        signals.append(first_sell)
+
     third_sell = _detect_third_sell(segments, pivots, trend, config)
-    if third_sell:
+    if third_sell and all(signal.confirmed_index != third_sell.confirmed_index for signal in signals):
+        third_sell = SellSignal(
+            id=len(signals),
+            type=third_sell.type,
+            candidate_index=third_sell.candidate_index,
+            confirmed_index=third_sell.confirmed_index,
+            stop_price=third_sell.stop_price,
+            reason=third_sell.reason,
+            stroke_id=third_sell.stroke_id,
+            segment_id=third_sell.segment_id,
+            pivot_id=third_sell.pivot_id,
+        )
         signals.append(third_sell)
+
+    second_sell = _detect_second_sell(segments, pivots, config)
+    if second_sell and all(signal.confirmed_index != second_sell.confirmed_index for signal in signals):
+        second_sell = SellSignal(
+            id=len(signals),
+            type=second_sell.type,
+            candidate_index=second_sell.candidate_index,
+            confirmed_index=second_sell.confirmed_index,
+            stop_price=second_sell.stop_price,
+            reason=second_sell.reason,
+            stroke_id=second_sell.stroke_id,
+            segment_id=second_sell.segment_id,
+            pivot_id=second_sell.pivot_id,
+        )
+        signals.append(second_sell)
 
     return signals
 
@@ -163,16 +203,16 @@ def _detect_third_buy(
     ):
         return None
 
-    pivot = pivots[-1]
     leave, pullback, confirm = segments[-3:]
+    pivot = _latest_completed_pivot_before(pivots, leave.id)
+    if not pivot:
+        return None
 
     if (
         leave.direction is not ChanDirection.UP
         or pullback.direction is not ChanDirection.DOWN
         or confirm.direction is not ChanDirection.UP
     ):
-        return None
-    if leave.id <= pivot.end_segment_id:
         return None
     if leave.high_price <= pivot.high_price:
         return None
@@ -193,6 +233,84 @@ def _detect_third_buy(
     )
 
 
+def _detect_first_sell(
+    segments: Sequence[Segment],
+    segment_metrics: Sequence[SegmentMetric],
+) -> SellSignal | None:
+    if len(segments) < 4 or len(segment_metrics) < len(segments):
+        return None
+
+    first_up, pullback, higher_up, confirm = segments[-4:]
+    if (
+        first_up.direction is not ChanDirection.UP
+        or pullback.direction is not ChanDirection.DOWN
+        or higher_up.direction is not ChanDirection.UP
+        or confirm.direction is not ChanDirection.DOWN
+    ):
+        return None
+
+    if higher_up.high_price <= first_up.high_price:
+        return None
+    if confirm.low_price >= pullback.low_price:
+        return None
+
+    metrics_by_segment_id = {
+        metric.segment_id: metric
+        for metric in segment_metrics
+    }
+    first_metric = metrics_by_segment_id.get(first_up.id)
+    higher_metric = metrics_by_segment_id.get(higher_up.id)
+    if not first_metric or not higher_metric:
+        return None
+    if higher_metric.change_per_stroke >= first_metric.change_per_stroke:
+        return None
+
+    return SellSignal(
+        id=0,
+        type=SellPointType.FIRST_SELL,
+        candidate_index=higher_up.id,
+        confirmed_index=confirm.id,
+        stop_price=higher_up.high_price,
+        reason="confirmed first sell: higher high with weaker up-segment force and downward turn",
+        segment_id=confirm.id,
+    )
+
+
+def _detect_second_sell(
+    segments: Sequence[Segment],
+    pivots: Sequence[Pivot],
+    config: ChanConfig,
+) -> SellSignal | None:
+    if len(segments) < 4:
+        return None
+
+    up, decline, rebound, confirm = segments[-4:]
+    if (
+        up.direction is not ChanDirection.UP
+        or decline.direction is not ChanDirection.DOWN
+        or rebound.direction is not ChanDirection.UP
+        or confirm.direction is not ChanDirection.DOWN
+    ):
+        return None
+
+    if rebound.high_price > up.high_price + config.second_buy_low_tolerance:
+        return None
+    if confirm.low_price >= decline.low_price:
+        return None
+    if _segments_are_inside_latest_pivot((up, decline, rebound, confirm), pivots):
+        return None
+
+    return SellSignal(
+        id=0,
+        type=SellPointType.SECOND_SELL,
+        candidate_index=rebound.id,
+        confirmed_index=confirm.id,
+        stop_price=rebound.high_price,
+        reason="confirmed second sell: rebound holds below prior high and turns down",
+        segment_id=confirm.id,
+    )
+
+
 def _detect_third_sell(
     segments: Sequence[Segment],
     pivots: Sequence[Pivot],
@@ -206,16 +324,16 @@ def _detect_third_sell(
     ):
         return None
 
-    pivot = pivots[-1]
     leave, pullback, confirm = segments[-3:]
+    pivot = _latest_completed_pivot_before(pivots, leave.id)
+    if not pivot:
+        return None
 
     if (
         leave.direction is not ChanDirection.DOWN
         or pullback.direction is not ChanDirection.UP
         or confirm.direction is not ChanDirection.DOWN
     ):
-        return None
-    if leave.id <= pivot.end_segment_id:
         return None
     if leave.low_price >= pivot.low_price:
         return None
@@ -251,3 +369,14 @@ def _segments_are_inside_latest_pivot(
         and segment.high_price <= pivot.high_price
         for segment in segments
     )
+
+
+def _latest_completed_pivot_before(
+    pivots: Sequence[Pivot],
+    segment_id: int,
+) -> Pivot | None:
+    """Return the nearest pivot completed before a leave segment."""
+    for pivot in reversed(pivots):
+        if pivot.end_segment_id < segment_id:
+            return pivot
+    return None

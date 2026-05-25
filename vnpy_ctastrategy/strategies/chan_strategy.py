@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from vnpy.chan import BuyPointType, BuySignal, ChanAnalyzer, ChanConfig, SellSignal
+from vnpy.chan import BuySignal, ChanAnalyzer, ChanConfig, SellSignal
 from vnpy.trader.position_sizing import PositionSizingRequest, calculate_position_size
 from vnpy_ctastrategy import (
     BarData,
@@ -38,8 +38,11 @@ class ChanStrategy(CtaTemplate):
     min_volume: float = 0
     volume_step: float = 0
     max_order_value: float = 0
+    max_position_value: float = 0
+    max_position_ratio: float = 0
     atr_value: float = 0
     atr_multiplier: float = 1
+    init_days: int = 0
 
     latest_signal_type: str = ""
     latest_signal_reason: str = ""
@@ -48,6 +51,7 @@ class ChanStrategy(CtaTemplate):
     last_signal_key: str = ""
     exit_order_sent: bool = False
     latest_chan_signal: dict = {}
+    warmup_bar_count: int = 0
 
     parameters = [
         "fixed_size",
@@ -68,8 +72,11 @@ class ChanStrategy(CtaTemplate):
         "min_volume",
         "volume_step",
         "max_order_value",
+        "max_position_value",
+        "max_position_ratio",
         "atr_value",
         "atr_multiplier",
+        "init_days",
     ]
     variables = [
         "latest_signal_type",
@@ -87,6 +94,10 @@ class ChanStrategy(CtaTemplate):
         self.write_log("缠论策略初始化")
         self.bg: BarGenerator = BarGenerator(self.on_bar)
         self.analyzer = ChanAnalyzer(self._create_chan_config())
+        self.warmup_bar_count = 0
+        if self.init_days > 0:
+            self.load_bar(self.init_days, callback=self._warmup_bar)
+            self.write_log(f"缠论预热完成: {self.warmup_bar_count} bars")
 
     def on_start(self) -> None:
         """Start strategy."""
@@ -231,6 +242,11 @@ class ChanStrategy(CtaTemplate):
             max_bars=self.max_bars or None,
         )
 
+    def _warmup_bar(self, bar: BarData) -> None:
+        """Feed historical bars into Chan analyzer without trading."""
+        self.analyzer.update_bar(bar)
+        self.warmup_bar_count += 1
+
     def _build_signal_key(self, signal: BuySignal) -> str:
         """Build a stable key for the same logical Chan signal across windows."""
         return f"{signal.type.value}:{signal.confirmed_index}:{signal.stop_price}"
@@ -268,6 +284,8 @@ class ChanStrategy(CtaTemplate):
                 min_volume=self.min_volume,
                 volume_step=self.volume_step,
                 max_position=self.max_position,
+                max_position_value=self.max_position_value,
+                max_position_ratio=self.max_position_ratio,
                 max_order_value=self.max_order_value,
             )
         )
@@ -296,6 +314,8 @@ class ChanStrategy(CtaTemplate):
                 min_volume=self.min_volume,
                 volume_step=self.volume_step,
                 max_position=self.max_position,
+                max_position_value=self.max_position_value,
+                max_position_ratio=self.max_position_ratio,
                 max_order_value=self.max_order_value,
             )
         )
