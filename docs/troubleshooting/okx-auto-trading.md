@@ -179,6 +179,23 @@ sleep 150
 .venv/bin/python tools/okx_auto_health.py
 ```
 
+When a strategy is running but live fills look suspiciously sparse, use the
+general diagnostic playbook before changing strategy rules:
+
+```bash
+docs/troubleshooting/strategy-live-trade-gap-diagnostics.md
+```
+
+For the current Chan adapter, compare runtime state with offline signal replay:
+
+```bash
+.venv/bin/python tools/chan_runtime_diagnostics.py
+.venv/bin/python tools/chan_runtime_diagnostics.py --replay-signals
+```
+
+This separates process/runtime issues, floating-point dust positions after close
+fills, and genuine signal scarcity for Chan specifically.
+
 If `status` says `not running` but `state.pid` is alive, the PID file is stale:
 
 ```bash

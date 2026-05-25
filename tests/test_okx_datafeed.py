@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from vnpy_okx.datafeed import _normalize_request_datetime
+from vnpy_okx.datafeed import Datafeed, _normalize_request_datetime
 from vnpy_okx.okx_gateway import CHINA_TZ
 
 
@@ -14,3 +14,9 @@ def test_normalize_request_datetime_sets_timezone() -> None:
     assert normalized_start.tzinfo == CHINA_TZ
     assert normalized_end.tzinfo == CHINA_TZ
     assert (normalized_end - normalized_start).total_seconds() > 0
+
+
+def test_datafeed_skips_malformed_demo_future_symbol() -> None:
+    datafeed = Datafeed()
+
+    assert datafeed._map_symbol("TESTING-USDT", "FUTURES") is None

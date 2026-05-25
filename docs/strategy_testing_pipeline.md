@@ -71,6 +71,8 @@ Required evidence:
 - notification state
 - initialization history window, when the live strategy depends on bar-derived
   state
+- runtime trade-gap diagnostics when live fills are materially fewer than
+  offline replay signals
 
 ### 6. Paper And DEMO Review
 
@@ -88,6 +90,22 @@ Use:
 ```bash
 .venv/bin/python tools/strategy_acceptance.py --strategy chan --gate all
 ```
+
+For sparse live fills, follow the general playbook first:
+
+```bash
+docs/troubleshooting/strategy-live-trade-gap-diagnostics.md
+```
+
+For the current Chan automation adapter, use:
+
+```bash
+.venv/bin/python tools/chan_runtime_diagnostics.py --replay-signals
+```
+
+The script compares local runtime state, live order logs, and recent public OKX
+1m signal replay. It is a concrete implementation of the generic diagnostic
+flow, not the only accepted method.
 
 ## Promotion Rule
 

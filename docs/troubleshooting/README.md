@@ -10,6 +10,12 @@ path.
 - [QMT GUI session and xtquant connect -1](qmt-gui-session-xtquant-connect-minus-1.md)
 - [OKX auto-trading runtime](okx-auto-trading.md): startup, health, Telegram,
   tmux process management, and recurring OKX websocket/CTA readiness issues.
+- [OKX datafeed malformed instruments](okx-datafeed-malformed-instruments.md):
+  public/demo instruments such as `TESTING-USDT` can break CTA datafeed startup
+  unless malformed symbols are skipped.
+- [Strategy live trade gap diagnostics](strategy-live-trade-gap-diagnostics.md):
+  general workflow for proving whether sparse live fills come from signal
+  scarcity, strategy state, risk/order routing, gateway health, or data quality.
 
 ## Entry Template
 

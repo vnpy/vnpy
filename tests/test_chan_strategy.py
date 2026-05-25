@@ -317,6 +317,31 @@ def test_chan_strategy_does_not_duplicate_same_signal() -> None:
     assert len(engine.orders) == 1
 
 
+def test_chan_strategy_treats_tiny_residual_position_as_flat_for_next_entry() -> None:
+    strategy, engine = _strategy({"fixed_size": 2})
+    strategy.pos = -6.938893903907228e-18
+    strategy.active_stop_price = 8
+    strategy.active_stop_orderid = "STOP.1"
+    strategy.exit_order_sent = True
+    next_signal = BuySignal(
+        id=0,
+        type=BuyPointType.SECOND_BUY,
+        candidate_index=3,
+        confirmed_index=4,
+        stop_price=9,
+        reason="next signal",
+    )
+    strategy.analyzer = FakeAnalyzer([_snapshot(next_signal)])
+
+    strategy.on_bar(_bar(0, 10))
+
+    assert strategy.pos == 0
+    assert engine.orders == [(Direction.LONG, Offset.OPEN, 10, 2, False)]
+    assert strategy.active_stop_price == 9
+    assert strategy.active_stop_orderid == ""
+    assert strategy.exit_order_sent is False
+
+
 def test_chan_strategy_distinguishes_different_confirmed_signals() -> None:
     strategy, engine = _strategy({"trade_enabled": False})
     first = _signal()
@@ -335,6 +360,21 @@ def test_chan_strategy_distinguishes_different_confirmed_signals() -> None:
 
     assert engine.orders == []
     assert sum("缠论买点触发" in log for log in engine.logs) == 2
+
+
+def test_chan_strategy_clears_stop_state_after_tiny_residual_close() -> None:
+    strategy, _engine = _strategy()
+    strategy.pos = -6.938893903907228e-18
+    strategy.active_stop_price = 8
+    strategy.active_stop_orderid = "STOP.1"
+    strategy.exit_order_sent = True
+
+    strategy.on_trade(_trade(0, 8, 1))
+
+    assert strategy.pos == 0
+    assert strategy.active_stop_price == 0
+    assert strategy.active_stop_orderid == ""
+    assert strategy.exit_order_sent is False
 
 
 def test_chan_strategy_sells_when_stop_is_touched() -> None:

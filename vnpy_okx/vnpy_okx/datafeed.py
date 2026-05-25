@@ -88,10 +88,18 @@ class Datafeed(BaseDatafeed):
         if inst_type == "SPOT":
             return inst_id.replace("-", "") + "_SPOT_OKX"
         if inst_type == "SWAP":
-            base, quote, _ = inst_id.split("-")
+            try:
+                base, quote, _ = inst_id.split("-")
+            except ValueError:
+                self.output(f"OKX datafeed: skip malformed SWAP instrument: {inst_id}")
+                return None
             return f"{base}{quote}_SWAP_OKX"
         if inst_type == "FUTURES":
-            base, quote, expiry = inst_id.split("-")
+            try:
+                base, quote, expiry = inst_id.split("-")
+            except ValueError:
+                self.output(f"OKX datafeed: skip malformed FUTURES instrument: {inst_id}")
+                return None
             return f"{base}{quote}_{expiry}_OKX"
         return None
 

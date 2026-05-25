@@ -43,6 +43,7 @@ class ChanStrategy(CtaTemplate):
     atr_value: float = 0
     atr_multiplier: float = 1
     init_days: int = 0
+    position_epsilon: float = 1e-8
 
     latest_signal_type: str = ""
     latest_signal_reason: str = ""
@@ -77,6 +78,7 @@ class ChanStrategy(CtaTemplate):
         "atr_value",
         "atr_multiplier",
         "init_days",
+        "position_epsilon",
     ]
     variables = [
         "latest_signal_type",
@@ -119,11 +121,13 @@ class ChanStrategy(CtaTemplate):
     def on_bar(self, bar: BarData) -> None:
         """Update Chan analyzer and trade confirmed buy signals."""
 
-        if self.pos == 0:
+        self._normalize_position_state()
+        if self._is_flat():
             self.cancel_all()
+            self._clear_exit_state()
         snapshot = self.analyzer.update_bar(bar)
 
-        if self.pos > 0:
+        if self._is_long():
             if snapshot.sell_signals:
                 sell_signal = snapshot.sell_signals[-1]
                 signal_key = self._build_sell_signal_key(sell_signal)
@@ -150,7 +154,7 @@ class ChanStrategy(CtaTemplate):
             self.put_event()
             return
 
-        if self.pos == 0 and snapshot.signals:
+        if self._is_flat() and snapshot.signals:
             signal = snapshot.signals[-1]
             signal_key = self._build_signal_key(signal)
             if signal_key != self.last_signal_key:
@@ -218,10 +222,9 @@ class ChanStrategy(CtaTemplate):
     def on_trade(self, trade: TradeData) -> None:
         """Handle trade updates."""
 
-        if self.pos == 0:
-            self.active_stop_price = 0
-            self.active_stop_orderid = ""
-            self.exit_order_sent = False
+        self._normalize_position_state()
+        if self._is_flat():
+            self._clear_exit_state()
         else:
             self._ensure_stop_order()
         self.put_event()
@@ -246,6 +249,25 @@ class ChanStrategy(CtaTemplate):
         """Feed historical bars into Chan analyzer without trading."""
         self.analyzer.update_bar(bar)
         self.warmup_bar_count += 1
+
+    def _normalize_position_state(self) -> None:
+        """Collapse floating-point dust positions to flat."""
+        if abs(self.pos) <= self.position_epsilon:
+            self.pos = 0
+
+    def _clear_exit_state(self) -> None:
+        """Clear stale exit state when no material position remains."""
+        self.active_stop_price = 0
+        self.active_stop_orderid = ""
+        self.exit_order_sent = False
+
+    def _is_flat(self) -> bool:
+        """Return whether current position should be treated as flat."""
+        return abs(self.pos) <= self.position_epsilon
+
+    def _is_long(self) -> bool:
+        """Return whether current position is materially long."""
+        return self.pos > self.position_epsilon
 
     def _build_signal_key(self, signal: BuySignal) -> str:
         """Build a stable key for the same logical Chan signal across windows."""
