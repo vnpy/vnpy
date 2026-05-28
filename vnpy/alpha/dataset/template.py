@@ -230,7 +230,7 @@ class AlphaDataset:
         feature_s: pd.Series = feature_df[name]
 
         # Extract price
-        price_df: pd.DataFrame = merged_df.select(["datetime", "vt_symbol", "close"]).to_pandas()
+        price_df: pd.DataFrame = result_df.select(["datetime", "vt_symbol", "close"]).to_pandas()
         price_df = price_df.pivot(index="datetime", columns="vt_symbol", values="close")
 
         # Merge data
