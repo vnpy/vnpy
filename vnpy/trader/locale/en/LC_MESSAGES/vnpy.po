@@ -715,6 +715,20 @@ msgstr "WeChat Notification"
 msgid "账号状态"
 msgstr "Account Status"
 
+#: vnpy\trader\ui\widget.py:1448
+msgid ""
+"控制两次微信推送之间的最小间隔。\n"
+"间隔内的新消息会暂存，并在下次推送时合并发送。\n"
+"用户每发送 1 条消息，机器人可在 24 小时内推送 10 条；超限后需用户再次发送消息才能恢复。"
+msgstr ""
+"Controls the minimum interval between two WeChat pushes.\n"
+"New messages received during the interval will be queued and merged into the next push.\n"
+"For each message sent by the user, the bot can push 10 messages within 24 hours; after the limit is exceeded, the user needs to send another message to resume."
+
+#: vnpy\trader\ui\widget.py:1453
+msgid " 秒"
+msgstr " sec"
+
 #: vnpy\trader\ui\widget.py:1447
 msgid "用户 ID："
 msgstr "User ID:"
@@ -722,6 +736,14 @@ msgstr "User ID:"
 #: vnpy\trader\ui\widget.py:1448
 msgid "网关："
 msgstr "Gateway:"
+
+#: vnpy\trader\ui\widget.py:1462
+msgid "推送设置"
+msgstr "Push Settings"
+
+#: vnpy\trader\ui\widget.py:1465
+msgid "最小间隔："
+msgstr "Min Interval:"
 
 #: vnpy\trader\ui\widget.py:1450 vnpy\trader\ui\widget.py:1579
 msgid "开始绑定"

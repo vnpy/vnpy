@@ -477,4 +477,4 @@ class AlphaLab:
 
     def list_all_signals(self) -> list[str]:
         """List all signals"""
-        return [file.stem for file in self.model_path.glob("*.parquet")]
+        return [file.stem for file in self.signal_path.glob("*.parquet")]

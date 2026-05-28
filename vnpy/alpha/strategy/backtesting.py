@@ -307,13 +307,13 @@ class BacktestingEngine:
             else:
                 max_drawdown_duration = 0
 
-            total_net_pnl = df["net_pnl"].sum()
+            total_net_pnl = cast(float, df["net_pnl"].sum())
             daily_net_pnl = total_net_pnl / total_days
 
-            total_commission = df["commission"].sum()
+            total_commission = cast(float, df["commission"].sum())
             daily_commission = total_commission / total_days
 
-            total_turnover = df["turnover"].sum()
+            total_turnover = cast(float, df["turnover"].sum())
             daily_turnover = total_turnover / total_days
 
             total_trade_count = cast(int, df["trade_count"].sum())

@@ -668,10 +668,10 @@ class WechatEngine(BaseEngine):
         self.creds: Credentials | None = None
         self.user_id: str = ""
 
-        self.send_message_interval: int = 60
-        self.last_send_ts: float | None = None
+        self.send_interval: int = 60
+        self.last_ts: float | None = None
 
-        self.pending_messages: list[str] = []
+        self.pending_msgs: list[str] = []
 
         self.queue: Queue[str] = Queue()
         self.thread: Thread | None = None
@@ -700,9 +700,9 @@ class WechatEngine(BaseEngine):
 
         self.user_id = str(data.get("user_id") or data.get("chat_id") or "")
 
-        send_interval_raw: int | None = data.get("send_interval")
-        if send_interval_raw:
-            self.send_message_interval = send_interval_raw
+        send_interval: Any = data.get("send_interval")
+        if isinstance(send_interval, int) and send_interval >= 0:
+            self.send_interval = send_interval
 
     def save_setting(self) -> None:
         """Persist current state back to json file."""
@@ -716,7 +716,7 @@ class WechatEngine(BaseEngine):
         if self.user_id:
             data["user_id"] = self.user_id
 
-        data["send_interval"] = self.send_message_interval
+        data["send_interval"] = self.send_interval
 
         save_json(self.setting_filename, data)
 
@@ -738,7 +738,7 @@ class WechatEngine(BaseEngine):
 
         self.creds = None
         self.user_id = ""
-        self.pending_messages.clear()
+        self.pending_msgs.clear()
 
         self.save_setting()
 
@@ -785,45 +785,49 @@ class WechatEngine(BaseEngine):
         while self.active:
             try:
                 msg: str = self.queue.get(block=True, timeout=1)
+                self.pending_msgs.append(msg)
             except Empty:
-                continue
+                pass
 
-            msgs: list[str] = list(self.pending_messages)
-            self.pending_messages.clear()
-            msgs.append(msg)
             while True:
                 try:
-                    msgs.append(self.queue.get_nowait())
+                    self.pending_msgs.append(self.queue.get_nowait())
                 except Empty:
                     break
 
-            if not self.creds or not self.user_id:
-                self.pending_messages.extend(msgs)
+            if not self.pending_msgs:
                 continue
 
+            if not self.creds or not self.user_id:
+                continue
+
+            gap: float = self.send_interval
+            if gap > 0:
+                prior: float | None = self.last_ts
+                if prior is not None:
+                    wait_secs: float = prior + gap - time.monotonic()
+                    if wait_secs > 0:
+                        continue
+
+            msgs: list[str] = list(self.pending_msgs)
+            self.pending_msgs.clear()
+
             try:
-                gap: float = self.send_message_interval
-                if gap > 0:
-                    prior: float | None = self.last_send_ts
-                    if prior is not None:
-                        wait_secs: float = prior + gap - time.monotonic()
-                        if wait_secs > 0:
-                            time.sleep(wait_secs)
+                self.last_ts = time.monotonic()
                 send_text(
                     self.creds,
                     self.user_id,
                     "\n".join(msgs),
                 )
-                self.last_send_ts = time.monotonic()
             except SessionExpired:
-                self.pending_messages.extend(msgs)
+                self.pending_msgs = msgs + self.pending_msgs
                 self.active = False
                 self.main_engine.write_log(
                     _("微信会话已过期，请通过菜单重新扫码绑定"),
                     self.engine_name,
                 )
             except WeixinError as exc:
-                self.pending_messages.extend(msgs)
+                self.pending_msgs = msgs + self.pending_msgs
                 self.main_engine.write_log(
                     _("微信推送失败：{}").format(exc),
                     self.engine_name,

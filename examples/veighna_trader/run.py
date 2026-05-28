@@ -8,7 +8,6 @@ from vnpy_ctp import CtpGateway
 # from vnpy_mini import MiniGateway
 # from vnpy_femas import FemasGateway
 # from vnpy_sopt import SoptGateway
-# from vnpy_uft import UftGateway
 # from vnpy_esunny import EsunnyGateway
 # from vnpy_xtp import XtpGateway
 # from vnpy_tora import ToraStockGateway, ToraOptionGateway

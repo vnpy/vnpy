@@ -377,7 +377,7 @@ class MlpModel(AlphaModel):
                 predictions.append(self.model(x.to(self.device)).detach().reshape(-1))
 
         if return_cpu:
-            return cast(np.ndarray, np.concatenate([pr.cpu().numpy() for pr in predictions]))
+            return np.concatenate([pr.cpu().numpy() for pr in predictions])
         else:
             return torch.cat(predictions, dim=0)
 
@@ -465,7 +465,7 @@ class MlpModel(AlphaModel):
             Feature importance dataframe
         """
         self.model.eval()
-        importance_dict = {}
+        importance_dict: dict[str, float] = {}
 
         test_data = torch.randn(1000, self.input_size).to(self.device)
         base_pred = self.model(test_data).detach()
@@ -480,12 +480,12 @@ class MlpModel(AlphaModel):
                 importance = torch.std(torch.abs(new_pred - base_pred)).item()
                 importance_dict[feature_name] = importance
 
-        df = pd.DataFrame({
-            'Feature': list(importance_dict.keys()),
-            'Importance': list(importance_dict.values())
+        df: pd.DataFrame = pd.DataFrame({
+            "Feature": list(importance_dict.keys()),
+            "Importance": list(importance_dict.values())
         })
-        df = df.sort_values('Importance', ascending=False)
-        df = df.set_index('Feature')
+        df = df.sort_values("Importance", ascending=False)
+        df = df.set_index("Feature")
 
         return df
 

@@ -8,3 +8,4 @@ VeighNa用户文档
    community/index
 
    elite/index
+   fusion/index

@@ -308,7 +308,8 @@ def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
     def decay_func(s: pl.Series) -> float:
         """Calculate linear decay weighted average for a series"""
         weights = pl.Series(range(window, 0, -1))
-        return float((s * weights).sum() / (window * (window + 1) / 2))
+        denominator: int = window * (window + 1) // 2
+        return float((s * weights).sum() / denominator)
 
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),

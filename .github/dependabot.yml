@@ -1,0 +1,34 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    target-branch: dev
+    open-pull-requests-limit: 5
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Shanghai
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    groups:
+      python:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    open-pull-requests-limit: 5
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Shanghai
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
