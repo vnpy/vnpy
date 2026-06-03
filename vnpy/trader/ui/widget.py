@@ -204,7 +204,8 @@ class TimeCell(BaseCell):
             timestamp = f"{timestamp}.{millisecond}"
         else:
             timestamp = f"{timestamp}.000"
-
+            
+        self._text = timestamp
         self.setText(timestamp)
         self._data = data
 
