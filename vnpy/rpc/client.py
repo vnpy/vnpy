@@ -1,3 +1,4 @@
+import pickle
 import threading
 from time import time
 from functools import lru_cache
@@ -136,8 +137,14 @@ class RpcClient:
                 self.on_disconnected()
                 continue
 
-            # Receive data from subscribe socket
-            topic, data = self._socket_sub.recv_pyobj(flags=zmq.NOBLOCK)
+            # Receive multipart message for ZMQ topic filtering
+            frames = self._socket_sub.recv_multipart(flags=zmq.NOBLOCK)
+
+            if len(frames) != 2:
+                continue
+
+            topic = frames[0].decode("utf-8")
+            data = pickle.loads(frames[1])
 
             if topic == HEARTBEAT_TOPIC:
                 self._last_received_ping = data
