@@ -232,6 +232,7 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
     from .math_function import (              # noqa
         less, greater, log, abs,
         sign, pow1, pow2,
+        cast_to_int,
         quesval, quesval2
     )
 

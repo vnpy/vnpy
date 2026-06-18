@@ -104,3 +104,15 @@ def test_dataproxy_between_proxy_comparisons() -> None:
     assert_int_data(x <= y, [1, 0, 1, 0])
     assert_int_data(x == y, [0, 0, 0, 0])
     assert_int_data(x != y, [1, 1, 1, 1])
+
+
+def test_cast_to_int_function() -> None:
+    """Test cast_to_int converts feature data to Int32."""
+    from vnpy.alpha.dataset.math_function import cast_to_int
+
+    df = make_test_df()
+    x = make_proxy(df, "x")
+
+    result = cast_to_int(x)
+
+    assert_int_data(result, [1, 3, 2, 4])
