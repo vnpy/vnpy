@@ -70,6 +70,16 @@ def sign(feature: DataProxy) -> DataProxy:
     return DataProxy(df)
 
 
+def cast_to_int(feature: DataProxy) -> DataProxy:
+    """将特征数据转换为32位整数"""
+    df: pl.DataFrame = feature.df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        pl.col("data").cast(pl.Int32, strict=False).alias("data")
+    )
+    return DataProxy(df)
+
+
 def quesval(threshold: float, feature1: DataProxy, feature2: DataProxy | float | int, feature3: DataProxy | float | int) -> DataProxy:
     """Return feature2 if threshold < feature1, otherwise feature3"""
     df_merged = feature1.df

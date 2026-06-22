@@ -377,7 +377,8 @@ class MlpModel(AlphaModel):
                 predictions.append(self.model(x.to(self.device)).detach().reshape(-1))
 
         if return_cpu:
-            return np.concatenate([pr.cpu().numpy() for pr in predictions])
+            result: np.ndarray = np.concatenate([pr.cpu().numpy() for pr in predictions])
+            return result
         else:
             return torch.cat(predictions, dim=0)
 
