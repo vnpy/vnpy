@@ -17,6 +17,11 @@ from vnpy.trader.utility import round_to, extract_vt_symbol
 from ..logger import logger
 from ..lab import AlphaLab
 from .template import AlphaStrategy
+from .statistics import (
+    calculate_calmar_ratio,
+    calculate_sharpe_ratio,
+    calculate_sortino_ratio,
+)
 
 
 class BacktestingEngine:
@@ -251,7 +256,10 @@ class BacktestingEngine:
         annual_return: float = 0
         daily_return: float = 0
         return_std: float = 0
+        downside_std: float = 0
         sharpe_ratio: float = 0
+        sortino_ratio: float = 0
+        calmar_ratio: float = 0
         return_drawdown_ratio: float = 0
 
         # Check if bankruptcy occurred
@@ -323,12 +331,22 @@ class BacktestingEngine:
             annual_return = total_return / total_days * self.annual_days
             daily_return = cast(float, df["return"].mean()) * 100
             return_std = cast(float, df["return"].std()) * 100
+            downside_returns = df.filter(pl.col("return") < 0)["return"]
+            downside_std = cast(float, downside_returns.std() or 0) * 100
 
-            if return_std:
-                daily_risk_free = self.risk_free / np.sqrt(self.annual_days)
-                sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(self.annual_days)
-            else:
-                sharpe_ratio = 0
+            sharpe_ratio = calculate_sharpe_ratio(
+                daily_return,
+                return_std,
+                self.risk_free,
+                self.annual_days
+            )
+            sortino_ratio = calculate_sortino_ratio(
+                daily_return,
+                downside_std,
+                self.risk_free,
+                self.annual_days
+            )
+            calmar_ratio = calculate_calmar_ratio(annual_return, max_ddpercent)
 
             return_drawdown_ratio = -total_net_pnl / max_drawdown
 
@@ -362,7 +380,10 @@ class BacktestingEngine:
 
         logger.info(f"日均收益率：  {daily_return:,.2f}%")
         logger.info(f"收益标准差：  {return_std:,.2f}%")
+        logger.info(f"下行标准差：  {downside_std:,.2f}%")
         logger.info(f"Sharpe Ratio：  {sharpe_ratio:,.2f}")
+        logger.info(f"Sortino Ratio：  {sortino_ratio:,.2f}")
+        logger.info(f"Calmar Ratio：  {calmar_ratio:,.2f}")
         logger.info(f"收益回撤比：  {return_drawdown_ratio:,.2f}")
 
         statistics: dict = {
@@ -388,7 +409,10 @@ class BacktestingEngine:
             "annual_return": annual_return,
             "daily_return": daily_return,
             "return_std": return_std,
+            "downside_std": downside_std,
             "sharpe_ratio": sharpe_ratio,
+            "sortino_ratio": sortino_ratio,
+            "calmar_ratio": calmar_ratio,
             "return_drawdown_ratio": return_drawdown_ratio,
         }
 
