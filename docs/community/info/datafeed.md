@@ -8,7 +8,7 @@
 - datafeed.username：数据服务的用户名；
 - datafeed.password：数据服务的密码。
 
-以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前VeighNa Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
+以上字段的具体用途由各数据服务适配器定义，如果是token方式授权通常填写在datafeed.password字段中。**具体每个数据服务的细节可在对应的项目地址中找到**。
 
 ## 迅投研
 
@@ -27,6 +27,16 @@
 - 注册申请：[RICEQUANT](https://www.ricequant.com/welcome/purchase?utm_source=vnpy)
 
 **请注意，配置信息里的username和password不是米筐官网登录用的账号和密码。**
+
+## CryptoHFTData
+
+CryptoHFTData提供多个加密货币交易所的历史高频行情数据。适配器将逐笔成交映射为VeighNa的TICK数据，并可从同一成交数据聚合分钟线、小时线和日线：
+- 项目地址：[vnpy_cryptohftdata](https://github.com/hmate9/vnpy_cryptohftdata)
+- 数据分类：加密货币现货、永续合约和期货
+- 数据周期：TICK、分钟线、小时线、日线
+- 服务文档：[CryptoHFTData](https://cryptohftdata.com/docs)
+
+使用时请将`datafeed.name`设置为`cryptohftdata`，将`datafeed.username`设置为CryptoHFTData交易所标识（例如`binance_futures`）。`datafeed.password`可填写API密钥，也可留空使用限速的免费层。由于VeighNa的`TickData`无法无损表示任意深度的顺序盘口更新，该适配器仅提供逐笔成交和成交聚合K线。
 
 
 ## UData

@@ -215,6 +215,8 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
     * :arrow_up: polygon（[polygon](https://www.github.com/vnpy/vnpy_polygon)）：股票、期货、期权
 
+    * CryptoHFTData（[cryptohftdata](https://github.com/hmate9/vnpy_cryptohftdata)）：加密货币TICK、分钟线、小时线、日线
+
 8. :arrow_up: 跨进程通讯标准组件（rpc），用于实现分布式部署的复杂交易系统。
 
 9. :arrow_up: Python高性能K线图表（chart），支持大数据量图表显示以及实时数据更新功能。

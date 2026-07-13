@@ -213,6 +213,8 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
     
     * :arrow_up: polygon ([polygon](https://www.github.com/vnpy/vnpy_polygon)): Stocks, futures, options
 
+    * CryptoHFTData ([cryptohftdata](https://github.com/hmate9/vnpy_cryptohftdata)): Crypto ticks, minute, hourly and daily bars
+
 8. :arrow_up: Standard component for inter-process communication (vnpy.rpc) for implementing complex trading systems in distributed deployments
 
 9. :arrow_up: Python high-performance K-line charts (vnpy.chart), supporting large data volume chart display and real-time data update functions
