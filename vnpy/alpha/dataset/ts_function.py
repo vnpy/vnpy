@@ -1,8 +1,10 @@
 """Time Series Operators"""
 
+from collections.abc import Callable
 from typing import cast
 
-from scipy import stats
+from scipy import stats    # type: ignore[import-untyped]
+from numpy.lib.stride_tricks import sliding_window_view
 import polars as pl
 import numpy as np
 
@@ -41,32 +43,30 @@ def ts_max(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_argmax(feature: DataProxy, window: int) -> DataProxy:
     """Return the index of the maximum value over a rolling window"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: cast(int, s.arg_max()) + 1, window).over("vt_symbol")
+    return _rolling_full_window_by_symbol(
+        feature=feature,
+        window=window,
+        reduce_slice=_reduce_argmax_slice,
     )
-    return DataProxy(df)
 
 
 def ts_argmin(feature: DataProxy, window: int) -> DataProxy:
     """Return the index of the minimum value over a rolling window"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: cast(int, s.arg_min()) + 1, window).over("vt_symbol")
+    return _rolling_full_window_by_symbol(
+        feature=feature,
+        window=window,
+        reduce_slice=_reduce_argmin_slice,
     )
-    return DataProxy(df)
 
 
 def ts_rank(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the percentile rank of the current value within the window"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: stats.percentileofscore(s, s[-1]) / 100, window).over("vt_symbol")
+    return _rolling_full_window_by_symbol(
+        feature=feature,
+        window=window,
+        reduce_slice=_reduce_rank_slice,
+        reduce_axis=_reduce_rank_axis,
     )
-    return DataProxy(df)
 
 
 def ts_sum(feature: DataProxy, window: int) -> DataProxy:
@@ -81,22 +81,22 @@ def ts_sum(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_mean(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the mean over a rolling window"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: np.nanmean(s), window, min_samples=1).over("vt_symbol")
+    return _rolling_by_symbol(
+        feature=feature,
+        window=window,
+        reduce_slice=_reduce_mean_slice,
+        reduce_axis=_reduce_mean_axis,
     )
-    return DataProxy(df)
 
 
 def ts_std(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the standard deviation over a rolling window"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: np.nanstd(s, ddof=0), window, min_samples=1).over("vt_symbol")
+    return _rolling_by_symbol(
+        feature=feature,
+        window=window,
+        reduce_slice=_reduce_std_slice,
+        reduce_axis=_reduce_std_axis,
     )
-    return DataProxy(df)
 
 
 def ts_slope(feature: DataProxy, window: int) -> DataProxy:
@@ -129,10 +129,18 @@ def ts_slope(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
     """Calculate the quantile value over a rolling window"""
+    data_dtype: pl.DataType = feature.df["data"].dtype
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: s.quantile(quantile=quantile, interpolation="linear"), window).over("vt_symbol")
+        pl.col("data")
+        .rolling_quantile(
+            quantile=quantile,
+            interpolation="linear",
+            window_size=window,
+        )
+        .over("vt_symbol")
+        .cast(data_dtype),
     )
     return DataProxy(df)
 
@@ -327,3 +335,323 @@ def ts_product(feature: DataProxy, window: int) -> DataProxy:
         pl.col("data").rolling_map(lambda s: s.product(), window).over("vt_symbol")
     )
     return DataProxy(df)
+
+
+def _rolling_by_symbol(
+    feature: DataProxy,
+    window: int,
+    reduce_slice: Callable[[object], float],
+    reduce_axis: Callable[[np.ndarray], np.ndarray],
+) -> DataProxy:
+    """
+    Shared rolling helper for ts_mean / ts_std.
+
+    Mirrors Polars 1.26 rolling_map semantics with per-symbol NumPy windows.
+    Unsupported dtypes fall back to _rolling_map_fallback(min_samples=1).
+    """
+    source_df: pl.DataFrame = feature.df
+    if source_df.height == 0:
+        return DataProxy(source_df.select(["datetime", "vt_symbol", "data"]))
+
+    data_dtype: pl.DataType = source_df["data"].dtype
+    # Fall back to rolling_map when the dtype is unsupported
+    if not _is_fast_rolling_dtype(data_dtype):
+        return _rolling_map_fallback(
+            feature=feature,
+            window=window,
+            reducer=reduce_slice,
+            min_samples=1,
+        )
+
+    # Add row_id so results can be written back in order
+    indexed_df: pl.DataFrame = source_df.with_row_index("row_id")
+    result_values: np.ndarray = np.empty(source_df.height, dtype=np.float64)
+    result_null: np.ndarray = np.zeros(source_df.height, dtype=np.bool_)
+
+    # Split by vt_symbol so windows stay within one symbol
+    group_frames: list[pl.DataFrame] = indexed_df.partition_by(
+        "vt_symbol",
+        maintain_order=True,
+    )
+    for group_df in group_frames:
+        row_index: np.ndarray = group_df["row_id"].to_numpy()
+        data_series: pl.Series = group_df["data"]
+        null_mask: np.ndarray = data_series.is_null().to_numpy()
+        # Convert to float64 and use NaN as the null placeholder
+        float_values: np.ndarray = (
+            data_series.cast(pl.Float64)
+            .fill_null(np.nan)
+            .to_numpy()
+            .astype(np.float64, copy=False)
+        )
+
+        length: int = int(float_values.shape[0])
+        local_values: np.ndarray = np.empty(length, dtype=np.float64)
+        local_null: np.ndarray = np.zeros(length, dtype=np.bool_)
+
+        partial_end: int = window - 1
+        if partial_end > length:
+            partial_end = length
+
+        # Call reduce_slice on short leading windows
+        for i in range(partial_end):
+            end: int = i + 1
+            window_null: np.ndarray = null_mask[0:end]
+            # Leave the result null when every value in the window is null
+            if bool(np.all(window_null)):
+                local_null[i] = True
+                local_values[i] = np.nan
+            else:
+                local_values[i] = reduce_slice(float_values[0:end])
+
+        if length >= window:
+            # Build sliding windows and call reduce_axis once
+            value_windows: np.ndarray = sliding_window_view(
+                float_values,
+                window_shape=window,
+            )
+            null_windows: np.ndarray = sliding_window_view(
+                null_mask.astype(np.uint8, copy=False),
+                window_shape=window,
+            )
+            all_null: np.ndarray = np.asarray(
+                null_windows.all(axis=-1),
+                dtype=np.bool_,
+            )
+            reduced: np.ndarray = reduce_axis(value_windows)
+            local_values[window - 1:] = reduced
+            # Set null when every value in the window was null
+            local_null[window - 1:] = all_null
+
+        # Scatter local results into the global arrays
+        result_values[row_index] = local_values
+        result_null[row_index] = local_null
+
+    # Map null flags to Polars null and cast to the input dtype
+    if _is_integer_rolling_dtype(data_dtype):
+        value_expr: pl.Expr = (
+            pl.when(pl.col("roll_null") | pl.col("roll_value").is_nan())
+            .then(pl.lit(None, dtype=pl.Float64))
+            .otherwise(pl.col("roll_value"))
+            .cast(data_dtype)
+        )
+    else:
+        if data_dtype == pl.Float32:
+            value_expr = (
+                pl.when(pl.col("roll_null"))
+                .then(pl.lit(None, dtype=pl.Float32))
+                .otherwise(pl.col("roll_value").cast(pl.Float32))
+            )
+        else:
+            value_expr = (
+                pl.when(pl.col("roll_null"))
+                .then(pl.lit(None, dtype=pl.Float64))
+                .otherwise(pl.col("roll_value"))
+            )
+
+    result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
+        pl.Series("roll_value", result_values),
+        pl.Series("roll_null", result_null),
+    ).select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        value_expr.alias("data"),
+    )
+    return DataProxy(result_df)
+
+
+def _rolling_full_window_by_symbol(
+    feature: DataProxy,
+    window: int,
+    reduce_slice: Callable[[pl.Series], float],
+    reduce_axis: Callable[[np.ndarray], np.ndarray] | None = None,
+) -> DataProxy:
+    """
+    Full-window per-symbol helper for rank / argmax / argmin.
+
+    First window-1 rows are null. Any Polars null in a full window yields null.
+    Does not change mean/std helper semantics.
+    """
+    source_df: pl.DataFrame = feature.df
+    if source_df.height == 0:
+        return DataProxy(source_df.select(["datetime", "vt_symbol", "data"]))
+
+    data_dtype: pl.DataType = source_df["data"].dtype
+    # Fall back to rolling_map when the dtype is unsupported
+    if not _is_fast_rolling_dtype(data_dtype):
+        return _rolling_map_fallback(
+            feature=feature,
+            window=window,
+            reducer=reduce_slice,
+        )
+
+    # Add row_id so results can be written back in order
+    indexed_df: pl.DataFrame = source_df.with_row_index("row_id")
+    result_values: np.ndarray = np.empty(source_df.height, dtype=np.float64)
+    result_null: np.ndarray = np.zeros(source_df.height, dtype=np.bool_)
+
+    # Split by vt_symbol so windows stay within one symbol
+    group_frames: list[pl.DataFrame] = indexed_df.partition_by(
+        "vt_symbol",
+        maintain_order=True,
+    )
+    for group_df in group_frames:
+        row_index: np.ndarray = group_df["row_id"].to_numpy()
+        data_series: pl.Series = group_df["data"]
+        length: int = int(data_series.len())
+        local_values: np.ndarray = np.empty(length, dtype=np.float64)
+        # Start with all null for the leading short windows
+        local_null: np.ndarray = np.ones(length, dtype=np.bool_)
+
+        if length >= window:
+            if reduce_axis is None:
+                # Call reduce_slice once per full window
+                for i in range(window - 1, length):
+                    start: int = i + 1 - window
+                    window_series: pl.Series = data_series.slice(start, window)
+                    # Leave the result null when the window has any null
+                    if window_series.null_count() > 0:
+                        local_null[i] = True
+                        local_values[i] = np.nan
+                    else:
+                        local_null[i] = False
+                        local_values[i] = reduce_slice(window_series)
+            else:
+                # Build sliding windows and call reduce_axis once
+                null_mask: np.ndarray = data_series.is_null().to_numpy()
+                # Fill null with 0 only to allow to_numpy
+                values: np.ndarray = data_series.fill_null(0).to_numpy()
+                value_windows: np.ndarray = sliding_window_view(values, window)
+                null_windows: np.ndarray = sliding_window_view(null_mask, window)
+                local_values[window - 1:] = reduce_axis(value_windows)
+                # Set null where any value in the window was null
+                local_null[window - 1:] = null_windows.any(axis=-1)
+
+        # Scatter local results into the global arrays
+        result_values[row_index] = local_values
+        result_null[row_index] = local_null
+
+    # Map null flags to Polars null and cast to the input dtype
+    value_expr: pl.Expr = (
+        pl.when(pl.col("roll_null"))
+        .then(pl.lit(None, dtype=pl.Float64))
+        .otherwise(pl.col("roll_value"))
+        .cast(data_dtype)
+    )
+    result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
+        pl.Series("roll_value", result_values),
+        pl.Series("roll_null", result_null),
+    ).select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        value_expr.alias("data"),
+    )
+    return DataProxy(result_df)
+
+
+def _rolling_map_fallback(
+    feature: DataProxy,
+    window: int,
+    reducer: Callable[..., float],
+    min_samples: int | None = None,
+) -> DataProxy:
+    """Fallback to Polars rolling_map for unsupported dtypes."""
+    if min_samples is None:
+        data_expr: pl.Expr = (
+            pl.col("data").rolling_map(reducer, window).over("vt_symbol")
+        )
+    else:
+        data_expr = (
+            pl.col("data")
+            .rolling_map(reducer, window, min_samples=min_samples)
+            .over("vt_symbol")
+        )
+    df: pl.DataFrame = feature.df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        data_expr,
+    )
+    return DataProxy(df)
+
+
+def _reduce_argmax_slice(series: pl.Series) -> float:
+    """1-based argmax position using Polars Series semantics."""
+    return float(cast(int, series.arg_max()) + 1)
+
+
+def _reduce_argmin_slice(series: pl.Series) -> float:
+    """1-based argmin position using Polars Series semantics."""
+    return float(cast(int, series.arg_min()) + 1)
+
+
+def _reduce_rank_slice(series: pl.Series) -> float:
+    """SciPy percentile rank of the last value in the window."""
+    return float(stats.percentileofscore(series, series[-1]) / 100)
+
+
+def _reduce_rank_axis(windows: np.ndarray) -> np.ndarray:
+    """Vectorized SciPy rank-percentile semantics over the last axis."""
+    scores: np.ndarray = windows[:, -1:]
+    left: np.ndarray = np.count_nonzero(windows < scores, axis=-1)
+    right: np.ndarray = np.count_nonzero(windows <= scores, axis=-1)
+    plus_one: np.ndarray = left < right
+    window_size: int = int(windows.shape[-1])
+    result: np.ndarray = (left + right + plus_one) * (50.0 / window_size) / 100
+
+    nan_windows: np.ndarray = np.isnan(windows).any(axis=-1)
+    result = np.asarray(result, dtype=np.float64)
+    result[nan_windows] = np.nan
+    return result
+
+
+def _reduce_mean_axis(windows: np.ndarray) -> np.ndarray:
+    """Vectorized nanmean over the last axis."""
+    with np.errstate(all="ignore"):
+        result: np.ndarray = np.asarray(np.nanmean(windows, axis=-1), dtype=np.float64)
+    return result
+
+
+def _reduce_std_axis(windows: np.ndarray) -> np.ndarray:
+    """Vectorized nanstd over the last axis."""
+    with np.errstate(all="ignore"):
+        result: np.ndarray = np.asarray(
+            np.nanstd(windows, axis=-1, ddof=0),
+            dtype=np.float64,
+        )
+    return result
+
+
+def _reduce_mean_slice(values: object) -> float:
+    """nanmean for one window slice."""
+    array: np.ndarray = np.asarray(values, dtype=np.float64)
+    with np.errstate(all="ignore"):
+        return float(np.nanmean(array))
+
+
+def _reduce_std_slice(values: object) -> float:
+    """nanstd for one window slice."""
+    array: np.ndarray = np.asarray(values, dtype=np.float64)
+    with np.errstate(all="ignore"):
+        return float(np.nanstd(array, ddof=0))
+
+
+def _is_fast_rolling_dtype(dtype: pl.DataType) -> bool:
+    """Return whether dtype uses the vectorized rolling path."""
+    return dtype in {
+        pl.Float32,
+        pl.Float64,
+        pl.Int32,
+        pl.Int64,
+        pl.UInt32,
+        pl.UInt64,
+    }
+
+
+def _is_integer_rolling_dtype(dtype: pl.DataType) -> bool:
+    """Return whether dtype needs integer cast-back semantics."""
+    return dtype in {
+        pl.Int32,
+        pl.Int64,
+        pl.UInt32,
+        pl.UInt64,
+    }
