@@ -10,6 +10,8 @@ updates:
       day: monday
       time: "09:00"
       timezone: Asia/Shanghai
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
       include: scope
@@ -26,6 +28,8 @@ updates:
       day: monday
       time: "09:00"
       timezone: Asia/Shanghai
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "chore(deps)"
       include: scope
