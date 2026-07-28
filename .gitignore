@@ -3,6 +3,10 @@
 *.pyo
 *.pyd
 *.egg-info/
+.venv/
+__pycache__/
+.pytest_cache/
+.env
 
 # Jupyter
 .ipynb_checkpoints

@@ -1,0 +1,6 @@
+environment: PAPER
+account_id: A01
+gateway_name: PAPER
+shadow_mode: false
+require_startup_reconciliation: true
+fail_closed: true

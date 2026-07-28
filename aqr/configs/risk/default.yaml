@@ -1,0 +1,15 @@
+risk:
+  account:
+    max_total_exposure: 0.60
+    max_drawdown_halt: 0.08
+
+  position:
+    max_single_weight: 0.05
+    max_industry_weight: 0.25
+
+  execution:
+    max_order_size: 100000
+    max_orders_per_second: 2
+    max_active_orders: 20
+    max_daily_cancels: 50
+    max_price_deviation: 0.02

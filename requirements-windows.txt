@@ -1,0 +1,8 @@
+# Packages imported by examples/veighna_trader/run.py.
+# The vnpy framework itself is installed from this checkout in editable mode.
+vnpy_ctp
+vnpy_ctastrategy
+vnpy_ctabacktester
+vnpy_datamanager
+vnpy_paperaccount
+vnpy_riskmanager

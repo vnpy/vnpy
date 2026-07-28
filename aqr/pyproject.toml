@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aqr-trading"
+version = "0.1.0"
+description = "AQR automated A-share trading execution framework"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "vnpy>=4.4.0",
+    "vnpy_paperaccount>=1.0.6",
+    "vnpy_riskmanager>=2.0.0",
+    "SQLAlchemy>=2.0.51",
+    "psycopg[binary]>=3.3.4",
+    "alembic>=1.18.5",
+    "pydantic-settings>=2.14.2",
+    "PyYAML>=6.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1",
+    "ruff>=0.12",
+]
+
+[project.scripts]
+aqr-execution-vnpy = "aqr.execution.vnpy.service:main"
+aqr-db = "aqr.persistence.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aqr"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP", "W"]

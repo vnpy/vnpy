@@ -1,0 +1,1 @@
+"""PostgreSQL persistence adapters."""

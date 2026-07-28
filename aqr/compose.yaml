@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    profiles: ["standalone-db"]
+    environment:
+      POSTGRES_USER: aqr
+      POSTGRES_PASSWORD: ${AQR_POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: aqr_core
+    ports:
+      - "${AQR_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - aqr_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aqr -d aqr_core"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  aqr_postgres_data:

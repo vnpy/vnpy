@@ -1,0 +1,6 @@
+environment: LIVE
+account_id: REPLACE_ME
+gateway_name: REPLACE_ME
+shadow_mode: true
+require_startup_reconciliation: true
+fail_closed: true

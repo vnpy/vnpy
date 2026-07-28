@@ -1,0 +1,60 @@
+name: AQR Phase 0 CI
+
+on:
+  push:
+    paths:
+      - "aqr/**"
+      - ".github/workflows/aqr-ci.yml"
+  pull_request:
+    paths:
+      - "aqr/**"
+      - ".github/workflows/aqr-ci.yml"
+
+jobs:
+  unit-and-paper:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install AQR
+        run: python -m pip install --editable "./aqr[dev]"
+      - name: Lint
+        run: python -m ruff check aqr/src aqr/tests
+      - name: Test domain and real PaperAccount pipeline
+        run: python -m pytest aqr/tests --ignore=aqr/tests/integration
+
+  postgres-ledger:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aqr
+          POSTGRES_PASSWORD: aqr_ci
+          POSTGRES_DB: aqr_core
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aqr -d aqr_core"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      AQR_DATABASE_URL: postgresql+psycopg://aqr:aqr_ci@localhost:5432/aqr_core
+      PYTHONPATH: aqr/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install ledger test dependencies
+        run: python -m pip install SQLAlchemy "psycopg[binary]" alembic pytest
+      - name: Migrate
+        working-directory: aqr
+        run: python -m alembic upgrade head
+      - name: Test PostgreSQL ledger
+        run: python -m pytest aqr/tests/integration
