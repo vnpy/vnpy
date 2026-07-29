@@ -1,0 +1,18 @@
+# Price-time priority: order 1 must trade before order 2.
+LIMIT 1 SELL 10100 5
+LIMIT 2 SELL 10100 7
+LIMIT 3 SELL 10200 4
+BOOK
+
+# Cross the best ask. This fills order 1, then partially fills order 2.
+LIMIT 10 BUY 10100 8
+BOOK
+
+# Sweep the remaining asks and cancel any unfilled market quantity.
+MARKET 11 BUY 10
+BOOK
+
+# Rest and cancel an order.
+LIMIT 20 BUY 9900 3
+CANCEL 20
+CHECK
