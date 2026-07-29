@@ -8,10 +8,13 @@ from multiprocessing.context import BaseContext
 import polars as pl
 import pandas as pd
 from tqdm import tqdm
-from alphalens.utils import get_clean_factor_and_forward_returns    # type: ignore
-from alphalens.tears import create_full_tear_sheet                  # type: ignore
 
 from ..logger import logger
+from .factor_performance import (
+    compute_factor_metrics,
+    create_full_tear_sheet,
+    prepare_factor_data,
+)
 from .utility import (
     to_datetime,
     Segment,
@@ -229,15 +232,25 @@ class AlphaDataset:
 
         feature_s: pd.Series = feature_df[name]
 
+        label_df: pd.DataFrame = result_df.select(["datetime", "vt_symbol", "label"]).to_pandas()
+        label_df.set_index(["datetime", "vt_symbol"], inplace=True)
+        label_s: pd.Series = label_df["label"]
+
         # Extract price
         price_df: pd.DataFrame = result_df.select(["datetime", "vt_symbol", "close"]).to_pandas()
         price_df = price_df.pivot(index="datetime", columns="vt_symbol", values="close")
 
         # Merge data
-        clean_data: pd.DataFrame = get_clean_factor_and_forward_returns(feature_s, price_df, quantiles=10)
+        clean_data: pd.DataFrame = prepare_factor_data(
+            feature_s,
+            label_s,
+            price_df,
+            quantiles=10,
+        )
 
         # Perform analysis
-        create_full_tear_sheet(clean_data)
+        metrics = compute_factor_metrics(clean_data, self.label_expression)
+        create_full_tear_sheet(metrics, name).show()
 
     def show_signal_performance(self, signal: pl.DataFrame) -> None:
         """
@@ -255,20 +268,26 @@ class AlphaDataset:
         signal_df.set_index(["datetime", "vt_symbol"], inplace=True)
         signal_s: pd.Series = signal_df["signal"]
 
+        label_df: pd.DataFrame = df.select(["datetime", "vt_symbol", "label"]).to_pandas()
+        label_df.set_index(["datetime", "vt_symbol"], inplace=True)
+        label_s: pd.Series = label_df["label"]
+
         # Extract price
         price_df: pd.DataFrame = df.select(["datetime", "vt_symbol", "close"]).to_pandas()
         price_df = price_df.pivot(index="datetime", columns="vt_symbol", values="close")
 
         # Merge data
-        clean_data: pd.DataFrame = get_clean_factor_and_forward_returns(
+        clean_data: pd.DataFrame = prepare_factor_data(
             signal_s,
+            label_s,
             price_df,
             max_loss=1.0,
             quantiles=10
         )
 
         # Perform analysis
-        create_full_tear_sheet(clean_data)
+        metrics = compute_factor_metrics(clean_data, self.label_expression)
+        create_full_tear_sheet(metrics, "Signal").show()
 
 
 def query_by_time(df: pl.DataFrame, start: datetime | str = "", end: datetime | str = "") -> pl.DataFrame:
