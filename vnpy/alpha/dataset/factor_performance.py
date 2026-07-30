@@ -632,20 +632,22 @@ def _quantize_factor(
 
 
 def _extract_label_period(label_expression: str) -> int:
-    """Extract label observation horizon from two ``ts_delay(close, offset)`` terms.
+    """Extract label observation horizon from two ``ts_delay`` offset terms.
 
-    The horizon is the absolute offset difference in trading sessions (bars),
-    not calendar days.
+    Matches any price field (e.g. ``close``, ``vwap``). The horizon is the
+    absolute difference of the two signed integer offsets in bars, not
+    calendar days.
     """
     pattern = re.compile(
-        r"ts_delay\s*\(\s*close\s*,\s*(-?\d+)\s*\)",
+        r"ts_delay\s*\(\s*[A-Za-z_]\w*\s*,\s*(-?\d+)\s*\)",
         re.IGNORECASE,
     )
     matches = pattern.findall(label_expression)
     if len(matches) != 2:
         raise ValueError(
-            "label_expression must contain exactly two ts_delay(close, integer_offset) "
-            f"terms; found {len(matches)}"
+            "label_expression must contain exactly two "
+            "ts_delay(field, integer_offset) terms; "
+            f"found {len(matches)}"
         )
     offset_a = int(matches[0])
     offset_b = int(matches[1])
