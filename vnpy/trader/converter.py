@@ -51,6 +51,8 @@ class PositionHolding:
             self.short_yd = position.yd_volume
             self.short_td = self.short_pos - self.short_yd
 
+        self.calculate_frozen()
+
     def update_order(self, order: OrderData) -> None:
         """"""
         if order.is_active():
