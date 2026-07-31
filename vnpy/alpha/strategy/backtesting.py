@@ -66,6 +66,7 @@ class BacktestingEngine:
 
         self.cash: float = 0
         self.signal_df: pl.DataFrame
+        self.fill_price: str
 
     def set_parameters(
         self,
@@ -75,9 +76,20 @@ class BacktestingEngine:
         end: datetime,
         capital: int = 1_000_000,
         risk_free: float = 0,
-        annual_days: int = 240
+        annual_days: int = 240,
+        fill_price: str = "open",
     ) -> None:
-        """Set parameters"""
+        """Set parameters.
+
+        Args:
+            fill_price: Match price mode. ``open`` keeps legacy open-based
+                fills; ``vwap`` uses ``turnover / volume`` when volume > 0.
+        """
+        if fill_price not in {"open", "vwap"}:
+            raise ValueError(
+                f"unsupported fill_price {fill_price!r}; expected 'open' or 'vwap'"
+            )
+
         self.vt_symbols = vt_symbols
         self.interval = interval
 
@@ -86,6 +98,7 @@ class BacktestingEngine:
         self.capital = capital
         self.risk_free = risk_free
         self.annual_days = annual_days
+        self.fill_price = fill_price
 
         self.cash = capital
 
@@ -667,7 +680,9 @@ class BacktestingEngine:
             # Generate trade information
             self.trade_count += 1
 
-            if long_cross:
+            if self.fill_price == "vwap":
+                trade_price = self.get_bar_vwap(bar)
+            elif long_cross:
                 trade_price = min(order.price, long_best_price)
             else:
                 trade_price = max(order.price, short_best_price)
@@ -705,6 +720,12 @@ class BacktestingEngine:
             # Push trade information
             self.strategy.update_trade(trade)
             self.trades[trade.vt_tradeid] = trade
+
+    def get_bar_vwap(self, bar: BarData) -> float:
+        """Return bar VWAP, falling back to close when volume is zero."""
+        if bar.volume > 0:
+            return bar.turnover / bar.volume
+        return bar.close_price
 
     def get_signal(self) -> pl.DataFrame:
         """Get model prediction signal for current time"""
