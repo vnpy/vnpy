@@ -86,7 +86,7 @@
 | 篇 | 状态 | 成稿路径 |
 |----|------|----------|
 | 1 | 已定稿 | `article/fusion/1_introduction.md` |
-| 2 | 文字定稿；智策投研 C 类截图待实跑替换 | `article/fusion/2_logic.md` |
+| 2 | 已定稿（与正式发表稿对齐） | `article/fusion/2_logic.md` |
 | 3 | 已定稿 | `article/fusion/3_continuous.md` |
 | 4～8 | 未成稿；须遵守本大纲与第 2 篇确认稿基线 | — |
 
@@ -174,7 +174,7 @@
 
 **发布标题**：【CTA量化通关系列2 - 你的交易想法，机器看不懂】
 
-**成稿**：`article/fusion/2_logic.md`（文字定稿；智策投研 C 类截图待实跑替换）
+**成稿**：`article/fusion/2_logic.md`（已定稿；与正式发表稿对齐）
 
 **章节展开（约 2800 字）**：
 
