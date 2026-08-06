@@ -18,12 +18,19 @@ VeighNa是一套基于Python的开源量化交易系统开发框架，在开源�
 
 在使用VeighNa进行二次开发（策略、模块等）的过程中有任何疑问，请查看[**VeighNa项目文档**](https://www.vnpy.com/docs/cn/index.html)，如果无法解决请前往[**官方社区论坛**](https://www.vnpy.com/forum/)的【提问求助】板块寻求帮助，也欢迎在【经验分享】板块分享你的使用心得！
 
-**想要获取更多关于VeighNa的资讯信息？** 请扫描下方二维码添加小助手加入【VeighNa社区交流微信群】：
+**想要更便捷地上手期货量化交易？** VeighNa Fusion现已在合作期货公司上线，带来一站式CTA量化交易与智能投研体验：
+
+* **开箱即用**：通过合作期货公司申请开通权限，无需自行完成繁琐的接入测试
+* **数据中心**：提供历史数据下载和管理能力，降低量化初学者的数据准备门槛
+* **智策投研**：根据策略描述辅助梳理逻辑、生成代码，并衔接历史回测与参数优化流程
+
+阅读[产品介绍文章](https://mp.weixin.qq.com/s/VknqBMnR3tUpWoKuTA8V4A)或查看[VeighNa Fusion文档](https://www.vnpy.com/docs/cn/fusion/index.html)。
+
+如需咨询开通，请扫描下方二维码添加【Fusion小助手】：
 
 <p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/github_wx.png"/, width=250>
+  <img src="https://vnpy.oss-cn-shanghai.aliyuncs.com/Fusion%E5%B0%8F%E5%8A%A9%E6%89%8B.png" width="250" alt="Fusion小助手">
 </p>
-
 
 ## AI-Powered
 
@@ -336,6 +343,12 @@ VeighNa使用Github托管其源代码，如果希望贡献代码请使用github�
 * [社区行为准则](https://github.com/vnpy/vnpy/blob/dev/.github/CODE_OF_CONDUCT.md)
 * [Issue模板](https://github.com/vnpy/vnpy/blob/dev/.github/ISSUE_TEMPLATE.md)
 * [PR模板](https://github.com/vnpy/vnpy/blob/dev/.github/PULL_REQUEST_TEMPLATE.md)
+
+**想要获取更多关于VeighNa开源社区的资讯？** 请扫描下方二维码添加小助手加入【VeighNa社区交流微信群】：
+
+<p align="center">
+  <img src="https://vnpy.oss-cn-shanghai.aliyuncs.com/github_wx.png" width="250" alt="VeighNa社区交流微信群">
+</p>
 
 ## 版权说明
 
