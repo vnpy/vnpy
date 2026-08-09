@@ -433,7 +433,7 @@ class TestAlpha101:
 
     def test_alpha62(self, test_df: pl.DataFrame) -> None:
         """Test Alpha#62"""
-        expr = "cast_to_int(cs_rank(ts_corr(vwap, ts_sum(ts_mean(volume, 20), 22), 10)) < cs_rank(cast_to_int((cs_rank(open) + cs_rank(open)) < (cs_rank((high + low) / 2) + cs_rank(high))))) * -1"
+        expr = "(cs_rank(ts_corr(vwap, ts_sum(ts_mean(volume, 20), 22), 10)) < cs_rank((cs_rank(open) + cs_rank(open)) < (cs_rank((high + low) / 2) + cs_rank(high)))) * -1"
         result = calculate_by_expression(test_df, expr)
         assert "data" in result.columns
 
@@ -445,13 +445,13 @@ class TestAlpha101:
 
     def test_alpha64(self, test_df: pl.DataFrame) -> None:
         """Test Alpha#64"""
-        expr = "cast_to_int(cs_rank(ts_corr(ts_sum(((open * 0.178404) + (low * (1 - 0.178404))), 13), ts_sum(ts_mean(volume, 120), 13), 17)) < cs_rank(ts_delta((((high + low) / 2 * 0.178404) + (vwap * (1 - 0.178404))), 4))) * -1"
+        expr = "(cs_rank(ts_corr(ts_sum(((open * 0.178404) + (low * (1 - 0.178404))), 13), ts_sum(ts_mean(volume, 120), 13), 17)) < cs_rank(ts_delta((((high + low) / 2 * 0.178404) + (vwap * (1 - 0.178404))), 4))) * -1"
         result = calculate_by_expression(test_df, expr)
         assert "data" in result.columns
 
     def test_alpha65(self, test_df: pl.DataFrame) -> None:
         """Test Alpha#65"""
-        expr = "cast_to_int(cs_rank(ts_corr(((open * 0.00817205) + (vwap * (1 - 0.00817205))), ts_sum(ts_mean(volume, 60), 9), 6)) < cs_rank(open - ts_min(open, 14))) * -1"
+        expr = "(cs_rank(ts_corr(((open * 0.00817205) + (vwap * (1 - 0.00817205))), ts_sum(ts_mean(volume, 60), 9), 6)) < cs_rank(open - ts_min(open, 14))) * -1"
         result = calculate_by_expression(test_df, expr)
         assert "data" in result.columns
 
@@ -469,7 +469,7 @@ class TestAlpha101:
 
     def test_alpha68(self, test_df: pl.DataFrame) -> None:
         """Test Alpha#68"""
-        expr = "cast_to_int(ts_rank(ts_corr(cs_rank(high), cs_rank(ts_mean(volume, 15)), 9), 14) < cs_rank(ts_delta((close * 0.518371 + low * (1 - 0.518371)), 1))) * -1"
+        expr = "(ts_rank(ts_corr(cs_rank(high), cs_rank(ts_mean(volume, 15)), 9), 14) < cs_rank(ts_delta((close * 0.518371 + low * (1 - 0.518371)), 1))) * -1"
         result = calculate_by_expression(test_df, expr)
         assert "data" in result.columns
 
