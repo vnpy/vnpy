@@ -36,6 +36,8 @@ class RpcClient:
 
         # Request socket (Request–reply pattern)
         self._socket_req: zmq.Socket = self._context.socket(zmq.REQ)
+        self._socket_req.setsockopt(zmq.REQ_RELAXED, 1)
+        self._socket_req.setsockopt(zmq.REQ_CORRELATE, 1)
 
         # Subscribe socket (Publish–subscribe pattern)
         self._socket_sub: zmq.Socket = self._context.socket(zmq.SUB)
