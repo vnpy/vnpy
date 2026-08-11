@@ -3,6 +3,7 @@
 *.pyo
 *.pyd
 *.egg-info/
+.venv/
 
 # Jupyter
 .ipynb_checkpoints
