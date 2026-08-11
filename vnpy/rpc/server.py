@@ -118,7 +118,9 @@ class RpcServer:
         Publish data
         """
         with self._lock:
-            self._socket_pub.send_pyobj([topic, data])
+            # Use multipart message for ZMQ topic filtering
+            self._socket_pub.send_string(topic, zmq.SNDMORE)
+            self._socket_pub.send_pyobj(data)
 
     def register(self, func: Callable) -> None:
         """
