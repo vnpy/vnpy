@@ -222,6 +222,10 @@ class AlphaDataset:
 
         # Fill NaN and drop nulls
         merged_df = merged_df.fill_nan(None).drop_nulls()
+        if merged_df.is_empty():
+            raise ValueError(
+                f"No valid rows available for feature performance analysis: {name}"
+            )
 
         # Extract feature
         feature_df: pd.DataFrame = merged_df.select(["datetime", "vt_symbol", name]).to_pandas()
