@@ -54,6 +54,9 @@ def test_ta_rsi_resets_warmup_for_each_contract() -> None:
     expected = expected_by_contract(df, talib.RSI, "close")
 
     np.testing.assert_allclose(result.df["data"].to_numpy(), expected, equal_nan=True)
+    assert result.df.select("datetime", "vt_symbol").equals(
+        df.select("datetime", "vt_symbol")
+    )
 
 
 def test_ta_atr_does_not_cross_contract_boundaries() -> None:
