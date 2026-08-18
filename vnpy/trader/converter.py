@@ -210,8 +210,13 @@ class PositionHolding:
 
         close_yd_exchanges: set[Exchange] = {Exchange.SHFE, Exchange.INE}
 
-        # If there is td_volume, we can only lock position
-        if td_volume and self.exchange not in close_yd_exchanges:
+        # If there is td_volume and no available yd position,
+        # we can only lock position
+        if (
+            td_volume
+            and not yd_available
+            and self.exchange not in close_yd_exchanges
+        ):
             req_open: OrderRequest = copy(req)
             req_open.offset = Offset.OPEN
             return [req_open]
