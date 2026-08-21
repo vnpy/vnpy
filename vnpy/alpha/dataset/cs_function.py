@@ -8,11 +8,17 @@ from .utility import DataProxy
 
 
 def cs_rank(feature: DataProxy) -> DataProxy:
-    """Perform cross-sectional ranking"""
+    """Perform cross-sectional ranking (percentile in [0, 1])"""
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rank().over("datetime")
+        pl.when(pl.col("data").count().over("datetime") > 1)
+        .then((pl.col("data").rank().over("datetime") - 1)
+              / (pl.col("data").count().over("datetime") - 1))
+        .when(pl.col("data").count().over("datetime") == 1)
+        .then(0.5)
+        .otherwise(None)
+        .alias("data")
     )
     return DataProxy(df)
 
