@@ -1,27 +1,5 @@
 # 【CTA量化通关系列4 - 不会写代码，也要会读策略】
 
-<!--
-生产备忘（发布前删除）：
-- 正文代码对齐统一实验任务 artifacts/code/version_001.py（「生成代码」阶段产物）。
-  该文件加密存储，需经智策界面或 load_artifact() 读取，勿直接用编辑器打开。
-  发稿前须逐段核一遍：参数值、parameters 名单、on_15min_bar 主干、三个辅助函数、on_trade。
-- 注意：write_params（选参写回）会让 code_agent 整篇重写并另存 final.py；
-  ~/.vntrader/fusion/generated_strategies/*.py 只是运行时导入副本，不可作为正文出处。
-  已确认该副本中 boll_window=18、boll_dev=2.2 属写回后的值，正文用生成阶段的 20/1.7。
-- C 类图：pics/generate_code.png 为任务 cta_20260831_145907「策略代码」页。
-  生成后流程会自动进入检查/回测，无法停在「生成代码」，正文已按此改口；勿用选参写回后的 18/2.2。
-  pics/code_preview.png 为「打开策略文件」后的编辑器视图。该次生成稿止损倍数名为
-  atr_stop_multiplier，与正文 version_001 的 sl_multiplier 同义，对数字 1.5。
-- 入场口径：原始想法为「等价格突破上轨做多」，智策口径为按触发价发停止单（见 profile.py
-  逻辑/代码 prompt 第 8、9 条）。本篇自带核对底稿，不再逐条引用第 2 篇发表稿的措辞。
-- 移动止损核对示范对照第 1 篇「写成固定止损」的类别错误；极值只顺势更新即还原移动止损，
-  勿把 ATR 距离随波动变化判成翻译偏差。
-- 极值重置已按真实代码确认落点在 on_trade 成交回报中。
-- 摘录的两处可读性简化，已核实不改变语义，发稿前确认可接受：
-  ① parameters 块省略了真实代码里的 `: ClassVar[list[str]]` 类型标注；
-  ② 参数块的行末注释比产物精简。其余摘录均与产物逐行一致（含 put_event）。
--->
-
 上一篇我们把回测要用的连续序列讲清楚了。规则清楚、数据就绪之后，可以把策略逻辑说明书交给 AI 生成一份 CTA 策略代码。实现门槛低了，核对有没有完整还原说明书，还是要人来做。
 
 > **你不需要会写代码，但你必须看得懂自己的资金按什么规则在交易。**
@@ -264,7 +242,7 @@ def on_trade(self, trade: TradeData) -> None:
 
 第二步，点「打开策略文件」，不要从文件顶上逐行读。先找参数与 `parameters`，再看 `on_15min_bar` 的主干，最后看 `handle_no_position`、`update_long_position` 与 `on_trade`。
 
-止损倍数这个旋钮，正文摘录里叫 `sl_multiplier`，有的生成稿会写成 `atr_stop_multiplier`。对的是数字 1.5，不是名字本身。
+止损倍数这个参数，正文摘录里叫 `sl_multiplier`，有的生成稿会写成 `atr_stop_multiplier`。对的是数字 1.5，不是名字本身。
 
 ![打开策略文件后从参数读起](./pics/code_preview.png)
 
@@ -277,7 +255,7 @@ def on_trade(self, trade: TradeData) -> None:
 
 ## 接下来讲什么
 
-代码写得出来、回测也跑得完，只说明它能出一份完整报告。逻辑有没有对上说明书，下一篇再展开。
+说明书对完了，代码写得出来，回测也能跑。接下来要当心的，是那些不会报错的坑——曲线好看，实盘却对不上。
 
 下一篇：AI 写的策略，能运行不等于能信。
 
