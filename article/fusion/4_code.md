@@ -2,39 +2,56 @@
 
 <!--
 生产备忘（发布前删除）：
-- 正文代码为按 2_logic.md 说明书整理的阅读示例，待正式任务生成文件按行替换；不得把阅读示例改称「智策本次输出」
-- C 类图：起草可用文档界面；发布必须替换为与第 2、4～7 篇同一 task_id 的
-  「生成代码」产物图 + 该策略代码预览（大纲第七节）。文档图不满足可追溯要求。
-  占位文件名：pics/generate_code.png、pics/code_preview.png
-- 逻辑底稿：2_logic.md「策略逻辑说明书（参考）」；不回写第 1–3 篇
-- 对外只写智策工作台 / 智策投研
-- 发布前用正式任务产物补两处可追溯的运行细节，替换文中「对照说明书和开源示例」的观察
-- 正式代码审核：极值重置是在无仓分支、持仓切换，还是 on_trade 成交回报里；按实际位置改正文措辞
+- 正文代码对齐统一实验任务 artifacts/code/version_001.py（「生成代码」阶段产物）。
+  该文件加密存储，需经智策界面或 load_artifact() 读取，勿直接用编辑器打开。
+  发稿前须逐段核一遍：参数值、parameters 名单、on_15min_bar 主干、三个辅助函数、on_trade。
+- 注意：write_params（选参写回）会让 code_agent 整篇重写并另存 final.py；
+  ~/.vntrader/fusion/generated_strategies/*.py 只是运行时导入副本，不可作为正文出处。
+  已确认该副本中 boll_window=18、boll_dev=2.2 属写回后的值，正文用生成阶段的 20/1.7。
+- C 类图：pics/generate_code.png 为任务 cta_20260831_145907「策略代码」页。
+  生成后流程会自动进入检查/回测，无法停在「生成代码」，正文已按此改口；勿用选参写回后的 18/2.2。
+  pics/code_preview.png 为「打开策略文件」后的编辑器视图。该次生成稿止损倍数名为
+  atr_stop_multiplier，与正文 version_001 的 sl_multiplier 同义，对数字 1.5。
+- 入场口径：原始想法为「等价格突破上轨做多」，智策口径为按触发价发停止单（见 profile.py
+  逻辑/代码 prompt 第 8、9 条）。本篇自带核对底稿，不再逐条引用第 2 篇发表稿的措辞。
+- 移动止损核对示范对照第 1 篇「写成固定止损」的类别错误；极值只顺势更新即还原移动止损，
+  勿把 ATR 距离随波动变化判成翻译偏差。
+- 极值重置已按真实代码确认落点在 on_trade 成交回报中。
+- 摘录的两处可读性简化，已核实不改变语义，发稿前确认可接受：
+  ① parameters 块省略了真实代码里的 `: ClassVar[list[str]]` 类型标注；
+  ② 参数块的行末注释比产物精简。其余摘录均与产物逐行一致（含 put_event）。
 -->
 
-上一篇把回测要用的连续序列讲清楚了。规则和数据都齐了之后，可以把第二篇确认过的策略逻辑说明书交给下一步，生成一份 CTA 策略代码。
+上一篇我们把回测要用的连续序列讲清楚了。规则清楚、数据就绪之后，可以把策略逻辑说明书交给 AI 生成一份 CTA 策略代码。实现门槛低了，核对有没有完整还原说明书，还是要人来做。
 
-代码可以借助工具写出来。它有没有忠实实现你确认过的规则，还是要人对照说明书去看。
+> **你不需要会写代码，但你必须看得懂自己的资金按什么规则在交易。**
 
-> **你不需要会写代码，但你必须看得懂自己的钱按什么规则在交易。**
+本篇只做一件事：带着第 2 篇的布林带、Aroon 和 ATR 案例，对着说明书把落点找齐。
 
-结构固定的 CTA 策略里，不必从第一行读到最后一行。优先核对的通常是五个位置：参数、K 线合成、指标计算、信号判断和持仓管理。有些函数只是框架在收行情，可以先跳过。
+## 规则落在代码的哪五处
 
-本篇继续用第二篇的布林带、Aroon 和 ATR 案例，带着那份说明书找落点。Python 语法、全部回调，以及这套规则能不能赚钱，本篇不展开。
+第 1 篇说过，阅读一份结构固定的 CTA 策略，通常比从零编写要容易。读的时候可以先记住一句：**代码是逻辑说明书的翻译。**
 
-## 五个固定部件
+落点就是说明书某一条在代码里的对应位置。代码里有五个固定部件，对照时通常对到这五处，但是要注意：说明书里的某一条，不一定只落在一个部件里。
 
-第 1 篇说过，阅读一份结构固定的 CTA 策略，通常比从零编写要容易。读的时候记住一句：**代码是逻辑说明书的翻译。** 五个部件告诉你翻译大概落在哪；说明书里的某一条，不一定只出现在其中一个部件里。
+这五个部件具体是：参数、K 线合成、指标计算、信号判断和持仓管理。`on_tick`、`on_order`、`on_stop_order` 在本案例里只有空的函数壳，里面没有交易逻辑判断，可以先跳过——但要确认它们本来就是空的。
 
-第 2 篇对照口头版时写过，大白话里没写、说明书里必须补上的，至少包括：在 15 分钟收盘后判断、突破看收盘价、移动止损只朝有利方向更新、持仓期间不加仓。这几条就是本篇最值得停下来对的地方。
+说明书里跟代码直接相关的内容，摘成六条放在这里，后面每一段都回到这张单子：
 
-边界情况——不加仓、方向不明不交易——尤其容易散落在好几处。仓位手数既出现在参数里，也会出现在下单数量上。下图只标主要落点，箭头不是一一对应。
+- 信号周期：1 分钟合成 15 分钟，指标和信号都在 15 分钟收盘后算。
+- 方向过滤：Aroon 上升指标大于下降指标才做多，反过来才做空。
+- 入场触发：无持仓时，以布林带上轨为多头触发价、下轨为空头触发价，价格触及即入场。
+- 出场：1.5 倍 ATR 移动止损，开仓后极值只朝有利方向更新。
+- 仓位：每次 1 手，持仓期间不加仓。
+- 边界：方向不明不交易；已有持仓只管出场。
+
+后两条尤其容易散落在好几处：手数既在参数里，也在下单数量上。下图只标主要落点，箭头不是一一对应。
 
 ```mermaid
 flowchart LR
   subgraph rules [规则五要素]
     r1[信号周期]
-    r2[入场条件]
+    r2[入场条件（含方向过滤）]
     r3[出场条件]
     r4[仓位规则]
     r5[边界情况]
@@ -55,155 +72,212 @@ flowchart LR
   r5 --> c5
 ```
 
-下面每段摘录都对着说明书读。中间省略的行用注释标出。类名、变量名在不同生成稿里可能不一样，看的是它在做什么。
+生成出来的策略基于标准 `CtaTemplate`（CTA 策略模板），核心逻辑拆进了几个辅助函数。下面按这五处逐个对照。
 
 ### 参数：说明书里的数字，先出现在这里
 
-说明书里的周期 20、宽度 1.7、Aroon 20、ATR 14、倍数 1.5、固定 1 手，通常写在策略类开头，并收进 `parameters` 列表。这些是以后可以改的旋钮，第 7 篇优化时也会回到这里。
+布林带周期 20、宽度 1.7，Aroon 周期 20，ATR 周期 14，止损 1.5 倍，每次 1 手，合成周期 15 分钟，都写在策略类开头。
 
 ```python
-boll_window = 20
-boll_dev = 1.7
-aroon_window = 20
-atr_window = 14
-sl_multiplier = 1.5
-fixed_size = 1
+# 策略参数
+boll_window: int = 20       # 布林带周期
+boll_dev: float = 1.7       # 布林带宽度
+aroon_window: int = 20      # Aroon 周期
+atr_window: int = 14        # ATR 周期
+sl_multiplier: float = 1.5  # 止损的 ATR 倍数
+fixed_size: int = 1         # 每次下单手数
+interval: int = 15          # K 线合成周期（分钟）
+```
 
+先核对这几个数字和说明书是否一致。这一步花不了多少时间，也不该省。
+
+紧跟着是 `parameters` 列表，收进去的参数可以在添加策略时由外部配置，后面选参时也会动到这些名字。
+
+```python
+# 参数名称列表：收进这里的参数可由外部配置
 parameters = [
     "boll_window",
     "boll_dev",
     "aroon_window",
     "atr_window",
     "sl_multiplier",
-    "fixed_size",
+    "interval",
 ]
 ```
 
-先核对这些数字和说明书是否一致。名称叫 `boll_dev` 还是 `boll_width` 不重要，值对上，才算通过第一步核对。后面还要看计算和下单有没有用到这些参数。
+列表里只收进六个参数名，比上面声明的参数少一个。
 
-同一段里常常还有 `boll_up`、`intra_trade_high`、`long_stop` 这类变量。它们跟参数不是一类：运行中会跟着行情和持仓变化，用来记住轨道、开仓后高点和当前止损价。
+第一，`fixed_size` 不在其中。手数属于仓位管理，实盘由风控模块控制，不放进这份名单，后面选参也不会动它。
+
+第二，`interval` 列在里面，但它决定的是合成周期，选参时也应固定。
+
+除了参数，策略类开头还有 `boll_up`、`intra_trade_high`、`long_stop` 这类列在 `variables` 里的变量。它们跟参数不是一类，运行中会随行情和持仓变化，记住实时轨道、开仓后极值和当前止损价。
 
 ### K 线合成：15 分钟决策写进了哪里
 
-说明书要求用 1 分钟合成 15 分钟，并且只在 15 分钟收盘后判断。对应位置一般是 `BarGenerator`（K 线合成器）和它后面的回调。
+第一条要求用 1 分钟合成 15 分钟。对应位置有两处：`on_init` 里创建的 `BarGenerator`（K 线合成器），以及 `on_bar` 回调。
 
 ```python
-self.bg = BarGenerator(self.on_bar, 15, self.on_15min_bar)
+# on_init 中创建 K 线生成器：将 1 分钟 K 线合成 15 分钟 K 线
+self.bg = BarGenerator(
+    self.on_bar,
+    window=int(self.interval),
+    on_window_bar=self.on_15min_bar,
+    interval=Interval.MINUTE,
+)
 
-def on_bar(self, bar: BarData):
+def on_bar(self, bar: BarData) -> None:
+    # 1 分钟 K 线只负责推入合成器，不在此处下单
     self.bg.update_bar(bar)
 ```
 
-第二个数字是 15，第三个是收到 15 分钟 K 线后要调用的函数。`on_bar` 里如果只做 `update_bar`，说明 1 分钟线只负责往上送，不下单。
-
-若指标计算或 `buy` / `short` 写在 `on_bar` 里，决策频率就和说明书对不上。第 2 篇写过：不在分钟内抢跑。
+`window` 指定合成周期，`on_window_bar` 指定每走完 15 分钟调用哪个函数。`on_bar` 里只做 `update_bar`，说明 1 分钟线只负责送进合成器；若指标计算或发单写在这里，决策频率就和说明书对不上了。
 
 ### 指标计算：布林、Aroon、ATR 的数值从哪来
 
-`ArrayManager`（K 线序列与指标计算）把合成后的 15 分钟 K 线收进去，再算出轨道、方向和波动。
+15 分钟 K 线回调 `on_15min_bar` 是策略主干：先把 K 线收进 `ArrayManager`（K 线序列与指标计算），算完指标，再按持仓状态分别处理。
 
 ```python
-am = self.am
-am.update_bar(bar)
-if not am.inited:
-    return
+def on_15min_bar(self, bar: BarData) -> None:
+    self.update_am(bar)
+    if not self.am.inited:
+        return
 
-boll_up, boll_down = am.boll(self.boll_window, self.boll_dev)
-aroon_up, aroon_down = am.aroon(self.aroon_window)
-atr_value = am.atr(self.atr_window)
+    self.calculate_indicators()
+
+    if self.pos == 0:
+        self.handle_no_position()
+    elif self.pos > 0:
+        self.update_long_position(bar)
+    elif self.pos < 0:
+        self.update_short_position(bar)
+
+    self.put_event()    # 通知界面刷新策略状态
 ```
 
-`if not am.inited: return` 的意思是：K 线还不够算指标时，先不算、也不下单。公式细节本篇不展开。要核对的是周期和宽度是否仍用上面的参数，以及 Aroon 的上、下两条有没有接反。后文摘录里的 `boll_up`、`atr_value`，都来自这一段。
+`pos` 是 CTA 引擎为该策略实例维护的逻辑净持仓：大于 0 为多，小于 0 为空，等于 0 为无仓，需要注意它和底层账户的实际持仓不一定一致。
 
-### 信号判断：过滤、突破、当前有没有仓
+这三个分支是仓位和边界这两条规则的主要落点：只有无持仓才会走到开仓函数，有仓时只更新止损。「不加仓」靠的就是这个结构，代码里没有专门写它的那一行。
 
-说明书把入场拆成方向过滤和收盘价突破，并且要求当前无持仓才开仓。这几条通常写在 `pos == 0` 的分支里。
+`if not self.am.inited: return` 常被读成「K 线不够算指标」。其实是 `ArrayManager` 的缓存还没填满，填满之前不算指标也不下单。
 
-`pos` 是 CTA 引擎为该策略实例维护的逻辑净持仓：大于 0 为多，小于 0 为空，等于 0 为无仓。它和账户里看到的实际持仓不一定相同。状态对不上时怎么审查，留给第 5 篇。
+这里容量设为 100，比最长的指标窗口大得多。`on_init` 里的 `load_bar(10)` 就是为此预加载历史 K 线。
 
 ```python
-if self.pos == 0:
-    self.intra_trade_high = bar.high_price
-    self.intra_trade_low = bar.low_price
-    if aroon_up > aroon_down and bar.close_price > boll_up:
-        self.buy(bar.close_price, self.fixed_size)
-    elif aroon_down > aroon_up and bar.close_price < boll_down:
-        self.short(bar.close_price, self.fixed_size)
+def calculate_indicators(self) -> None:
+    # 布林带上下轨
+    self.boll_up, self.boll_down = self.am.boll(
+        int(self.boll_window), self.boll_dev
+    )
+    # Aroon 指标
+    self.aroon_up, self.aroon_down = self.am.aroon(int(self.aroon_window))
+    # ATR 指标
+    self.atr_value = self.am.atr(int(self.atr_window))
 ```
 
-开仓前要同时成立三件事：Aroon 允许该方向、收盘价突破对应轨道、现在没有仓。两者相等时两条都不进，就是「方向不明不交易」。`fixed_size` 对应固定 1 手。
+要核对的是计算函数有没有传入前面声明的参数，以及 Aroon 的上、下两条有没有接反。
 
-我们核对移动止损时，还要看最高价、最低价有没有按笔重新初始化。上一笔多单如果曾到过 4000，新一笔在 3500 附近开仓，若不重置，止损仍按 4000 算，会立刻失真。
+### 信号判断：方向过滤与入场触发
 
-核对时还要看极值是在无仓分支、逻辑持仓切换后，还是成交回报中重置。若重置早于实际成交，记录的高低价可能包含成交前行情。
-
-有一种常见写法，是在轨道价格上挂停止单，例如 `self.buy(boll_up, self.fixed_size, True)`。它可能在 15 分钟还没收完时就被触发。说明书写的是收盘价突破，两种挂法跟说明书不是一回事。对的时候看比较的是 `bar.close_price`，还是轨道上的挂单价。
-
-### 持仓管理：出场写在有仓的分支
-
-说明书只保留一条离场路径：1.5 倍 ATR 移动止损，并且只朝有利方向更新。有仓时不应再走上面的开仓语句——这就是不加仓、不对锁。
-
-说明书要的是「触及或跌破」。我们对照说明书和开源 CTA 示例时，发现收盘后拿同一根 K 线的最低价去判断，并不等于触及。
-
-一根已经走完的 K 线里，高点和低点谁先出现，事后看不出来。常见写法是本根收盘后更新止损价，再挂停止单，让它在后续行情里等待触及。
+说明书把入场拆成方向过滤和入场触发。无持仓时，主干会调用 `handle_no_position`。
 
 ```python
-self.cancel_all()
-# ... 中间省略：推入 ArrayManager、计算指标
-elif self.pos > 0:
+def handle_no_position(self) -> None:
+    # 取消上一周期可能残留的旧委托
+    self.cancel_all()
+
+    # 上升趋势更强，以布林带上轨为触发价开多
+    if self.aroon_up > self.aroon_down:
+        self.buy(self.boll_up, self.fixed_size, stop=True)
+
+    # 下降趋势更强，以布林带下轨为触发价开空
+    if self.aroon_down > self.aroon_up:
+        self.short(self.boll_down, self.fixed_size, stop=True)
+```
+
+只有无持仓且 Aroon 给出明确方向时，策略才会往对应轨道挂单。两个指标数值相等时，多空两个分支都不会执行，这就是「方向不明不交易」。
+
+参数 `stop=True` 表示发的是停止单：先在本地记着一个触发价，等价格真的触及才报出去。所以这里有两层时点——决策在 15 分钟收盘完成，成交可能落在下一根 15 分钟的盘中。
+
+每根 K 线的轨道都在变，所以函数开头先 `cancel_all()` 撤掉旧单，再按新轨道挂出。
+
+### 持仓管理：移动止损与成交极值
+
+说明书只保留一条离场路径：1.5 倍 ATR 移动止损。多头持仓时调用 `update_long_position`。
+
+```python
+def update_long_position(self, bar: BarData) -> None:
+    # 更新持仓期间最高价（只升不降）
     self.intra_trade_high = max(self.intra_trade_high, bar.high_price)
-    self.long_stop = self.intra_trade_high - atr_value * self.sl_multiplier
-    self.sell(self.long_stop, abs(self.pos), True)
+
+    # 按最新极值与 ATR 重算止损价，发送平仓停止单
+    self.long_stop = self.intra_trade_high - self.sl_multiplier * self.atr_value
+    self.cancel_all()
+    self.sell(self.long_stop, self.fixed_size, stop=True)
 ```
 
-第三个参数 `True` 表示停止单。默认的限价单跟「触及后触发平仓委托」不是一回事：停止单的作用是价格触及后发出平仓委托，不能保证立即成交。
+`max` 让多头跟踪的最高价只升不降。空头一侧在 `update_short_position` 里用 `min` 跟踪最低价，平仓同样发停止单。止损价每根 K 线按最新极值和 ATR 重算一次，下一节把这一条完整对一遍。
 
-`max` 让多头跟踪的最高价只升不降，止损价因此只能上移。空头一侧通常用 `min` 跟踪最低价，止损价只能下移，平仓函数换成 `cover(..., True)`。
+有一条容易漏的细节：`intra_trade_high`（开仓后最高价）从哪里开始记？看成交回调 `on_trade`：
 
-`cancel_all()` 出现在每根 15 分钟 K 线处理的开头，是在撤销上一轮还没成交的委托，避免旧价格的停止单和新单同时挂着。委托从下达到成交或撤销的完整过程，留到后面再讲。
+```python
+def on_trade(self, trade: TradeData) -> None:
+    # 开仓成交，把极值起点设为真实成交价
+    if trade.direction == Direction.LONG and trade.offset == Offset.OPEN:
+        self.intra_trade_high = trade.price
+    elif trade.direction == Direction.SHORT and trade.offset == Offset.OPEN:
+        self.intra_trade_low = trade.price
+    # 平仓成交，重置极值记录
+    elif trade.offset in (Offset.CLOSE, Offset.CLOSETODAY):
+        self.intra_trade_high = 0.0
+        self.intra_trade_low = 0.0
+
+    self.put_event()
+```
+
+只有收到开仓成交回报时，才把成交价作为跟踪起点，平仓后归零。如果过早用发单前的 K 线高点初始化，或者平仓后不重置，上一笔的极值就会带到新一笔止损里。
 
 ## 把移动止损完整对一遍
 
-五个落点找齐以后，用说明书里最容易写歪的一条，把核对动作走完。第 1 篇举过：口头要求 1.5 倍 ATR 移动止损，代码里却可能变成固定止损。两种都能跑完回测，交易行为已经不同。
+部件找齐以后，用一条容易对不上的，把核对做完。第 1 篇举过例子：策略说明要求 1.5 倍 ATR 移动止损，代码里可能变成固定止损，两种写法都能跑完回测，交易行为却已经不是一回事。
 
-说明书这一条是：
+说明书这一条是：持仓后启用移动止损，距离为 1.5 × ATR（周期 14），多头跟踪开仓后最高价、空头跟踪最低价，价格触及则平仓。
 
-> 持仓后启用移动止损，距离为 1.5 × ATR（周期 14）。多头止损价随行情上移，不随行情下移；空头止损价随行情下移，不随行情上移。价格触及或跌破（升破）止损价则平仓。
+对着代码按顺序检查：
+- ATR 周期是不是 14、倍数是不是 1.5——看参数声明与 `calculate_indicators`。
+- 极值起点是不是从开仓成交算起——看 `on_trade` 用没用 `trade.price`。
+- 多头用最高价、空头用最低价——看 `max` 与 `min`。
+- 平仓用的是不是停止单，多头 `sell`、空头 `cover`。
+- 每根新 K 线更新时，有没有先撤掉旧止损单——看 `cancel_all()`。
 
-对着代码按顺序问。ATR 周期是不是 14，倍数是不是 1.5——看参数，再看 `am.atr(...)` 和乘法。多头有没有用开仓后最高价更新止损，空头有没有用最低价——看 `max` / `min`。
+这几处对上了，说明书这一条就算落到代码里了。先看极值有没有顺势更新；止损价按「极值 − 1.5 倍 ATR」每根重算，就够了。
 
-最高价、最低价有没有按笔重新初始化，以及重置写在发单时还是成交之后。平仓用的是不是停止单（第三个参数为 `True`），多头是不是 `sell`、空头是不是 `cover`。有仓时会不会再次 `buy` / `short`。
+对不上时，常见的走样就是第 1 篇那个例子：极值不再更新，或者开仓后只算一次、后面不再改，虽然看起来仍然有止损，但跑的已经是固定止损。
 
-如果开仓后只计算一次固定止损价，后面不再用极值更新，那就是固定止损。上面的阅读示例按说明书写成了移动止损；你拿到的生成稿若不一样，差异通常就在这几行。
+## 在 Fusion 里打开生成代码
 
-> 假设示例：代码写成 `long_stop = 开仓价 - 1.5 × ATR`，之后不再改。回测仍能跑完，但已经不是说明书里的移动止损。
+前面找落点的读法，换一个编辑器也一样。下一步就是在智策投研里打开生成出来的文件。确认逻辑之后，流程会生成一份和开源版同一套结构的 `CtaTemplate` 策略文件。
 
-这一步的目的，是学会「拿说明书问代码」。生成稿还能不能信、还有哪些典型错误，下一篇再系统说。
+第一步，在智策工作台打开智策投研。确认逻辑之后，流程会接着生成代码，并可能自动往下走；打开「策略代码」页，确认文件已经出来即可。
 
-## 在 Fusion 里看生成出来的文件
+![智策投研策略代码页](./pics/generate_code.png)
 
-上面的读法，不依赖某一个软件。在 VeighNa Fusion 里，确认逻辑之后，智策投研会进入「生成代码」。产物是标准 `CtaTemplate`（CTA 策略模板）策略文件，和 VeighNa 开源版用的是同一套结构，生成之后可以继续自己读、自己改。
+第二步，点「打开策略文件」，不要从文件顶上逐行读。先找参数与 `parameters`，再看 `on_15min_bar` 的主干，最后看 `handle_no_position`、`update_long_position` 与 `on_trade`。
 
-第一步，在智策工作台打开智策投研，等流程走到生成代码，确认已经产出策略文件。
+止损倍数这个旋钮，正文摘录里叫 `sl_multiplier`，有的生成稿会写成 `atr_stop_multiplier`。对的是数字 1.5，不是名字本身。
 
-![智策投研生成代码产物](./pics/generate_code.png)
-
-第二步，打开代码预览，不要从文件顶上逐行读。先搜 `parameters`、`BarGenerator`、`ArrayManager`，再找 `pos == 0`、极值重置和止损相关的变量。
-
-![智策投研代码预览](./pics/code_preview.png)
-
-界面长什么样会随版本调整。读的顺序不变：先对参数和周期，再对开仓与止损。
+![打开策略文件后从参数读起](./pics/code_preview.png)
 
 ## 本篇小结
 
-- 读 CTA 策略，核心是核对说明书的翻译。
-- 五个固定部件给出找落点的地图；边界情况要按说明书条目找，不要按部件凑数。
-- 移动止损至少要核周期、倍数、极值是否按笔重置、更新方向、是否用停止单等待触及，以及持仓时还开不开新仓。
-- 智策投研可以生成标准模板文件；翻译有没有走样，仍要人来看。
+- 读 CTA 策略，核心是核对说明书的翻译。对之前先把准备核对的规则摘成一张单子。
+- 五个部件给出找落点的地图；边界规则按单子逐条找，不要按部件凑条目。
+- 移动止损至少要核周期、倍数、成交初始化、极值方向，以及更新前有没有撤旧单。
+- 智策投研能生成标准 `CtaTemplate` 文件；翻译有没有走样，仍要人来看。
 
 ## 接下来讲什么
 
-代码能生成、也能运行，只说明它通过了基本的格式和接口检查。逻辑写错、用了当时还拿不到的信息、状态和真实持仓对不上，回测照样能出一份完整报告。
+代码写得出来、回测也跑得完，只说明它能出一份完整报告。逻辑有没有对上说明书，下一篇再展开。
 
 下一篇：AI 写的策略，能运行不等于能信。
 
