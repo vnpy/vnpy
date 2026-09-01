@@ -129,7 +129,6 @@ def ts_slope(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
     """Calculate the quantile value over a rolling window"""
-    data_dtype: pl.DataType = feature.df["data"].dtype
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
@@ -140,7 +139,7 @@ def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
             window_size=window,
         )
         .over("vt_symbol")
-        .cast(data_dtype),
+        .cast(pl.Float64),
     )
     return DataProxy(df)
 
@@ -322,7 +321,10 @@ def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: decay_func(s), window).over("vt_symbol")
+        pl.col("data")
+        .cast(pl.Float64)
+        .rolling_map(lambda s: decay_func(s), window)
+        .over("vt_symbol"),
     )
     return DataProxy(df)
 
@@ -346,8 +348,8 @@ def _rolling_by_symbol(
     """
     Shared rolling helper for ts_mean / ts_std.
 
-    Mirrors Polars 1.26 rolling_map semantics with per-symbol NumPy windows.
-    Unsupported dtypes fall back to _rolling_map_fallback(min_samples=1).
+    Per-symbol NumPy windows with min_samples=1.
+    Unsupported dtypes fall back to `_rolling_map_fallback(min_samples=1)`.
     """
     source_df: pl.DataFrame = feature.df
     if source_df.height == 0:
@@ -427,27 +429,11 @@ def _rolling_by_symbol(
         result_values[row_index] = local_values
         result_null[row_index] = local_null
 
-    # Map null flags to Polars null and cast to the input dtype
-    if _is_integer_rolling_dtype(data_dtype):
-        value_expr: pl.Expr = (
-            pl.when(pl.col("roll_null") | pl.col("roll_value").is_nan())
-            .then(pl.lit(None, dtype=pl.Float64))
-            .otherwise(pl.col("roll_value"))
-            .cast(data_dtype)
-        )
-    else:
-        if data_dtype == pl.Float32:
-            value_expr = (
-                pl.when(pl.col("roll_null"))
-                .then(pl.lit(None, dtype=pl.Float32))
-                .otherwise(pl.col("roll_value").cast(pl.Float32))
-            )
-        else:
-            value_expr = (
-                pl.when(pl.col("roll_null"))
-                .then(pl.lit(None, dtype=pl.Float64))
-                .otherwise(pl.col("roll_value"))
-            )
+    value_expr: pl.Expr = (
+        pl.when(pl.col("roll_null"))
+        .then(pl.lit(None, dtype=pl.Float64))
+        .otherwise(pl.col("roll_value"))
+    )
 
     result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
         pl.Series("roll_value", result_values),
@@ -531,12 +517,10 @@ def _rolling_full_window_by_symbol(
         result_values[row_index] = local_values
         result_null[row_index] = local_null
 
-    # Map null flags to Polars null and cast to the input dtype
     value_expr: pl.Expr = (
         pl.when(pl.col("roll_null"))
         .then(pl.lit(None, dtype=pl.Float64))
         .otherwise(pl.col("roll_value"))
-        .cast(data_dtype)
     )
     result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
         pl.Series("roll_value", result_values),
@@ -556,16 +540,15 @@ def _rolling_map_fallback(
     min_samples: int | None = None,
 ) -> DataProxy:
     """Fallback to Polars rolling_map for unsupported dtypes."""
+    data_col: pl.Expr = pl.col("data").cast(pl.Float64)
     if min_samples is None:
-        data_expr: pl.Expr = (
-            pl.col("data").rolling_map(reducer, window).over("vt_symbol")
-        )
+        data_expr: pl.Expr = data_col.rolling_map(reducer, window).over("vt_symbol")
     else:
-        data_expr = (
-            pl.col("data")
-            .rolling_map(reducer, window, min_samples=min_samples)
-            .over("vt_symbol")
-        )
+        data_expr = data_col.rolling_map(
+            reducer,
+            window,
+            min_samples=min_samples,
+        ).over("vt_symbol")
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
@@ -640,16 +623,6 @@ def _is_fast_rolling_dtype(dtype: pl.DataType) -> bool:
     return dtype in {
         pl.Float32,
         pl.Float64,
-        pl.Int32,
-        pl.Int64,
-        pl.UInt32,
-        pl.UInt64,
-    }
-
-
-def _is_integer_rolling_dtype(dtype: pl.DataType) -> bool:
-    """Return whether dtype needs integer cast-back semantics."""
-    return dtype in {
         pl.Int32,
         pl.Int64,
         pl.UInt32,
