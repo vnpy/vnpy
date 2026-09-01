@@ -595,10 +595,10 @@ def _reduce_mean_axis(windows: np.ndarray) -> np.ndarray:
 
 
 def _reduce_std_axis(windows: np.ndarray) -> np.ndarray:
-    """Vectorized nanstd over the last axis."""
+    """Vectorized nanstd over the last axis, sample std (ddof=1)."""
     with np.errstate(all="ignore"):
         result: np.ndarray = np.asarray(
-            np.nanstd(windows, axis=-1, ddof=0),
+            np.nanstd(windows, axis=-1, ddof=1),
             dtype=np.float64,
         )
     return result
@@ -612,10 +612,10 @@ def _reduce_mean_slice(values: object) -> float:
 
 
 def _reduce_std_slice(values: object) -> float:
-    """nanstd for one window slice."""
+    """nanstd for one window slice, sample std (ddof=1)."""
     array: np.ndarray = np.asarray(values, dtype=np.float64)
     with np.errstate(all="ignore"):
-        return float(np.nanstd(array, ddof=0))
+        return float(np.nanstd(array, ddof=1))
 
 
 def _is_fast_rolling_dtype(dtype: pl.DataType) -> bool:
