@@ -36,9 +36,6 @@ def apply_by_contract(
     vt_symbol keeps every contract's warm-up period and computation isolated,
     and preserves the original row order and index.
     """
-    if not series:
-        raise ValueError("at least one series is required")
-
     index = series[0].index
     for s in series[1:]:
         if not s.index.equals(index):
