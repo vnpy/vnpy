@@ -232,16 +232,42 @@ def ts_resi(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_corr(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
     """Calculate the correlation between two features over a rolling window"""
+    std_atol: float = 2e-5
     df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
+
+    df_merged = df_merged.with_columns(
+        [
+            pl.col("data").fill_nan(None).alias("left"),
+            pl.col("data_right").fill_nan(None).alias("right"),
+        ]
+    )
+    df_merged = df_merged.with_columns(
+        [
+            pl.when(pl.col("left").is_infinite()).then(None).otherwise(pl.col("left")).alias("left"),
+            pl.when(pl.col("right").is_infinite()).then(None).otherwise(pl.col("right")).alias("right"),
+        ]
+    )
 
     df: pl.DataFrame = df_merged.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.rolling_corr("data", "data_right", window_size=window, min_samples=1).over("vt_symbol").alias("data")
+        pl.rolling_corr("left", "right", window_size=window, min_samples=1).over("vt_symbol").alias("corr"),
+        pl.col("left").rolling_std(window, min_samples=1).over("vt_symbol").alias("std_left"),
+        pl.col("right").rolling_std(window, min_samples=1).over("vt_symbol").alias("std_right"),
     )
 
-    df = df.with_columns(
-        pl.when(pl.col("data").is_infinite()).then(None).otherwise(pl.col("data")).alias("data")
+    df = df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        pl.when(
+            pl.col("corr").is_infinite()
+            | pl.col("corr").is_nan()
+            | (pl.col("std_left").abs() <= std_atol)
+            | (pl.col("std_right").abs() <= std_atol)
+        )
+        .then(None)
+        .otherwise(pl.col("corr"))
+        .alias("data"),
     )
 
     return DataProxy(df)
