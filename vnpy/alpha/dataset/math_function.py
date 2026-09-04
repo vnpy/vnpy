@@ -17,7 +17,10 @@ def less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     df: pl.DataFrame = df_merged.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.min_horizontal("data", "data_right").over("vt_symbol").alias("data")
+        pl.when(pl.col("data").is_null() | pl.col("data_right").is_null())
+        .then(None)
+        .otherwise(pl.min_horizontal("data", "data_right").over("vt_symbol"))
+        .alias("data"),
     )
 
     return DataProxy(df)
@@ -34,7 +37,10 @@ def greater(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     df: pl.DataFrame = df_merged.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.max_horizontal("data", "data_right").over("vt_symbol").alias("data")
+        pl.when(pl.col("data").is_null() | pl.col("data_right").is_null())
+        .then(None)
+        .otherwise(pl.max_horizontal("data", "data_right").over("vt_symbol"))
+        .alias("data"),
     )
 
     return DataProxy(df)
@@ -45,7 +51,7 @@ def log(feature: DataProxy) -> DataProxy:
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").log().over("vt_symbol")
+        pl.col("data").log().over("vt_symbol").fill_nan(None)
     )
     return DataProxy(df)
 
@@ -65,7 +71,14 @@ def sign(feature: DataProxy) -> DataProxy:
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.when(pl.col("data") > 0).then(1).when(pl.col("data") < 0).then(-1).otherwise(0).alias("data")
+        pl.when(pl.col("data").is_null())
+        .then(None)
+        .when(pl.col("data") > 0)
+        .then(1)
+        .when(pl.col("data") < 0)
+        .then(-1)
+        .otherwise(0)
+        .alias("data")
     )
     return DataProxy(df)
 

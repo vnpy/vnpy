@@ -8,6 +8,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 import polars as pl
 import numpy as np
 
+from .math_function import greater, less, log
 from .utility import DataProxy
 
 
@@ -275,45 +276,17 @@ def ts_corr(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
 
 def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     """Return the minimum value between two features"""
-    if isinstance(feature2, DataProxy):
-        df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
-    else:
-        df_merged = feature1.df.with_columns(pl.lit(feature2).alias("data_right"))
-
-    df: pl.DataFrame = df_merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.min_horizontal("data", "data_right").over("vt_symbol").alias("data")
-    )
-
-    return DataProxy(df)
+    return less(feature1, feature2)
 
 
 def ts_greater(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     """Return the maximum value between two features"""
-    if isinstance(feature2, DataProxy):
-        df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
-
-    else:
-        df_merged = feature1.df.with_columns(pl.lit(feature2).alias("data_right"))
-
-    df: pl.DataFrame = df_merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.max_horizontal("data", "data_right").over("vt_symbol").alias("data")
-    )
-
-    return DataProxy(df)
+    return greater(feature1, feature2)
 
 
 def ts_log(feature: DataProxy) -> DataProxy:
     """Calculate the natural logarithm of the feature"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").log().over("vt_symbol")
-    )
-    return DataProxy(df)
+    return log(feature)
 
 
 def ts_abs(feature: DataProxy) -> DataProxy:
@@ -462,7 +435,7 @@ def _rolling_by_symbol(
     )
 
     result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
-        pl.Series("roll_value", result_values),
+        pl.Series("roll_value", result_values, nan_to_null=True),
         pl.Series("roll_null", result_null),
     ).select(
         pl.col("datetime"),
@@ -549,7 +522,7 @@ def _rolling_full_window_by_symbol(
         .otherwise(pl.col("roll_value"))
     )
     result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
-        pl.Series("roll_value", result_values),
+        pl.Series("roll_value", result_values, nan_to_null=True),
         pl.Series("roll_null", result_null),
     ).select(
         pl.col("datetime"),
@@ -580,6 +553,7 @@ def _rolling_map_fallback(
         pl.col("vt_symbol"),
         data_expr,
     )
+    df = df.with_columns(pl.col("data").fill_nan(None))
     return DataProxy(df)
 
 
