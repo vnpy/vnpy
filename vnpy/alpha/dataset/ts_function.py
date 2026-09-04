@@ -8,6 +8,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 import polars as pl
 import numpy as np
 
+from .math_function import greater, less, log
 from .utility import DataProxy
 
 
@@ -129,7 +130,6 @@ def ts_slope(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
     """Calculate the quantile value over a rolling window"""
-    data_dtype: pl.DataType = feature.df["data"].dtype
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
@@ -140,7 +140,7 @@ def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
             window_size=window,
         )
         .over("vt_symbol")
-        .cast(data_dtype),
+        .cast(pl.Float64),
     )
     return DataProxy(df)
 
@@ -233,16 +233,42 @@ def ts_resi(feature: DataProxy, window: int) -> DataProxy:
 
 def ts_corr(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
     """Calculate the correlation between two features over a rolling window"""
+    std_atol: float = 2e-5
     df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
+
+    df_merged = df_merged.with_columns(
+        [
+            pl.col("data").fill_nan(None).alias("left"),
+            pl.col("data_right").fill_nan(None).alias("right"),
+        ]
+    )
+    df_merged = df_merged.with_columns(
+        [
+            pl.when(pl.col("left").is_infinite()).then(None).otherwise(pl.col("left")).alias("left"),
+            pl.when(pl.col("right").is_infinite()).then(None).otherwise(pl.col("right")).alias("right"),
+        ]
+    )
 
     df: pl.DataFrame = df_merged.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.rolling_corr("data", "data_right", window_size=window, min_samples=1).over("vt_symbol").alias("data")
+        pl.rolling_corr("left", "right", window_size=window, min_samples=1).over("vt_symbol").alias("corr"),
+        pl.col("left").rolling_std(window, min_samples=1).over("vt_symbol").alias("std_left"),
+        pl.col("right").rolling_std(window, min_samples=1).over("vt_symbol").alias("std_right"),
     )
 
-    df = df.with_columns(
-        pl.when(pl.col("data").is_infinite()).then(None).otherwise(pl.col("data")).alias("data")
+    df = df.select(
+        pl.col("datetime"),
+        pl.col("vt_symbol"),
+        pl.when(
+            pl.col("corr").is_infinite()
+            | pl.col("corr").is_nan()
+            | (pl.col("std_left").abs() <= std_atol)
+            | (pl.col("std_right").abs() <= std_atol)
+        )
+        .then(None)
+        .otherwise(pl.col("corr"))
+        .alias("data"),
     )
 
     return DataProxy(df)
@@ -250,45 +276,17 @@ def ts_corr(feature1: DataProxy, feature2: DataProxy, window: int) -> DataProxy:
 
 def ts_less(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     """Return the minimum value between two features"""
-    if isinstance(feature2, DataProxy):
-        df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
-    else:
-        df_merged = feature1.df.with_columns(pl.lit(feature2).alias("data_right"))
-
-    df: pl.DataFrame = df_merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.min_horizontal("data", "data_right").over("vt_symbol").alias("data")
-    )
-
-    return DataProxy(df)
+    return less(feature1, feature2)
 
 
 def ts_greater(feature1: DataProxy, feature2: DataProxy | float) -> DataProxy:
     """Return the maximum value between two features"""
-    if isinstance(feature2, DataProxy):
-        df_merged: pl.DataFrame = feature1.df.join(feature2.df, on=["datetime", "vt_symbol"])
-
-    else:
-        df_merged = feature1.df.with_columns(pl.lit(feature2).alias("data_right"))
-
-    df: pl.DataFrame = df_merged.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.max_horizontal("data", "data_right").over("vt_symbol").alias("data")
-    )
-
-    return DataProxy(df)
+    return greater(feature1, feature2)
 
 
 def ts_log(feature: DataProxy) -> DataProxy:
     """Calculate the natural logarithm of the feature"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").log().over("vt_symbol")
-    )
-    return DataProxy(df)
+    return log(feature)
 
 
 def ts_abs(feature: DataProxy) -> DataProxy:
@@ -322,7 +320,10 @@ def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
-        pl.col("data").rolling_map(lambda s: decay_func(s), window).over("vt_symbol")
+        pl.col("data")
+        .cast(pl.Float64)
+        .rolling_map(lambda s: decay_func(s), window)
+        .over("vt_symbol"),
     )
     return DataProxy(df)
 
@@ -346,8 +347,8 @@ def _rolling_by_symbol(
     """
     Shared rolling helper for ts_mean / ts_std.
 
-    Mirrors Polars 1.26 rolling_map semantics with per-symbol NumPy windows.
-    Unsupported dtypes fall back to _rolling_map_fallback(min_samples=1).
+    Per-symbol NumPy windows with min_samples=1.
+    Unsupported dtypes fall back to `_rolling_map_fallback(min_samples=1)`.
     """
     source_df: pl.DataFrame = feature.df
     if source_df.height == 0:
@@ -427,30 +428,14 @@ def _rolling_by_symbol(
         result_values[row_index] = local_values
         result_null[row_index] = local_null
 
-    # Map null flags to Polars null and cast to the input dtype
-    if _is_integer_rolling_dtype(data_dtype):
-        value_expr: pl.Expr = (
-            pl.when(pl.col("roll_null") | pl.col("roll_value").is_nan())
-            .then(pl.lit(None, dtype=pl.Float64))
-            .otherwise(pl.col("roll_value"))
-            .cast(data_dtype)
-        )
-    else:
-        if data_dtype == pl.Float32:
-            value_expr = (
-                pl.when(pl.col("roll_null"))
-                .then(pl.lit(None, dtype=pl.Float32))
-                .otherwise(pl.col("roll_value").cast(pl.Float32))
-            )
-        else:
-            value_expr = (
-                pl.when(pl.col("roll_null"))
-                .then(pl.lit(None, dtype=pl.Float64))
-                .otherwise(pl.col("roll_value"))
-            )
+    value_expr: pl.Expr = (
+        pl.when(pl.col("roll_null"))
+        .then(pl.lit(None, dtype=pl.Float64))
+        .otherwise(pl.col("roll_value"))
+    )
 
     result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
-        pl.Series("roll_value", result_values),
+        pl.Series("roll_value", result_values, nan_to_null=True),
         pl.Series("roll_null", result_null),
     ).select(
         pl.col("datetime"),
@@ -531,15 +516,13 @@ def _rolling_full_window_by_symbol(
         result_values[row_index] = local_values
         result_null[row_index] = local_null
 
-    # Map null flags to Polars null and cast to the input dtype
     value_expr: pl.Expr = (
         pl.when(pl.col("roll_null"))
         .then(pl.lit(None, dtype=pl.Float64))
         .otherwise(pl.col("roll_value"))
-        .cast(data_dtype)
     )
     result_df: pl.DataFrame = source_df.select(["datetime", "vt_symbol"]).with_columns(
-        pl.Series("roll_value", result_values),
+        pl.Series("roll_value", result_values, nan_to_null=True),
         pl.Series("roll_null", result_null),
     ).select(
         pl.col("datetime"),
@@ -556,21 +539,21 @@ def _rolling_map_fallback(
     min_samples: int | None = None,
 ) -> DataProxy:
     """Fallback to Polars rolling_map for unsupported dtypes."""
+    data_col: pl.Expr = pl.col("data").cast(pl.Float64)
     if min_samples is None:
-        data_expr: pl.Expr = (
-            pl.col("data").rolling_map(reducer, window).over("vt_symbol")
-        )
+        data_expr: pl.Expr = data_col.rolling_map(reducer, window).over("vt_symbol")
     else:
-        data_expr = (
-            pl.col("data")
-            .rolling_map(reducer, window, min_samples=min_samples)
-            .over("vt_symbol")
-        )
+        data_expr = data_col.rolling_map(
+            reducer,
+            window,
+            min_samples=min_samples,
+        ).over("vt_symbol")
     df: pl.DataFrame = feature.df.select(
         pl.col("datetime"),
         pl.col("vt_symbol"),
         data_expr,
     )
+    df = df.with_columns(pl.col("data").fill_nan(None))
     return DataProxy(df)
 
 
@@ -612,10 +595,10 @@ def _reduce_mean_axis(windows: np.ndarray) -> np.ndarray:
 
 
 def _reduce_std_axis(windows: np.ndarray) -> np.ndarray:
-    """Vectorized nanstd over the last axis."""
+    """Vectorized nanstd over the last axis, sample std (ddof=1)."""
     with np.errstate(all="ignore"):
         result: np.ndarray = np.asarray(
-            np.nanstd(windows, axis=-1, ddof=0),
+            np.nanstd(windows, axis=-1, ddof=1),
             dtype=np.float64,
         )
     return result
@@ -629,10 +612,10 @@ def _reduce_mean_slice(values: object) -> float:
 
 
 def _reduce_std_slice(values: object) -> float:
-    """nanstd for one window slice."""
+    """nanstd for one window slice, sample std (ddof=1)."""
     array: np.ndarray = np.asarray(values, dtype=np.float64)
     with np.errstate(all="ignore"):
-        return float(np.nanstd(array, ddof=0))
+        return float(np.nanstd(array, ddof=1))
 
 
 def _is_fast_rolling_dtype(dtype: pl.DataType) -> bool:
@@ -640,16 +623,6 @@ def _is_fast_rolling_dtype(dtype: pl.DataType) -> bool:
     return dtype in {
         pl.Float32,
         pl.Float64,
-        pl.Int32,
-        pl.Int64,
-        pl.UInt32,
-        pl.UInt64,
-    }
-
-
-def _is_integer_rolling_dtype(dtype: pl.DataType) -> bool:
-    """Return whether dtype needs integer cast-back semantics."""
-    return dtype in {
         pl.Int32,
         pl.Int64,
         pl.UInt32,

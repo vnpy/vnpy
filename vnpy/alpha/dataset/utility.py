@@ -33,10 +33,10 @@ class DataProxy:
 
         return cast(pl.Series, value)
 
-    def _comparison_series(self, value: object) -> pl.Series:
+    def _comparison_series(self, value: object, missing_fill: int) -> pl.Series:
         """Normalize comparison results to an Int32 series."""
         if isinstance(value, pl.Series):
-            return value.cast(pl.Int32)
+            return value.cast(pl.Int32).fill_null(missing_fill)
 
         if isinstance(value, bool):
             return pl.Series(name="data", values=[int(value)] * len(self.df))
@@ -48,8 +48,9 @@ class DataProxy:
 
     def result(self, s: pl.Series) -> "DataProxy":
         """Convert series data to feature object"""
+        cleaned: pl.Series = s.fill_nan(None)
         result: pl.DataFrame = self.df[["datetime", "vt_symbol"]]
-        result = result.with_columns(other=s)
+        result = result.with_columns(other=cleaned)
 
         return DataProxy(result)
 
@@ -96,7 +97,7 @@ class DataProxy:
     def __rmul__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Right multiplication operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"]  * other.df["data"])
+            s = self._as_series(self.df["data"] * other.df["data"])
         else:
             s = self._as_series(self.df["data"] * other)
         return self.result(s)
@@ -157,7 +158,7 @@ class DataProxy:
             s: object = self.df["data"] > other.df["data"]
         else:
             s = self.df["data"] > other
-        return self.result(self._comparison_series(s))
+        return self.result(self._comparison_series(s, 0))
 
     def __ge__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Greater than or equal comparison"""
@@ -165,7 +166,7 @@ class DataProxy:
             s: object = self.df["data"] >= other.df["data"]
         else:
             s = self.df["data"] >= other
-        return self.result(self._comparison_series(s))
+        return self.result(self._comparison_series(s, 0))
 
     def __lt__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Less than comparison"""
@@ -173,7 +174,7 @@ class DataProxy:
             s: object = self.df["data"] < other.df["data"]
         else:
             s = self.df["data"] < other
-        return self.result(self._comparison_series(s))
+        return self.result(self._comparison_series(s, 0))
 
     def __le__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Less than or equal comparison"""
@@ -181,7 +182,7 @@ class DataProxy:
             s: object = self.df["data"] <= other.df["data"]
         else:
             s = self.df["data"] <= other
-        return self.result(self._comparison_series(s))
+        return self.result(self._comparison_series(s, 0))
 
     def __eq__(self, other: Union["DataProxy", Real]) -> "DataProxy":  # type: ignore[override]
         """Equal comparison"""
@@ -189,7 +190,7 @@ class DataProxy:
             s: object = self.df["data"] == other.df["data"]
         else:
             s = self.df["data"] == other
-        return self.result(self._comparison_series(s))
+        return self.result(self._comparison_series(s, 0))
 
     def __ne__(self, other: Union["DataProxy", Real]) -> "DataProxy":  # type: ignore[override]
         """Not equal comparison"""
@@ -197,11 +198,12 @@ class DataProxy:
             s: object = self.df["data"] != other.df["data"]
         else:
             s = self.df["data"] != other
-        return self.result(self._comparison_series(s))
+        return self.result(self._comparison_series(s, 1))
 
 
 def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
     """Execute calculation based on expression"""
+    df = df.with_columns(pl.col(pl.Float64, pl.Float32).fill_nan(None))
     # Import operators locally to avoid polluting global namespace
     from .ts_function import (              # noqa
         ts_delay,
@@ -257,6 +259,7 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
 
 def calculate_by_polars(df: pl.DataFrame, expression: pl.expr.expr.Expr) -> pl.DataFrame:
     """Execute calculation based on Polars expression"""
+    df = df.with_columns(pl.col(pl.Float64, pl.Float32).fill_nan(None))
     return df.select([
         "datetime",
         "vt_symbol",
