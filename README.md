@@ -106,10 +106,6 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
 
         * :arrow_up: 华鑫奇点（[tora](https://www.github.com/vnpy/vnpy_tora)）：国内证券（A股）、ETF期权
 
-        * 东证OST（[ost](https://www.github.com/vnpy/vnpy_ost)）：国内证券（A股）
-
-        * 东方财富EMT（[emt](https://www.github.com/vnpy/vnpy_emt)）：国内证券（A股）
-
         * 飞鼠（[sgit](https://www.github.com/vnpy/vnpy_sgit)）：黄金TD、国内期货
 
         * :arrow_up: 金仕达黄金（[ksgold](https://www.github.com/vnpy/vnpy_ksgold)）：黄金TD
@@ -119,8 +115,6 @@ vnpy.alpha模块的设计理念受到[Qlib](https://github.com/microsoft/qlib)�
         * :arrow_up: 融航（[rohon](https://www.github.com/vnpy/vnpy_rohon)）：期货资管
 
         * :arrow_up: 杰宜斯（[jees](https://www.github.com/vnpy/vnpy_jees)）：期货资管
-
-        * 中汇亿达（[comstar](https://www.github.com/vnpy/vnpy_comstar)）：银行间市场
 
         * :arrow_up: TTS（[tts](https://www.github.com/vnpy/vnpy_tts)）：国内期货（仿真）
 
