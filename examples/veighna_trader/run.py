@@ -1,3 +1,7 @@
+"""
+Launch VeighNa Trader with CTP, CTA strategy, backtesting, and data manager.
+"""
+
 from vnpy.event import EventEngine
 
 from vnpy.trader.engine import MainEngine
@@ -36,7 +40,9 @@ from vnpy_datamanager import DataManagerApp
 
 
 def main():
-    """"""
+    """
+    Create the main window with CTP, CTA strategy, CTA backtester, and data manager.
+    """
     qapp = create_qapp()
 
     event_engine = EventEngine()

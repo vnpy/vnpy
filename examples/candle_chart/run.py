@@ -1,3 +1,7 @@
+"""
+Show stored minute bars on a candlestick and volume chart.
+"""
+
 from datetime import datetime
 
 from vnpy.trader.ui import create_qapp, QtCore
@@ -32,6 +36,9 @@ if __name__ == "__main__":
     widget.update_history(history)
 
     def update_bar() -> None:
+        """
+        Push the next queued bar into the chart.
+        """
         bar = new_data.pop(0)
         widget.update_bar(bar)
 

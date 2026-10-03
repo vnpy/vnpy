@@ -1,3 +1,7 @@
+"""
+Dataset template that calculates expressions and serves train, valid, and test segments.
+"""
+
 import time
 from datetime import datetime
 from typing import cast

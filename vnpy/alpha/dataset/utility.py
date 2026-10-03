@@ -1,3 +1,7 @@
+"""
+Expression registry, feature data proxy, and helpers for alpha calculations.
+"""
+
 from datetime import datetime
 from enum import Enum
 from numbers import Real

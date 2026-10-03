@@ -1,3 +1,7 @@
+"""
+Chart widget and crosshair cursor.
+"""
+
 from datetime import datetime
 
 import pyqtgraph as pg      # type: ignore
@@ -18,11 +22,15 @@ pg.setConfigOptions(antialias=True)
 
 
 class ChartWidget(pg.PlotWidget):
-    """"""
+    """
+    Widget that shows one or more linked chart plots.
+    """
     MIN_BAR_COUNT = 100
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
-        """"""
+        """
+        Create the chart widget and its bar manager.
+        """
         super().__init__(parent)
 
         self._manager: BarManager = BarManager()
@@ -54,7 +62,9 @@ class ChartWidget(pg.PlotWidget):
         return DatetimeAxis(self._manager, orientation="bottom")
 
     def add_cursor(self) -> None:
-        """"""
+        """
+        Add a crosshair cursor to the chart.
+        """
         if not self._cursor:
             self._cursor = ChartCursor(
                 self, self._manager, self._plots, self._item_plot_map)
@@ -322,7 +332,9 @@ class ChartWidget(pg.PlotWidget):
 
 
 class ChartCursor(QtCore.QObject):
-    """"""
+    """
+    Crosshair cursor that shows bar information.
+    """
 
     def __init__(
         self,
@@ -331,7 +343,9 @@ class ChartCursor(QtCore.QObject):
         plots: dict[str, pg.GraphicsObject],
         item_plot_map: dict[ChartItem, pg.GraphicsObject]
     ) -> None:
-        """"""
+        """
+        Create the cursor and connect it to mouse movement.
+        """
         super().__init__()
 
         self._widget: ChartWidget = widget
@@ -486,7 +500,9 @@ class ChartCursor(QtCore.QObject):
             self._x_label.setAnchor((0, 0))
 
     def update_info(self) -> None:
-        """"""
+        """
+        Refresh the information text shown by the cursor.
+        """
         buf: dict = {}
 
         for item, plot in self._item_plot_map.items():

@@ -1,3 +1,7 @@
+"""
+Multi-layer perceptron model for alpha factor prediction.
+"""
+
 import copy
 from collections import defaultdict
 from typing import Literal, cast
@@ -47,32 +51,7 @@ class MlpModel(AlphaModel):
         seed: int | None = None
     ) -> None:
         """
-        Initialize MLP model
-
-        Parameters
-        ----------
-        input_size : int, default 360
-            Input feature dimension
-        hidden_sizes : tuple[int], default (256,)
-            Number of neurons in hidden layers
-        lr : float, default 0.001
-            Learning rate
-        n_epochs : int, default 300
-            Maximum training steps
-        batch_size : int, default 2000
-            Number of samples per batch
-        early_stop_rounds : int, default 50
-            Early stopping rounds, training stops if validation loss doesn't improve within these rounds
-        eval_steps : int, default 20
-            Evaluate model every this many steps
-        optimizer : Literal["sgd", "adam"], default "adam"
-            Optimizer type, options are "sgd" or "adam"
-        weight_decay : float, default 0.0
-            L2 regularization coefficient
-        seed : Optional[int], optional
-            Random seed for reproducibility
-        device : str, default "cpu"
-            Training device
+        Initialize the network on the given device, accepting only adam or sgd, and seed NumPy and PyTorch when a seed is provided.
         """
         # Save model hyperparameters
         self.input_size: int = input_size
@@ -140,20 +119,7 @@ class MlpModel(AlphaModel):
         evaluation_results: dict | None = None,
     ) -> None:
         """
-        Train the multi-layer perceptron model
-
-        Trains the MLP model using the given dataset, with main steps including:
-        1. Preparing training and validation data
-        2. Iteratively training for multiple steps
-        3. Evaluating model performance at fixed intervals
-        4. Implementing early stopping to prevent overfitting
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            Dataset object containing training data
-        evaluation_results : dict
-            Dictionary for storing evaluation metrics during training
+        Train with periodic validation and early stopping, and append segment losses to evaluation_results when it is provided.
         """
         # Initialize a new dictionary if evaluation_results is None
         if evaluation_results is None:
@@ -227,19 +193,7 @@ class MlpModel(AlphaModel):
         train_samples: int
     ) -> float:
         """
-        Execute one training step
-
-        Parameters
-        ----------
-        train_valid_data : dict
-            Training and validation data
-        train_samples : int
-            Number of training samples
-
-        Returns
-        -------
-        float
-            Current batch loss value
+        Run one optimization step on a random training batch and return that batch loss.
         """
         batch_loss = AverageMeter()
         self.model.train()
@@ -271,27 +225,7 @@ class MlpModel(AlphaModel):
         best_valid_score: float
     ) -> tuple[int, float, dict[str, torch.Tensor] | None]:
         """
-        Evaluate current model performance
-
-        Parameters
-        ----------
-        train_valid_data : dict
-            Training and validation data
-        evaluation_results : dict
-            Evaluation results record
-        step : int
-            Current training step
-        train_loss : float
-            Current training loss
-        early_stop_count : int
-            Count of steps without improvement
-        best_valid_score : float
-            Best validation loss
-
-        Returns
-        -------
-        tuple[int, float, dict] | None
-            Returns updated early stop count, best validation loss, and best model parameters
+        Score validation, reset the early-stop count when loss improves, and return that count, the best loss, and the new state dict if it improved.
         """
         early_stop_count += 1
         train_loss /= self.eval_steps
@@ -328,19 +262,7 @@ class MlpModel(AlphaModel):
 
     def _loss_fn(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """
-        Calculate loss value
-
-        Parameters
-        ----------
-        pred : torch.Tensor
-            Model predictions
-        target : torch.Tensor
-            Target true values
-
-        Returns
-        -------
-        torch.Tensor
-            Calculated loss value
+        Compute mean squared error after flattening predictions and targets.
         """
         pred, target = pred.reshape(-1), target.reshape(-1)
         loss: torch.Tensor = nn.MSELoss()(pred, target)
@@ -348,21 +270,7 @@ class MlpModel(AlphaModel):
 
     def _predict_batch(self, data: torch.Tensor, return_cpu: bool = True) -> np.ndarray | torch.Tensor:
         """
-        Neural network prediction function
-
-        Parameters
-        ----------
-        data : torch.Tensor
-            Input data
-        return_cpu : bool, default True
-            Whether to return CPU tensor
-        step : Optional[int], optional
-            Current training step
-
-        Returns
-        -------
-        np.ndarray | torch.Tensor
-            Model prediction results
+        Predict in batches of 8096 and return a NumPy array, or a tensor when return_cpu is false.
         """
         data = data.to(self.device)
 
@@ -383,19 +291,7 @@ class MlpModel(AlphaModel):
 
     def predict(self, dataset: AlphaDataset, segment: Segment) -> np.ndarray:
         """
-        Model prediction interface
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            Prediction dataset
-        segment : Segment
-            Dataset segment
-
-        Returns
-        -------
-        np.ndarray
-            Prediction result array
+        Predict one dataset segment, or raise ValueError if the model has not been trained.
         """
         if not self.fitted:
             raise ValueError("Model has not been trained yet!")
@@ -409,30 +305,14 @@ class MlpModel(AlphaModel):
 
     def _check_tensor_nan(self, tensor: torch.Tensor, name: str) -> None:
         """
-        Check if tensor contains NaN values
-
-        Parameters
-        ----------
-        tensor : torch.Tensor
-            Tensor to check
-        name : str
-            Tensor name
-
-        Returns
-        -------
-        None
+        Print a message when the tensor contains any NaN values.
         """
         if torch.isnan(tensor).any():
             print(f"NaN values detected: {name}")
 
     def detail(self) -> pd.DataFrame | None:
         """
-        Output MLP model detail information
-
-        Returns
-        -------
-        pd.DataFrame
-            Feature importance dataframe
+        Log the model configuration and return feature importance, or None when the model is not trained.
         """
         if not self.fitted:
             logger.info("模型尚未训练，无法显示详细信息")
@@ -457,12 +337,7 @@ class MlpModel(AlphaModel):
 
     def _calculate_feature_importance(self) -> pd.DataFrame:
         """
-        Calculate feature importance
-
-        Returns
-        -------
-        pd.DataFrame
-            Feature importance dataframe
+        Estimate importance from how much predictions move when each input feature is perturbed.
         """
         self.model.eval()
         importance_dict: dict[str, float] = {}
@@ -492,37 +367,18 @@ class MlpModel(AlphaModel):
 
 class AverageMeter:
     """
-    Class for calculating and storing average and current values
-
-    Attributes
-    ----------
-    val : float
-        Current value
-    avg : float
-        Average value
-    sum : float
-        Sum
-    count : int
-        Count
+    Track the latest value together with its running sum, count, and average.
     """
 
     def __init__(self) -> None:
         """
-        Initialize AverageMeter
-
-        Returns
-        -------
-        None
+        Start the meter with every statistic set to zero.
         """
         self.reset()
 
     def reset(self) -> None:
         """
-        Reset all statistics
-
-        Returns
-        -------
-        None
+        Clear the current value, sum, count, and average.
         """
         self.val: float = 0
         self.avg: float = 0
@@ -531,18 +387,7 @@ class AverageMeter:
 
     def update(self, val: float, n: int = 1) -> None:
         """
-        Update statistics
-
-        Parameters
-        ----------
-        val : float
-            Current value
-        n : int, default 1
-            Current batch size
-
-        Returns
-        -------
-        None
+        Record a value weighted by n and refresh the running average.
         """
         self.val = val
         self.sum += val * n
@@ -552,15 +397,7 @@ class AverageMeter:
 
 class MlpNetwork(nn.Module):
     """
-    Deep Neural Network Model Structure
-
-    Used to build multi-layer perceptron network structure, supporting multiple hidden layers
-    and different activation functions.
-
-    Attributes
-    ----------
-    network : nn.ModuleList
-        List of neural network layers
+    Multilayer perceptron of dropout, linear, batch-norm, and activation layers.
     """
 
     def __init__(
@@ -571,21 +408,7 @@ class MlpNetwork(nn.Module):
         activation: str = "LeakyReLU"
     ) -> None:
         """
-        Constructor
-
-        Parameters
-        ----------
-        input_size : int
-            Input feature dimension, i.e., number of features per sample
-        output_size : int, default 1
-            Output dimension, used for predicting target values
-        hidden_sizes : tuple[int], default (256,)
-            Tuple of hidden layer neuron counts, e.g., (256, 128) represents two hidden layers
-            with 256 and 128 neurons respectively
-        activation : str, default "LeakyReLU"
-            Activation function type, options:
-            - "LeakyReLU": Leaky ReLU function
-            - "SiLU": Sigmoid Linear Unit function
+        Build hidden layers of linear, batch norm, and LeakyReLU or SiLU, with 0.05 dropout at the input and before the output. Any other activation name raises ValueError.
         """
         super().__init__()
 
@@ -619,22 +442,7 @@ class MlpNetwork(nn.Module):
 
     def _get_activation(self, name: str) -> nn.Module:
         """
-        Get specified activation function layer
-
-        Parameters
-        ----------
-        name : str
-            Activation function name
-
-        Returns
-        -------
-        nn.Module
-            Activation function layer instance
-
-        Raises
-        ------
-        ValueError
-            When an unsupported activation function type is specified
+        Return LeakyReLU with negative slope 0.1 or SiLU, or raise ValueError for any other name.
         """
         if name == "LeakyReLU":
             return nn.LeakyReLU(negative_slope=0.1)
@@ -645,14 +453,7 @@ class MlpNetwork(nn.Module):
 
     def _initialize_weights(self) -> None:
         """
-        Initialize network weight parameters
-
-        Uses Kaiming initialization method for all linear layers, which is particularly
-        suitable for deep networks using LeakyReLU activation functions.
-
-        Returns
-        -------
-        None
+        Apply Kaiming normal initialization to every linear layer using leaky ReLU.
         """
         for module in self.modules():
             if isinstance(module, nn.Linear):
@@ -665,17 +466,7 @@ class MlpNetwork(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Forward propagation calculation
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input feature tensor, shape (batch_size, input_size)
-
-        Returns
-        -------
-        torch.Tensor
-            Model output tensor, shape (batch_size, output_size)
+        Pass the input through each network layer in order.
         """
         # Pass through all layers in the network sequentially
         for layer in self.network:

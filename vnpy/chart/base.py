@@ -1,3 +1,7 @@
+"""
+Shared colors, fonts, and helpers for charts.
+"""
+
 from vnpy.trader.ui import QtGui
 
 
@@ -17,5 +21,7 @@ NORMAL_FONT = QtGui.QFont("Arial", 9)
 
 
 def to_int(value: float) -> int:
-    """"""
+    """
+    Round a value to the nearest integer.
+    """
     return int(round(value, 0))

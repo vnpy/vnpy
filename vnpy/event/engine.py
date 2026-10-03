@@ -21,7 +21,9 @@ class Event:
     """
 
     def __init__(self, type: str, data: Any = None) -> None:
-        """"""
+        """
+        Store the event type and data.
+        """
         self.type: str = type
         self.data: Any = data
 

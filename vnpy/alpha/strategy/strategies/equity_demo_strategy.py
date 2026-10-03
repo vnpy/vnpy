@@ -1,3 +1,7 @@
+"""
+Long-only equity demo strategy driven by alpha signals.
+"""
+
 from collections import defaultdict
 
 import polars as pl

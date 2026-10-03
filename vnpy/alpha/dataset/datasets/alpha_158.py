@@ -1,3 +1,7 @@
+"""
+Qlib 158-factor dataset built from candlestick and rolling price expressions.
+"""
+
 import polars as pl
 
 from vnpy.alpha import AlphaDataset

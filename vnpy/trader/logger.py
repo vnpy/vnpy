@@ -1,3 +1,7 @@
+"""
+Logger setup for console and file output.
+"""
+
 import sys
 from datetime import datetime
 from pathlib import Path

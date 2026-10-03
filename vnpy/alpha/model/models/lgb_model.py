@@ -1,3 +1,7 @@
+"""
+LightGBM model for alpha factor prediction.
+"""
+
 from typing import cast
 
 import numpy as np
@@ -22,20 +26,7 @@ class LgbModel(AlphaModel):
         seed: int | None = None
     ):
         """
-        Parameters
-        ----------
-        learning_rate : float
-            Learning rate
-        num_leaves : int
-            Number of leaf nodes
-        num_boost_round : int
-            Maximum number of training rounds
-        early_stopping_rounds : int
-            Number of rounds for early stopping
-        log_evaluation_period : int
-            Interval rounds for printing training logs
-        seed : int | None
-            Random seed
+        Initialize an MSE LightGBM booster with early stopping and periodic training logs.
         """
         self.params: dict = {
             "objective": "mse",
@@ -52,17 +43,7 @@ class LgbModel(AlphaModel):
 
     def _prepare_data(self, dataset: AlphaDataset) -> list[lgb.Dataset]:
         """
-        Prepare data for training and validation
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            The dataset containing features and labels
-
-        Returns
-        -------
-        list[lgb.Dataset]
-            List of LightGBM datasets for training and validation
+        Build LightGBM datasets for the train segment and then the validation segment.
         """
         ds: list[lgb.Dataset] = []
 
@@ -83,16 +64,7 @@ class LgbModel(AlphaModel):
 
     def fit(self, dataset: AlphaDataset) -> None:
         """
-        Fit the model using the dataset
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            The dataset containing features and labels
-
-        Returns
-        -------
-        None
+        Train the booster on the train and validation sets, stopping early when validation stalls.
         """
         # Prepare task data
         ds: list[lgb.Dataset] = self._prepare_data(dataset)
@@ -112,24 +84,7 @@ class LgbModel(AlphaModel):
 
     def predict(self, dataset: AlphaDataset, segment: Segment) -> np.ndarray:
         """
-        Make predictions using the trained model
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            The dataset containing features
-        segment : Segment
-            The segment to make predictions on
-
-        Returns
-        -------
-        np.ndarray
-            Prediction results
-
-        Raises
-        ------
-        ValueError
-            If the model has not been fitted yet
+        Predict one data segment, or raise ValueError if the booster has not been fitted.
         """
         # Check if model exists
         if self.model is None:
@@ -148,14 +103,7 @@ class LgbModel(AlphaModel):
 
     def detail(self) -> None:
         """
-        Display model details with feature importance plots
-
-        Generates two plots showing feature importance based on
-        'split' and 'gain' metrics.
-
-        Returns
-        -------
-        None
+        Plot up to 50 features by split and by gain, and return immediately if the model is not fitted.
         """
         if not self.model:
             return

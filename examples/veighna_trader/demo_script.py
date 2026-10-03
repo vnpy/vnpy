@@ -1,3 +1,7 @@
+"""
+Example script strategy that subscribes to contracts and logs ticks.
+"""
+
 from time import sleep
 
 from vnpy_scripttrader import ScriptEngine

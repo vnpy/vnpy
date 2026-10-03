@@ -1,3 +1,7 @@
+"""
+Qt application setup and the exception window.
+"""
+
 import ctypes
 import platform
 import sys
@@ -48,7 +52,9 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
         exc_value: BaseException,
         exc_traceback: types.TracebackType | None
     ) -> None:
-        """Show exception detail with QMessageBox."""
+        """
+        Show exception detail in the exception window.
+        """
         logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("Main thread exception")
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
@@ -58,7 +64,9 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     sys.excepthook = excepthook
 
     def threading_excepthook(args: threading.ExceptHookArgs) -> None:
-        """Show exception detail from background threads with QMessageBox."""
+        """
+        Show exception detail from background threads in the exception window.
+        """
         if args.exc_value and args.exc_traceback:
             logger.opt(exception=(args.exc_type, args.exc_value, args.exc_traceback)).critical("Background thread exception")
             sys.__excepthook__(args.exc_type, args.exc_value, args.exc_traceback)
@@ -72,18 +80,24 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
 
 
 class ExceptionWidget(QtWidgets.QWidget):
-    """"""
+    """
+    Window that displays exception tracebacks.
+    """
     signal: QtCore.Signal = QtCore.Signal(str)
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
-        """"""
+        """
+        Create the exception window and connect its signal.
+        """
         super().__init__(parent)
 
         self.init_ui()
         self.signal.connect(self.show_exception)
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Lay out the traceback text and action buttons.
+        """
         self.setWindowTitle(_("触发异常"))
         self.setFixedSize(600, 600)
 
@@ -111,7 +125,9 @@ class ExceptionWidget(QtWidgets.QWidget):
         self.setLayout(vbox)
 
     def show_exception(self, msg: str) -> None:
-        """"""
+        """
+        Display an exception message in this window.
+        """
         self.msg_edit.setText(msg)
         self.show()
 

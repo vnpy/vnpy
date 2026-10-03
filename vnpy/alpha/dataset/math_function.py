@@ -133,14 +133,14 @@ def pow1(base: DataProxy, exponent: float) -> DataProxy:
 
 
 def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
-    """Power operation between two DataProxy objects (base^exponent)
+    """
+    Power operation between two DataProxy objects (base^exponent).
 
-    handle logic:
-    - base > 0: calculate base^exponent
-    - base < 0 and exponent is integer: calculate -1 * |base|^exponent
-    - other cases (base = 0, exponent is NaN, negative base and non-integer exponent): return 0
-
-    Note: use floor method to check integer rather than cast(Int64) method, because NaN cannot be converted to integer will report an error
+    A positive base uses base^exponent. A negative base with an integer
+    exponent uses -1 * abs(base)^exponent. Other cases, including a zero
+    base, a NaN exponent, and a negative base with a non-integer exponent,
+    return 0. Integers are detected with floor because casting NaN to Int64
+    raises an error.
     """
     base_renamed = base.df.rename({"data": "base_data"})
     exp_renamed = exponent.df.rename({"data": "exp_data"})
@@ -163,5 +163,4 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     ).select(["datetime", "vt_symbol", "data"])
 
     return DataProxy(df)
-
 

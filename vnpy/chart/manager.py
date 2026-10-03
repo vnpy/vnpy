@@ -1,3 +1,7 @@
+"""
+Bar data manager for chart widgets.
+"""
+
 from datetime import datetime
 from _collections_abc import dict_keys
 
@@ -7,10 +11,14 @@ from .base import to_int
 
 
 class BarManager:
-    """"""
+    """
+    Store bar data and index mappings for charts.
+    """
 
     def __init__(self) -> None:
-        """"""
+        """
+        Initialize empty bar storage and range caches.
+        """
         self._bars: dict[datetime, BarData] = {}
         self._datetime_index_map: dict[datetime, int] = {}
         self._index_datetime_map: dict[int, datetime] = {}

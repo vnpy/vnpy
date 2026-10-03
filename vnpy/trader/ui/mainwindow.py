@@ -43,7 +43,9 @@ class MainWindow(QtWidgets.QMainWindow):
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Create the main window and build its UI.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -57,7 +59,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Set up the title, docks, toolbar, menu, and window state.
+        """
         self.setWindowTitle(self.window_title)
         self.init_dock()
         self.init_toolbar()
@@ -65,7 +69,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.load_window_setting("custom")
 
     def init_dock(self) -> None:
-        """"""
+        """
+        Create the default trading docks.
+        """
         self.trading_widget, trading_dock = self.create_dock(
             TradingWidget, _("交易"), QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
         )
@@ -99,7 +105,9 @@ class MainWindow(QtWidgets.QMainWindow):
         position_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
 
     def init_menu(self) -> None:
-        """"""
+        """
+        Create the menu bar and its actions.
+        """
         bar: QtWidgets.QMenuBar = self.menuBar()
         bar.setNativeMenuBar(False)     # for mac and linux
 
@@ -188,7 +196,9 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def init_toolbar(self) -> None:
-        """"""
+        """
+        Create the left toolbar.
+        """
         self.toolbar: QtWidgets.QToolBar = QtWidgets.QToolBar(self)
         self.toolbar.setObjectName(_("工具栏"))
         self.toolbar.setFloatable(False)
@@ -214,7 +224,9 @@ class MainWindow(QtWidgets.QMainWindow):
         func: Callable,
         toolbar: bool = False
     ) -> None:
-        """"""
+        """
+        Add a menu action and optionally show it on the toolbar.
+        """
         icon: QtGui.QIcon = QtGui.QIcon(icon_name)
 
         action: QtGui.QAction = QtGui.QAction(action_name, self)
@@ -282,7 +294,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_widget(self, widget_class: type[QtWidgets.QWidget], name: str) -> None:
         """
-        Open contract manager.
+        Open a widget by class and name.
         """
         widget: QtWidgets.QWidget | None = self.widgets.get(name, None)
         if not widget:
@@ -330,11 +342,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_forum(self) -> None:
         """
+        Open the community forum in a web browser.
         """
         webbrowser.open("https://www.vnpy.com/forum/")
 
     def edit_global_setting(self) -> None:
         """
+        Open the global configuration dialog.
         """
         dialog: GlobalDialog = GlobalDialog()
         dialog.exec()

@@ -1,3 +1,7 @@
+"""
+Keep a CTA strategy process alive during futures trading hours.
+"""
+
 import multiprocessing
 import sys
 from time import sleep
@@ -39,7 +43,9 @@ NIGHT_END = time(2, 45)
 
 
 def check_trading_period() -> bool:
-    """"""
+    """
+    Return whether the clock is inside the day session or the overnight night session.
+    """
     current_time = datetime.now().time()
 
     trading = False

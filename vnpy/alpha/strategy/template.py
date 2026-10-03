@@ -1,3 +1,7 @@
+"""
+Template for alpha strategies that trade toward target positions.
+"""
+
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import TYPE_CHECKING

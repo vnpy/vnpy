@@ -1,3 +1,7 @@
+"""
+Abstract database and loader for bar and tick storage.
+"""
+
 from abc import ABC, abstractmethod
 from datetime import datetime
 from types import ModuleType
@@ -137,7 +141,9 @@ database: BaseDatabase | None = None
 
 
 def get_database() -> BaseDatabase:
-    """"""
+    """
+    Return the configured database, or SQLite when its driver is missing.
+    """
     # Return database object if already inited
     global database
     if database:

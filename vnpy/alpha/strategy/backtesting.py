@@ -1,3 +1,7 @@
+"""
+Backtesting engine for alpha portfolio strategies.
+"""
+
 from collections import defaultdict
 from datetime import date, datetime
 from copy import copy

@@ -1,3 +1,7 @@
+"""
+Gettext translation lookup for trader messages.
+"""
+
 import gettext
 from pathlib import Path
 

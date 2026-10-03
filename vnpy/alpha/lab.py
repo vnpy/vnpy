@@ -1,3 +1,7 @@
+"""
+Research workspace that stores bars, index components, contracts, datasets, models, and signals.
+"""
+
 import json
 import shelve
 import pickle

@@ -271,7 +271,9 @@ class BarGenerator:
             self.update_bar_daily_window(bar)
 
     def update_bar_minute_window(self, bar: BarData) -> None:
-        """"""
+        """
+        Aggregate minute bars into a window bar and push it when the window completes.
+        """
         # If not inited, create window bar object
         if not self.window_bar:
             dt: datetime = bar.datetime.replace(second=0, microsecond=0)
@@ -309,7 +311,9 @@ class BarGenerator:
             self.window_bar = None
 
     def update_bar_hour_window(self, bar: BarData) -> None:
-        """"""
+        """
+        Aggregate minute bars into an hour bar and push it when the hour finishes.
+        """
         # If not inited, create window bar object
         if not self.hour_bar:
             dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
@@ -388,7 +392,9 @@ class BarGenerator:
             self.on_hour_bar(finished_bar)
 
     def on_hour_bar(self, bar: BarData) -> None:
-        """"""
+        """
+        Push a one-hour bar, or fold it into a multi-hour window bar.
+        """
         if self.window == 1:
             if self.on_window_bar:
                 self.on_window_bar(bar)
@@ -428,7 +434,9 @@ class BarGenerator:
                 self.window_bar = None
 
     def update_bar_daily_window(self, bar: BarData) -> None:
-        """"""
+        """
+        Aggregate minute bars into a daily bar and push it at the session end.
+        """
         # If not inited, create daily bar object
         if not self.daily_bar:
             self.daily_bar = BarData(
@@ -575,7 +583,7 @@ class ArrayManager:
     @property
     def open_interest(self) -> np.ndarray:
         """
-        Get trading volume time series.
+        Get open interest time series.
         """
         return self.open_interest_array
 

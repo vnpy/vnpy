@@ -1,3 +1,7 @@
+"""
+Preprocessors that drop, fill, normalize, and rank alpha feature columns.
+"""
+
 from datetime import datetime
 
 import numpy as np

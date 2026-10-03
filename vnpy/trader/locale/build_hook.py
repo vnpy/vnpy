@@ -1,3 +1,7 @@
+"""
+Hatch build hook that compiles gettext catalogs to mo files.
+"""
+
 from pathlib import Path
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface

@@ -1,3 +1,7 @@
+"""
+ZeroMQ RPC server.
+"""
+
 import threading
 import traceback
 from time import time
@@ -9,7 +13,9 @@ from .common import HEARTBEAT_TOPIC, HEARTBEAT_INTERVAL
 
 
 class RpcServer:
-    """"""
+    """
+    Server for remote procedure calls over ZeroMQ.
+    """
 
     def __init__(self) -> None:
         """
@@ -36,7 +42,9 @@ class RpcServer:
         self._heartbeat_at: float | None = None
 
     def is_active(self) -> bool:
-        """"""
+        """
+        Return whether the server is active.
+        """
         return self._active
 
     def start(
@@ -75,6 +83,9 @@ class RpcServer:
         self._active = False
 
     def join(self) -> None:
+        """
+        Wait for the server thread to exit.
+        """
         # Wait for RpcServer thread to exit
         if self._thread and self._thread.is_alive():
             self._thread.join()

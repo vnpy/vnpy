@@ -1,3 +1,7 @@
+"""
+ZeroMQ RPC client.
+"""
+
 import threading
 from time import time
 from functools import lru_cache
@@ -27,7 +31,9 @@ class RemoteException(Exception):
 
 
 class RpcClient:
-    """"""
+    """
+    Client for remote procedure calls over ZeroMQ.
+    """
 
     def __init__(self) -> None:
         """Constructor"""
@@ -59,6 +65,9 @@ class RpcClient:
         """
         # Perform remote call task
         def dorpc(*args: Any, **kwargs: Any) -> Any:
+            """
+            Perform the remote call and return its result.
+            """
             # Get timeout value from kwargs, default value is 30 seconds
             timeout: int = kwargs.pop("timeout", 30000)
 
@@ -120,6 +129,9 @@ class RpcClient:
         self._active = False
 
     def join(self) -> None:
+        """
+        Wait for the client thread to exit.
+        """
         # Wait for RpcClient thread to exit
         if self._thread and self._thread.is_alive():
             self._thread.join()

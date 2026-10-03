@@ -1,3 +1,7 @@
+"""
+LASSO regression model for alpha factor prediction.
+"""
+
 import numpy as np
 import polars as pl
 from sklearn.linear_model import Lasso      # type: ignore
@@ -20,14 +24,7 @@ class LassoModel(AlphaModel):
         random_state: int | None = None,
     ) -> None:
         """
-        Parameters
-        ----------
-        alpha : float
-            Regularization parameter
-        max_iter : int
-            Maximum number of iterations
-        random_state : int
-            Random seed
+        Initialize a LASSO regressor with an L1 penalty, an iteration cap, and an optional random seed.
         """
         self.alpha: float = alpha
         self.max_iter: int = max_iter
@@ -39,12 +36,7 @@ class LassoModel(AlphaModel):
 
     def fit(self, dataset: AlphaDataset) -> None:
         """
-        Fit the model with dataset
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            The dataset used for training
+        Fit LASSO without an intercept on the combined train and validation learn sets, keeping one row per datetime and vt_symbol.
         """
         # Get training data
         df_train: pl.DataFrame = dataset.fetch_learn(Segment.TRAIN)
@@ -74,24 +66,7 @@ class LassoModel(AlphaModel):
 
     def predict(self, dataset: AlphaDataset, segment: Segment) -> np.ndarray:
         """
-        Make predictions using the model
-
-        Parameters
-        ----------
-        dataset : AlphaDataset
-            The dataset used for prediction
-        segment : Segment
-            The segment of data to use for prediction
-
-        Returns
-        -------
-        np.ndarray
-            Prediction results
-
-        Raises
-        ------
-        ValueError
-            If the model has not been fitted yet
+        Predict one data segment, or raise ValueError if the model has not been fitted.
         """
         # Check if model exists
         if self.model is None:

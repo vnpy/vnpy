@@ -1,3 +1,7 @@
+"""
+Brute-force and genetic algorithm parameter optimization.
+"""
+
 from collections.abc import Callable
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
@@ -29,7 +33,9 @@ class OptimizationSetting:
     """
 
     def __init__(self) -> None:
-        """"""
+        """
+        Initialize an empty parameter space and target name.
+        """
         self.params: dict[str, list] = {}
         self.target_name: str = ""
 
@@ -40,7 +46,9 @@ class OptimizationSetting:
         end: float | None = None,
         step: float | None = None
     ) -> tuple[bool, str]:
-        """"""
+        """
+        Add one fixed value or an inclusive stepped range of parameter values.
+        """
         if end is None or step is None:
             self.params[name] = [start]
             return True, _("固定参数添加成功")
@@ -63,11 +71,15 @@ class OptimizationSetting:
         return True, _("范围参数添加成功，数量{}").format(len(value_list))
 
     def set_target(self, target_name: str) -> None:
-        """"""
+        """
+        Set the optimization target name.
+        """
         self.target_name = target_name
 
     def generate_settings(self) -> list[dict]:
-        """"""
+        """
+        Build every combination of the configured parameter values.
+        """
         keys: dict_keys = self.params.keys()
         values: dict_values = self.params.values()
         products: list = list(product(*values))
@@ -84,7 +96,9 @@ def check_optimization_setting(
     optimization_setting: OptimizationSetting,
     output: OUTPUT_FUNC = print
 ) -> bool:
-    """"""
+    """
+    Return whether the setting has combinations and a target name.
+    """
     if not optimization_setting.generate_settings():
         output(_("优化参数组合为空，请检查"))
         return False
@@ -149,11 +163,15 @@ def run_ga_optimization(
     parameter_tuples: list[list[tuple]] = [list(d.items()) for d in settings]
 
     def generate_parameter() -> list:
-        """"""
+        """
+        Choose one parameter combination at random.
+        """
         return choice(parameter_tuples)
 
     def mutate_individual(individual: list, indpb: float) -> tuple:
-        """"""
+        """
+        Replace genes at random with values from another parameter combination.
+        """
         size: int = len(individual)
         paramlist: list = generate_parameter()
         for i in range(size):

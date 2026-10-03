@@ -1,3 +1,7 @@
+"""
+RPC client and server.
+"""
+
 from .client import RpcClient
 from .server import RpcServer
 

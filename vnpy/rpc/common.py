@@ -1,3 +1,7 @@
+"""
+Heartbeat settings and interrupt handling for RPC.
+"""
+
 import signal
 
 

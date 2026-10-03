@@ -63,7 +63,9 @@ class BaseCell(QtWidgets.QTableWidgetItem):
     """
 
     def __init__(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Initialize the cell text and stored data.
+        """
         super().__init__()
 
         self._text: str = ""
@@ -102,7 +104,9 @@ class EnumCell(BaseCell):
     """
 
     def __init__(self, content: Enum, data: Any) -> None:
-        """"""
+        """
+        Initialize the enum cell.
+        """
         super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
@@ -119,7 +123,9 @@ class DirectionCell(EnumCell):
     """
 
     def __init__(self, content: Enum, data: Any) -> None:
-        """"""
+        """
+        Initialize the direction cell.
+        """
         super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
@@ -140,7 +146,9 @@ class BidCell(BaseCell):
     """
 
     def __init__(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Initialize the bid cell color.
+        """
         super().__init__(content, data)
 
         self.setForeground(COLOR_BID)
@@ -152,7 +160,9 @@ class AskCell(BaseCell):
     """
 
     def __init__(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Initialize the ask cell color.
+        """
         super().__init__(content, data)
 
         self.setForeground(COLOR_ASK)
@@ -164,7 +174,9 @@ class PnlCell(BaseCell):
     """
 
     def __init__(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Initialize the pnl cell.
+        """
         super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
@@ -188,11 +200,15 @@ class TimeCell(BaseCell):
     local_tz = ZoneInfo(get_localzone_name())
 
     def __init__(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Initialize the time cell.
+        """
         super().__init__(content, data)
 
     def set_content(self, content: datetime | None, data: Any) -> None:
-        """"""
+        """
+        Set the cell text to the local time with milliseconds.
+        """
         if content is None:
             return
 
@@ -215,11 +231,15 @@ class DateCell(BaseCell):
     """
 
     def __init__(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Initialize the date cell.
+        """
         super().__init__(content, data)
 
     def set_content(self, content: Any, data: Any) -> None:
-        """"""
+        """
+        Set the cell text to the calendar date.
+        """
         if content is None:
             return
 
@@ -233,7 +253,9 @@ class MsgCell(BaseCell):
     """
 
     def __init__(self, content: str, data: Any) -> None:
-        """"""
+        """
+        Initialize a left-aligned message cell.
+        """
         super().__init__(content, data)
         self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
@@ -251,7 +273,9 @@ class BaseMonitor(QtWidgets.QTableWidget):
     signal: QtCore.Signal = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Initialize the monitor table and register its events.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -263,7 +287,9 @@ class BaseMonitor(QtWidgets.QTableWidget):
         self.register_event()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Initialize the table and the right-click menu.
+        """
         self.init_table()
         self.init_menu()
 
@@ -402,12 +428,16 @@ class BaseMonitor(QtWidgets.QTableWidget):
         self.menu.popup(QtGui.QCursor.pos())
 
     def save_setting(self) -> None:
-        """"""
+        """
+        Save the table column layout.
+        """
         settings: QtCore.QSettings = QtCore.QSettings(self.__class__.__name__, "custom")
         settings.setValue("column_state", self.horizontalHeader().saveState())
 
     def load_setting(self) -> None:
-        """"""
+        """
+        Restore the table column layout.
+        """
         settings: QtCore.QSettings = QtCore.QSettings(self.__class__.__name__, "custom")
         column_state = settings.value("column_state")
 
@@ -614,7 +644,9 @@ class ConnectDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, main_engine: MainEngine, gateway_name: str) -> None:
-        """"""
+        """
+        Initialize the gateway connection dialog.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -626,7 +658,9 @@ class ConnectDialog(QtWidgets.QDialog):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Build the gateway connection form.
+        """
         self.setWindowTitle(_("连接{}").format(self.gateway_name))
 
         # Default setting provides field name, field data type and field default value.
@@ -709,7 +743,9 @@ class TradingWidget(QtWidgets.QWidget):
     signal_tick: QtCore.Signal = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Initialize the manual trading widget.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -722,7 +758,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.register_event()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Build the order form and market depth display.
+        """
         self.setFixedWidth(300)
 
         # Trading function area
@@ -866,12 +904,16 @@ class TradingWidget(QtWidgets.QWidget):
         return label
 
     def register_event(self) -> None:
-        """"""
+        """
+        Register the handler for tick events.
+        """
         self.signal_tick.connect(self.process_tick_event)
         self.event_engine.register(EVENT_TICK, self.signal_tick.emit)
 
     def process_tick_event(self, event: Event) -> None:
-        """"""
+        """
+        Update the depth display from a matching tick.
+        """
         tick: TickData = event.data
         if tick.vt_symbol != self.vt_symbol:
             return
@@ -1032,7 +1074,9 @@ class TradingWidget(QtWidgets.QWidget):
             self.main_engine.cancel_order(req, order.gateway_name)
 
     def update_with_cell(self, cell: BaseCell) -> None:
-        """"""
+        """
+        Fill the order form from a table cell.
+        """
         data = cell.get_data()
 
         self.symbol_line.setText(data.symbol)
@@ -1105,6 +1149,9 @@ class ContractManager(QtWidgets.QWidget):
     }
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
+        """
+        Initialize the contract query window.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -1113,7 +1160,9 @@ class ContractManager(QtWidgets.QWidget):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Build the contract filter and result table.
+        """
         self.setWindowTitle(_("合约查询"))
         self.resize(1000, 600)
 
@@ -1187,7 +1236,9 @@ class AboutDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Initialize the about dialog.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -1196,7 +1247,9 @@ class AboutDialog(QtWidgets.QDialog):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Show platform and dependency version information.
+        """
         self.setWindowTitle(_("关于VeighNa Trader"))
 
         from ... import __version__ as vnpy_version
@@ -1230,11 +1283,13 @@ class AboutDialog(QtWidgets.QDialog):
 
 class GlobalDialog(QtWidgets.QDialog):
     """
-    Start connection of a certain gateway.
+    Edit global configuration.
     """
 
     def __init__(self) -> None:
-        """"""
+        """
+        Initialize the global configuration dialog.
+        """
         super().__init__()
 
         self.widgets: dict[str, tuple[QtWidgets.QLineEdit, type]] = {}
@@ -1242,7 +1297,9 @@ class GlobalDialog(QtWidgets.QDialog):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Build the form from the current global settings.
+        """
         self.setWindowTitle(_("全局配置"))
         self.setMinimumWidth(800)
 
@@ -1316,7 +1373,9 @@ class WechatWorker(QtCore.QThread):
     signal_failed: QtCore.Signal = QtCore.Signal(str)
 
     def __init__(self) -> None:
-        """"""
+        """
+        Initialize the WeChat binding worker.
+        """
         super().__init__()
 
         self._stop: bool = False
@@ -1326,7 +1385,9 @@ class WechatWorker(QtCore.QThread):
         self._stop = True
 
     def run(self) -> None:
-        """"""
+        """
+        Log in with a QR code and wait for the first inbound message.
+        """
         try:
             deadline: float = time.monotonic() + 600.0      # wait for 10 minutes
 
@@ -1379,7 +1440,9 @@ class WechatDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Initialize the WeChat binding dialog.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -1392,7 +1455,9 @@ class WechatDialog(QtWidgets.QDialog):
         self.refresh_status()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Build the stacked pages of the binding dialog.
+        """
         self.setWindowTitle(_("微信通知"))
         self.setMinimumWidth(380)
 
