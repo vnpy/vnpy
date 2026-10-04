@@ -104,12 +104,16 @@ class RpcServer:
                 continue
 
             # Receive request data from Reply socket
-            req = self._socket_rep.recv_pyobj()
+            req: tuple[str, tuple[object, ...], dict[str, object]] = self._socket_rep.recv_pyobj()
 
             # Get function name and parameters
+            name: str
+            args: tuple[object, ...]
+            kwargs: dict[str, object]
             name, args, kwargs = req
 
             # Try to get and execute callable function object; capture exception information if it fails
+            e: Exception
             try:
                 func: Callable = self._functions[name]
                 r: object = func(*args, **kwargs)

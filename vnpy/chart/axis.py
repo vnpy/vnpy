@@ -37,6 +37,7 @@ class DatetimeAxis(pg.AxisItem):
 
         strings: list = []
 
+        ix: int
         for ix in values:
             dt: datetime | None = self._manager.get_datetime(ix)
 

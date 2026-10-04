@@ -110,5 +110,7 @@ class LassoModel(AlphaModel):
         # Print feature importance
         logger.info(f"LASSO模型特征总数量: {len(data)}")
 
+        name: str
+        importance: float
         for name, importance in data:
             logger.info(f"{name}: {importance:.6f}")

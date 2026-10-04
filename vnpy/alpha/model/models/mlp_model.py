@@ -4,6 +4,7 @@ Multi-layer perceptron model for alpha factor prediction.
 
 import copy
 from collections import defaultdict
+from collections.abc import Callable
 from typing import Literal, cast
 
 import numpy as np
@@ -72,7 +73,7 @@ class MlpModel(AlphaModel):
             torch.manual_seed(seed)
 
         # Set loss function type
-        self._scorer = mean_squared_error
+        self._scorer: Callable[..., float] = mean_squared_error
 
         # Initialize model
         self.model: nn.Module = MlpNetwork(
@@ -84,7 +85,7 @@ class MlpModel(AlphaModel):
         self.model = self.model.to(device)
 
         # Set optimizer
-        optimizer_name = optimizer.lower()
+        optimizer_name: str = optimizer.lower()
         if optimizer_name == "adam":
             self.optimizer: optim.Optimizer = optim.Adam(
                 self.model.parameters(),
@@ -129,14 +130,15 @@ class MlpModel(AlphaModel):
         train_valid_data: dict[str, dict] = defaultdict(dict)
 
         # Process training and validation sets separately
+        segment: Segment
         for segment in [Segment.TRAIN, Segment.VALID]:
             # Get learning data and sort by time and trading code
             df: pl.DataFrame = dataset.fetch_learn(segment)
             df = df.sort(["datetime", "vt_symbol"])
 
             # Extract features and labels
-            features = df.select(df.columns[2: -1]).to_numpy()
-            labels = np.array(df["label"])
+            features: np.ndarray = df.select(df.columns[2: -1]).to_numpy()
+            labels: np.ndarray = np.array(df["label"])
 
             # Store feature and label data
             train_valid_data["x"][segment] = torch.from_numpy(features).float().to(self.device)
@@ -153,11 +155,12 @@ class MlpModel(AlphaModel):
         early_stop_count: int = 0           # Number of steps without performance improvement
         train_loss: float = 0               # Current training loss
         best_valid_score: float = np.inf    # Best validation loss
-        best_params = None                  # Best model parameters
+        best_params: dict[str, torch.Tensor] | None = None                  # Best model parameters
 
         train_samples: int = train_valid_data["y"][Segment.TRAIN].shape[0]
 
         # Iterate through training steps
+        step: int
         for step in range(1, self.n_epochs + 1):
             # Check if early stopping condition is met
             if early_stop_count >= self.early_stop_rounds:
@@ -165,7 +168,7 @@ class MlpModel(AlphaModel):
                 break
 
             # Train one batch
-            batch_loss = self._train_step(train_valid_data, train_samples)
+            batch_loss: float = self._train_step(train_valid_data, train_samples)
             train_loss += batch_loss
 
             # Periodically evaluate the model
@@ -195,18 +198,18 @@ class MlpModel(AlphaModel):
         """
         Run one optimization step on a random training batch and return that batch loss.
         """
-        batch_loss = AverageMeter()
+        batch_loss: AverageMeter = AverageMeter()
         self.model.train()
         self.optimizer.zero_grad()
 
         # Randomly select batch data
-        batch_indices = np.random.choice(train_samples, self.batch_size)
-        batch_features = train_valid_data["x"][Segment.TRAIN][batch_indices]
-        batch_labels = train_valid_data["y"][Segment.TRAIN][batch_indices]
+        batch_indices: np.ndarray = np.random.choice(train_samples, self.batch_size)
+        batch_features: torch.Tensor = train_valid_data["x"][Segment.TRAIN][batch_indices]
+        batch_labels: torch.Tensor = train_valid_data["y"][Segment.TRAIN][batch_indices]
 
         # Forward and backward propagation
-        predictions = self.model(batch_features)
-        cur_loss = self._loss_fn(predictions, batch_labels)
+        predictions: torch.Tensor = self.model(batch_features)
+        cur_loss: torch.Tensor = self._loss_fn(predictions, batch_labels)
         cur_loss.backward()
 
         # Update model parameters
@@ -236,9 +239,9 @@ class MlpModel(AlphaModel):
 
             data: torch.Tensor = train_valid_data["x"][Segment.VALID]
             pred: torch.Tensor = cast(torch.Tensor, self._predict_batch(data, return_cpu=False))
-            valid_loss = self._loss_fn(pred, train_valid_data["y"][Segment.VALID])
+            valid_loss: torch.Tensor = self._loss_fn(pred, train_valid_data["y"][Segment.VALID])
 
-            loss_val = valid_loss.item()
+            loss_val: float = valid_loss.item()
 
         # Record evaluation results
         logger.info(f"[Step {step}]: train_loss {train_loss:.6f}, valid_loss {loss_val:.6f}")
@@ -246,7 +249,7 @@ class MlpModel(AlphaModel):
         evaluation_results[Segment.VALID].append(loss_val)
 
         # Update best model if validation performance improves
-        best_params = None
+        best_params: dict[str, torch.Tensor] | None = None
         if loss_val < best_valid_score:
             logger.info(f"\t验证集损失从 {best_valid_score:.6f} 降低到 {loss_val:.6f}")
             best_valid_score = loss_val
@@ -280,6 +283,7 @@ class MlpModel(AlphaModel):
 
         with torch.no_grad():
             batch_size: int = 8096
+            i: int
             for i in range(0, len(data), batch_size):
                 x: torch.Tensor = data[i: i + batch_size]
                 predictions.append(self.model(x.to(self.device)).detach().reshape(-1))
@@ -323,7 +327,7 @@ class MlpModel(AlphaModel):
         logger.info(f"隐藏层大小: {self.hidden_sizes}")
 
         # 计算模型总参数量
-        total_params = sum(p.numel() for p in self.model.parameters())
+        total_params: int = sum(p.numel() for p in self.model.parameters())
         logger.info(f"模型总参数量: {total_params:,}")
 
         # 显示训练状态信息
@@ -332,7 +336,7 @@ class MlpModel(AlphaModel):
         logger.info(f"批次大小: {self.batch_size}")
 
         # Calculate feature importance
-        importance_df = self._calculate_feature_importance()
+        importance_df: pd.DataFrame = self._calculate_feature_importance()
         return importance_df
 
     def _calculate_feature_importance(self) -> pd.DataFrame:
@@ -342,17 +346,19 @@ class MlpModel(AlphaModel):
         self.model.eval()
         importance_dict: dict[str, float] = {}
 
-        test_data = torch.randn(1000, self.input_size).to(self.device)
-        base_pred = self.model(test_data).detach()
+        test_data: torch.Tensor = torch.randn(1000, self.input_size).to(self.device)
+        base_pred: torch.Tensor = self.model(test_data).detach()
 
-        noise_level = 0.1
+        noise_level: float = 0.1
+        i: int
+        feature_name: str
         for i, feature_name in enumerate(self.feature_names):
-            perturbed_data = test_data.clone()
+            perturbed_data: torch.Tensor = test_data.clone()
             perturbed_data[:, i] += torch.randn(1000).to(self.device) * noise_level
 
             with torch.no_grad():
-                new_pred = self.model(perturbed_data)
-                importance = torch.std(torch.abs(new_pred - base_pred)).item()
+                new_pred: torch.Tensor = self.model(perturbed_data)
+                importance: float = torch.std(torch.abs(new_pred - base_pred)).item()
                 importance_dict[feature_name] = importance
 
         df: pd.DataFrame = pd.DataFrame({
@@ -414,12 +420,14 @@ class MlpNetwork(nn.Module):
 
         # Build network layers
         layers: list[nn.Module] = []
-        layer_sizes = [input_size] + list(hidden_sizes)
+        layer_sizes: list[int] = [input_size] + list(hidden_sizes)
 
         # Input layer Dropout
         layers.append(nn.Dropout(0.05))
 
         # Build hidden layers
+        in_size: int
+        out_size: int
         for in_size, out_size in zip(layer_sizes[:-1], layer_sizes[1:], strict=False):
             # Add a neural network block: linear layer + batch normalization + activation function
             layers.extend([
@@ -435,7 +443,7 @@ class MlpNetwork(nn.Module):
         ])
 
         # Combine all layers into a sequence
-        self.network = nn.ModuleList(layers)
+        self.network: nn.ModuleList = nn.ModuleList(layers)
 
         # Initialize network weights
         self._initialize_weights()
@@ -455,6 +463,7 @@ class MlpNetwork(nn.Module):
         """
         Apply Kaiming normal initialization to every linear layer using leaky ReLU.
         """
+        module: nn.Module
         for module in self.modules():
             if isinstance(module, nn.Linear):
                 nn.init.kaiming_normal_(
@@ -469,6 +478,7 @@ class MlpNetwork(nn.Module):
         Pass the input through each network layer in order.
         """
         # Pass through all layers in the network sequentially
+        layer: nn.Module
         for layer in self.network:
             x = layer(x)
         return x

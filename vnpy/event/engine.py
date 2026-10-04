@@ -7,10 +7,10 @@ from collections.abc import Callable
 from queue import Empty, Queue
 from threading import Thread
 from time import sleep
-from typing import Any
+from typing import Any, TypeAlias
 
 
-EVENT_TIMER = "eTimer"
+EVENT_TIMER: str = "eTimer"
 
 
 class Event:
@@ -29,7 +29,7 @@ class Event:
 
 
 # Defines handler function to be used in event engine.
-HandlerType = Callable[[Event], None]
+HandlerType: TypeAlias = Callable[[Event], None]
 
 
 class EventEngine:

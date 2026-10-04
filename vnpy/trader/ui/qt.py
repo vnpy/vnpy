@@ -19,7 +19,7 @@ from ..utility import get_icon_path
 from ..locale import _
 
 
-Qt = QtCore.Qt
+Qt: type[QtCore.Qt] = QtCore.Qt
 
 
 def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:

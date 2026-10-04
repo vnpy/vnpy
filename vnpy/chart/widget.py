@@ -3,6 +3,7 @@ Chart widget and crosshair cursor.
 """
 
 from datetime import datetime
+from typing import Any
 
 import pyqtgraph as pg      # type: ignore
 
@@ -25,7 +26,7 @@ class ChartWidget(pg.PlotWidget):
     """
     Widget that shows one or more linked chart plots.
     """
-    MIN_BAR_COUNT = 100
+    MIN_BAR_COUNT: int = 100
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         """
@@ -156,6 +157,7 @@ class ChartWidget(pg.PlotWidget):
         """
         self._manager.clear_all()
 
+        item: ChartItem
         for item in self._items.values():
             item.clear_all()
 
@@ -168,6 +170,7 @@ class ChartWidget(pg.PlotWidget):
         """
         self._manager.update_history(history)
 
+        item: ChartItem
         for item in self._items.values():
             item.update_history(history)
 
@@ -181,6 +184,7 @@ class ChartWidget(pg.PlotWidget):
         """
         self._manager.update_bar(bar)
 
+        item: ChartItem
         for item in self._items.values():
             item.update_bar(bar)
 
@@ -193,7 +197,11 @@ class ChartWidget(pg.PlotWidget):
         """
         Update the limit of plots.
         """
+        item: ChartItem
+        plot: pg.PlotItem
         for item, plot in self._item_plot_map.items():
+            min_value: float
+            max_value: float
             min_value, max_value = item.get_y_range()
 
             plot.setLimits(
@@ -210,6 +218,7 @@ class ChartWidget(pg.PlotWidget):
         max_ix: int = self._right_ix
         min_ix: int = self._right_ix - self._bar_count
 
+        plot: pg.PlotItem
         for plot in self._plots.values():
             plot.setRange(xRange=(min_ix, max_ix), padding=0)
 
@@ -227,6 +236,8 @@ class ChartWidget(pg.PlotWidget):
         max_ix: int = min(self._manager.get_count(), int(view_range[0][1]))
 
         # Update limit for y-axis
+        item: ChartItem
+        plot: pg.PlotItem
         for item, plot in self._item_plot_map.items():
             y_range: tuple = item.get_y_range(min_ix, max_ix)
             plot.setRange(yRange=y_range)
@@ -248,7 +259,7 @@ class ChartWidget(pg.PlotWidget):
         """
         Reimplement this method of parent to move chart horizontally and zoom in/out.
         """
-        Key = QtCore.Qt.Key
+        Key: type[QtCore.Qt.Key] = QtCore.Qt.Key
 
         if event.key() == Key.Key_Left:
             self._on_key_left()
@@ -376,11 +387,14 @@ class ChartCursor(QtCore.QObject):
 
         pen: QtGui.QPen = pg.mkPen(WHITE_COLOR)
 
+        plot_name: str
+        plot: pg.GraphicsObject
         for plot_name, plot in self._plots.items():
             v_line: pg.InfiniteLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
             h_line: pg.InfiniteLine = pg.InfiniteLine(angle=0, movable=False, pen=pen)
             view: pg.ViewBox = plot.getViewBox()
 
+            line: pg.InfiniteLine
             for line in [v_line, h_line]:
                 line.setZValue(0)
                 line.hide()
@@ -395,6 +409,8 @@ class ChartCursor(QtCore.QObject):
         Create label objects on axis.
         """
         self._y_labels: dict[str, pg.TextItem] = {}
+        plot_name: str
+        plot: pg.GraphicsObject
         for plot_name, plot in self._plots.items():
             label: pg.TextItem = pg.TextItem(
                 plot_name, fill=CURSOR_COLOR, color=BLACK_COLOR)
@@ -415,6 +431,8 @@ class ChartCursor(QtCore.QObject):
         """
         """
         self._infos: dict[str, pg.TextItem] = {}
+        plot_name: str
+        plot: pg.GraphicsObject
         for plot_name, plot in self._plots.items():
             info: pg.TextItem = pg.TextItem(
                 "info",
@@ -444,11 +462,14 @@ class ChartCursor(QtCore.QObject):
         # First get current mouse point
         pos: tuple = evt
 
+        plot_name: str
+        view: pg.ViewBox
         for plot_name, view in self._views.items():
-            rect = view.sceneBoundingRect()
+            # pyqtgraph 视图矩形无存根，且 contains 的实参是 tuple
+            rect: Any = view.sceneBoundingRect()
 
             if rect.contains(pos):
-                mouse_point = view.mapSceneToView(pos)
+                mouse_point: QtCore.QPointF = view.mapSceneToView(pos)
                 self._x = to_int(mouse_point.x())
                 self._y = mouse_point.y()
                 self._plot_name = plot_name
@@ -461,10 +482,13 @@ class ChartCursor(QtCore.QObject):
 
     def _update_line(self) -> None:
         """"""
+        v_line: pg.InfiniteLine
         for v_line in self._v_lines.values():
             v_line.setPos(self._x)
             v_line.show()
 
+        plot_name: str
+        h_line: pg.InfiniteLine
         for plot_name, h_line in self._h_lines.items():
             if plot_name == self._plot_name:
                 h_line.setPos(self._y)
@@ -475,15 +499,17 @@ class ChartCursor(QtCore.QObject):
     def _update_label(self) -> None:
         """"""
         bottom_plot: pg.PlotItem = list(self._plots.values())[-1]
-        axis_width = bottom_plot.getAxis("right").width()
-        axis_height = bottom_plot.getAxis("bottom").height()
+        axis_width: float = bottom_plot.getAxis("right").width()
+        axis_height: float = bottom_plot.getAxis("bottom").height()
         axis_offset: QtCore.QPointF = QtCore.QPointF(axis_width, axis_height)
 
         bottom_view: pg.ViewBox = list(self._views.values())[-1]
-        bottom_right = bottom_view.mapSceneToView(
+        bottom_right: QtCore.QPointF = bottom_view.mapSceneToView(
             bottom_view.sceneBoundingRect().bottomRight() - axis_offset
         )
 
+        plot_name: str
+        label: pg.TextItem
         for plot_name, label in self._y_labels.items():
             if plot_name == self._plot_name:
                 label.setText(str(self._y))
@@ -505,6 +531,8 @@ class ChartCursor(QtCore.QObject):
         """
         buf: dict = {}
 
+        item: ChartItem
+        plot: pg.GraphicsObject
         for item, plot in self._item_plot_map.items():
             item_info_text: str = item.get_info_text(self._x)
 
@@ -514,6 +542,7 @@ class ChartCursor(QtCore.QObject):
                 if item_info_text:
                     buf[plot] += ("\n\n" + item_info_text)
 
+        plot_name: str
         for plot_name, plot in self._plots.items():
             plot_info_text: str = buf[plot]
             info: pg.TextItem = self._infos[plot_name]
@@ -521,7 +550,7 @@ class ChartCursor(QtCore.QObject):
             info.show()
 
             view: pg.ViewBox = self._views[plot_name]
-            top_left = view.mapSceneToView(view.sceneBoundingRect().topLeft())
+            top_left: QtCore.QPointF = view.mapSceneToView(view.sceneBoundingRect().topLeft())
             info.setPos(top_left)
 
     def move_right(self) -> None:
@@ -565,8 +594,10 @@ class ChartCursor(QtCore.QObject):
         self._y = 0
         self._plot_name = ""
 
+        line: pg.InfiniteLine
         for line in list(self._v_lines.values()) + list(self._h_lines.values()):
             line.hide()
 
+        label: pg.TextItem
         for label in list(self._y_labels.values()) + [self._x_label]:
             label.hide()

@@ -73,6 +73,7 @@ def send_text(
         ],
     }
 
+    session: requests.Session
     with requests.Session() as session:
         _post(
             creds.base_url,
@@ -93,6 +94,7 @@ def poll(
 
     Returns a tuple of (user IDs, next sync_buf).
     """
+    session: requests.Session
     with requests.Session() as session:
         data: dict[str, Any] = _post(
             creds.base_url,
@@ -108,6 +110,7 @@ def poll(
 
     raw_messages: Any = data.get("msgs")
     if isinstance(raw_messages, list):
+        raw: object
         for raw in raw_messages:
             if not isinstance(raw, dict):
                 continue
@@ -125,6 +128,7 @@ def request_qrcode() -> tuple[str, str]:
 
     Returns a tuple of (qrcode, scan_url).
     """
+    session: requests.Session
     with requests.Session() as session:
         qr_data: dict[str, Any] = _get(
             DEFAULT_BASE_URL,
@@ -153,6 +157,7 @@ def wait_for_login(
     """
     current_url: str = DEFAULT_BASE_URL
 
+    session: requests.Session
     with requests.Session() as session:
         while time.monotonic() < deadline:
             try:
@@ -207,6 +212,7 @@ def _post(
     url: str = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
     headers: dict[str, str] = _headers(token)
 
+    exc: requests.RequestException
     try:
         response: requests.Response = session.post(
             url,
@@ -236,6 +242,7 @@ def _get(
         "iLink-App-ClientVersion": _CLIENT_VERSION,
     }
 
+    exc: requests.RequestException
     try:
         response: requests.Response = session.get(
             url,
@@ -256,6 +263,7 @@ def _parse(response: requests.Response) -> dict[str, Any]:
     if not response.ok:
         raise WeixinError(f"HTTP {response.status_code}: {response.text[:200]}")
 
+    exc: ValueError
     try:
         data: Any = response.json()
     except ValueError as exc:

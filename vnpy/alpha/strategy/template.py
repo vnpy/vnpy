@@ -40,6 +40,8 @@ class AlphaStrategy(metaclass=ABCMeta):
         self.active_orderids: set[str] = set()
 
         # Set strategy parameters
+        k: str
+        v: object
         for k, v in setting.items():
             if hasattr(self, k):
                 setattr(self, k, v)
@@ -108,6 +110,7 @@ class AlphaStrategy(metaclass=ABCMeta):
             self, vt_symbol, direction, offset, price, volume
         )
 
+        vt_orderid: str
         for vt_orderid in vt_orderids:
             self.active_orderids.add(vt_orderid)
 
@@ -119,6 +122,7 @@ class AlphaStrategy(metaclass=ABCMeta):
 
     def cancel_all(self) -> None:
         """Cancel all active orders"""
+        vt_orderid: str
         for vt_orderid in list(self.active_orderids):
             self.cancel_order(vt_orderid)
 
@@ -139,6 +143,8 @@ class AlphaStrategy(metaclass=ABCMeta):
         self.cancel_all()
 
         # Only send orders for contracts with current bar data
+        vt_symbol: str
+        bar: BarData
         for vt_symbol, bar in bars.items():
             # Calculate position difference
             target: float = self.get_target(vt_symbol)

@@ -102,10 +102,10 @@ def ts_std(feature: DataProxy, window: int) -> DataProxy:
 def ts_slope(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the slope of linear regression over a rolling window (optimized)"""
     # 预计算 x 相关的常数 (x = 0, 1, 2, ..., window-1)
-    n = window
-    sum_x = n * (n - 1) / 2  # 等差数列求和
-    sum_x2 = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
-    denominator = n * sum_x2 - sum_x * sum_x
+    n: int = window
+    sum_x: float = n * (n - 1) / 2  # 等差数列求和
+    sum_x2: float = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
+    denominator: float = n * sum_x2 - sum_x * sum_x
 
     # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
     # 等价于 sum((window-1-j) * y[t-j]) for j in 0..window-1
@@ -140,10 +140,10 @@ def ts_quantile(feature: DataProxy, window: int, quantile: float) -> DataProxy:
 def ts_rsquare(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the R-squared value of linear regression over a rolling window (optimized)"""
     # 预计算 x 相关的常数 (x = 0, 1, 2, ..., window-1)
-    n = window
-    sum_x2 = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
-    mean_x = (n - 1) / 2
-    var_x = sum_x2 / n - mean_x * mean_x  # 总体方差
+    n: int = window
+    sum_x2: float = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
+    mean_x: float = (n - 1) / 2
+    var_x: float = sum_x2 / n - mean_x * mean_x  # 总体方差
 
     # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
     sum_xy_expr: pl.Expr = pl.sum_horizontal([
@@ -186,11 +186,11 @@ def ts_rsquare(feature: DataProxy, window: int) -> DataProxy:
 def ts_resi(feature: DataProxy, window: int) -> DataProxy:
     """Calculate the residual of linear regression over a rolling window (optimized)"""
     # 预计算 x 相关的常数 (x = 0, 1, 2, ..., window-1)
-    n = window
-    sum_x = n * (n - 1) / 2  # 等差数列求和
-    sum_x2 = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
-    mean_x = (n - 1) / 2
-    denominator = n * sum_x2 - sum_x * sum_x
+    n: int = window
+    sum_x: float = n * (n - 1) / 2  # 等差数列求和
+    sum_x2: float = (n - 1) * n * (2 * n - 1) / 6  # 平方和公式
+    mean_x: float = (n - 1) / 2
+    denominator: float = n * sum_x2 - sum_x * sum_x
 
     # 计算 sum(i * y[t-window+1+i]) for i in 0..window-1
     sum_xy_expr: pl.Expr = pl.sum_horizontal([
@@ -307,7 +307,7 @@ def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
     """Calculate linear decay weighted average"""
     def decay_func(s: pl.Series) -> float:
         """Calculate linear decay weighted average for a series"""
-        weights = pl.Series(range(window, 0, -1))
+        weights: pl.Series = pl.Series(range(window, 0, -1))
         denominator: int = window * (window + 1) // 2
         return float((s * weights).sum() / denominator)
 

@@ -11,7 +11,7 @@ from .constant import Direction, Exchange, Interval, Offset, Status, Product, Op
 INFO: int = 20
 
 
-ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
+ACTIVE_STATUSES: set[Status] = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
 
 @dataclass

@@ -9,7 +9,9 @@ from random import random, choice
 from time import perf_counter
 from multiprocessing import get_context
 from multiprocessing.context import BaseContext
-from multiprocessing.managers import DictProxy
+from multiprocessing.managers import DictProxy, SyncManager
+from multiprocessing.pool import Pool
+from typing import TypeAlias
 from _collections_abc import dict_keys, dict_values, Iterable
 
 from tqdm import tqdm
@@ -17,9 +19,9 @@ from deap import creator, base, tools, algorithms       # type: ignore
 
 from .locale import _
 
-OUTPUT_FUNC = Callable[[str], None]
-EVALUATE_FUNC = Callable[[dict], dict]
-KEY_FUNC = Callable[[tuple], float]
+OUTPUT_FUNC: TypeAlias = Callable[[str], None]
+EVALUATE_FUNC: TypeAlias = Callable[[dict], dict]
+KEY_FUNC: TypeAlias = Callable[[tuple], float]
 
 
 # Create individual class used in genetic algorithm optimization
@@ -85,6 +87,7 @@ class OptimizationSetting:
         products: list = list(product(*values))
 
         settings: list = []
+        p: tuple[float, ...]
         for p in products:
             setting: dict = dict(zip(keys, p, strict=False))
             settings.append(setting)
@@ -125,6 +128,7 @@ def run_bf_optimization(
 
     start: float = perf_counter()
 
+    executor: ProcessPoolExecutor
     with ProcessPoolExecutor(
         max_workers,
         mp_context=get_context("spawn")
@@ -174,6 +178,7 @@ def run_ga_optimization(
         """
         size: int = len(individual)
         paramlist: list = generate_parameter()
+        i: int
         for i in range(size):
             if random() < indpb:
                 individual[i] = paramlist[i]
@@ -181,6 +186,8 @@ def run_ga_optimization(
 
     # Set up multiprocessing Pool and Manager
     ctx: BaseContext = get_context("spawn")
+    manager: SyncManager
+    pool: Pool
     with ctx.Manager() as manager, ctx.Pool(max_workers) as pool:
         # Create shared dict for result cache
         cache: DictProxy[tuple, tuple] = manager.dict()

@@ -15,7 +15,7 @@ from .utility import ZoneInfo
 from .locale import _
 
 
-DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
+DB_TZ: ZoneInfo = ZoneInfo(SETTINGS["database.timezone"])
 
 
 def convert_tz(dt: datetime) -> datetime:

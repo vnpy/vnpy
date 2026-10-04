@@ -2,6 +2,7 @@
 Position holdings and offset conversion for close, lock, and net modes.
 """
 
+from collections.abc import Callable
 from copy import copy
 from typing import TYPE_CHECKING
 
@@ -77,6 +78,8 @@ class PositionHolding:
         """
         Build an order from the request and update frozen volume.
         """
+        gateway_name: str
+        orderid: str
         gateway_name, orderid = vt_orderid.split(".")
 
         order: OrderData = req.create_order_data(orderid, gateway_name)
@@ -137,6 +140,7 @@ class PositionHolding:
         self.short_yd_frozen = 0
         self.short_td_frozen = 0
 
+        order: OrderData
         for order in self.active_orders.values():
             # Ignore position open orders
             if order.offset == Offset.OPEN:
@@ -344,7 +348,7 @@ class OffsetConverter:
         """
         self.holdings: dict[str, PositionHolding] = {}
 
-        self.get_contract = oms_engine.get_contract
+        self.get_contract: Callable[[str], ContractData | None] = oms_engine.get_contract
 
     def update_position(self, position: PositionData) -> None:
         """

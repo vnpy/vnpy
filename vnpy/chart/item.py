@@ -87,6 +87,7 @@ class ChartItem(pg.GraphicsObject):
 
         bars: list[BarData] = self._manager.get_all_bars()
 
+        ix: int
         for ix, _ in enumerate(bars):
             self._bar_picutures[ix] = None
 
@@ -149,6 +150,7 @@ class ChartItem(pg.GraphicsObject):
         self._item_picuture = QtGui.QPicture()
         painter: QtGui.QPainter = QtGui.QPainter(self._item_picuture)
 
+        ix: int
         for ix in range(min_ix, max_ix):
             bar_picture: QtGui.QPicture | None = self._bar_picutures[ix]
 
@@ -228,6 +230,8 @@ class CandleItem(ChartItem):
         """
         Get the bounding rectangle of all candle prices.
         """
+        min_price: float
+        max_price: float
         min_price, max_price = self._manager.get_price_range()
         rect: QtCore.QRectF = QtCore.QRectF(
             0,
@@ -243,6 +247,8 @@ class CandleItem(ChartItem):
 
         If min_ix and max_ix not specified, then return range with whole data set.
         """
+        min_price: float
+        max_price: float
         min_price, max_price = self._manager.get_price_range(min_ix, max_ix)
         return min_price, max_price
 
@@ -321,6 +327,8 @@ class VolumeItem(ChartItem):
         """
         Get the bounding rectangle of all volume bars.
         """
+        min_volume: float
+        max_volume: float
         min_volume, max_volume = self._manager.get_volume_range()
         rect: QtCore.QRectF = QtCore.QRectF(
             0,
@@ -336,6 +344,8 @@ class VolumeItem(ChartItem):
 
         If min_ix and max_ix not specified, then return range with whole data set.
         """
+        min_volume: float
+        max_volume: float
         min_volume, max_volume = self._manager.get_volume_range(min_ix, max_ix)
         return min_volume, max_volume
 

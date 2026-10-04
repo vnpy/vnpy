@@ -5,15 +5,17 @@ Research workspace that stores bars, index components, contracts, datasets, mode
 import json
 import shelve
 import pickle
+from io import BufferedReader, BufferedWriter, TextIOWrapper
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
 from functools import lru_cache
+from typing import Any
 
 import polars as pl
 
 from vnpy.trader.object import BarData
-from vnpy.trader.constant import Interval
+from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.utility import extract_vt_symbol
 
 from .logger import logger
@@ -40,6 +42,7 @@ class AlphaLab:
         self.contract_path: Path = self.lab_path.joinpath("contract.json")
 
         # Create folders
+        path: Path
         for path in [
             self.lab_path,
             self.daily_path,
@@ -136,10 +139,14 @@ class AlphaLab:
         # Convert to BarData objects
         bars: list[BarData] = []
 
+        symbol: str
+        exchange: Exchange
         symbol, exchange = extract_vt_symbol(vt_symbol)
 
+        # iter_rows(named=True) 的静态类型是 dict[str, Any]，同一行里同时有 datetime 和价格
+        row: dict[str, Any]
         for row in df.iter_rows(named=True):
-            bar = BarData(
+            bar: BarData = BarData(
                 symbol=symbol,
                 exchange=exchange,
                 datetime=row["datetime"],
@@ -188,6 +195,7 @@ class AlphaLab:
         # Read data for each symbol
         dfs: list = []
 
+        vt_symbol: str
         for vt_symbol in vt_symbols:
             # Check if file exists
             file_path: Path = folder_path.joinpath(f"{vt_symbol}.parquet")
@@ -254,6 +262,7 @@ class AlphaLab:
         """Save index component data"""
         file_path: Path = self.component_path.joinpath(f"{index_symbol}")
 
+        db: shelve.Shelf[list[str]]
         with shelve.open(str(file_path)) as db:
             db.update(index_components)
 
@@ -270,11 +279,13 @@ class AlphaLab:
         start = to_datetime(start)
         end = to_datetime(end)
 
+        db: shelve.Shelf[list[str]]
         with shelve.open(str(file_path)) as db:
             keys: list[str] = list(db.keys())
             keys.sort()
 
             index_components: dict[datetime, list[str]] = {}
+            key: str
             for key in keys:
                 dt: datetime = datetime.strptime(key, "%Y-%m-%d")
                 if start <= dt <= end:
@@ -297,6 +308,7 @@ class AlphaLab:
 
         component_symbols: set[str] = set()
 
+        vt_symbols: list[str]
         for vt_symbols in index_components.values():
             component_symbols.update(vt_symbols)
 
@@ -323,15 +335,18 @@ class AlphaLab:
 
         # Get all component symbols
         all_symbols: set[str] = set()
+        vt_symbols: list[str]
         for vt_symbols in index_components.values():
             all_symbols.update(vt_symbols)
 
         # Iterate through each component to identify its duration in the index
+        vt_symbol: str
         for vt_symbol in all_symbols:
             period_start: datetime | None = None
             period_end: datetime | None = None
 
             # Iterate through each trading day to identify continuous holding periods
+            trading_date: datetime
             for trading_date in trading_dates:
                 if vt_symbol in index_components[trading_date]:
                     if period_start is None:
@@ -362,6 +377,7 @@ class AlphaLab:
         contracts: dict = {}
 
         if self.contract_path.exists():
+            f: TextIOWrapper
             with open(self.contract_path, encoding="UTF-8") as f:
                 contracts = json.load(f)
 
@@ -385,6 +401,7 @@ class AlphaLab:
         contracts: dict = {}
 
         if self.contract_path.exists():
+            f: TextIOWrapper
             with open(self.contract_path, encoding="UTF-8") as f:
                 contracts = json.load(f)
 
@@ -394,6 +411,7 @@ class AlphaLab:
         """Save dataset"""
         file_path: Path = self.dataset_path.joinpath(f"{name}.pkl")
 
+        f: BufferedWriter
         with open(file_path, mode="wb") as f:
             pickle.dump(dataset, f)
 
@@ -404,6 +422,7 @@ class AlphaLab:
             logger.error(f"Dataset file {name} does not exist")
             return None
 
+        f: BufferedReader
         with open(file_path, mode="rb") as f:
             dataset: AlphaDataset = pickle.load(f)
             return dataset
@@ -426,6 +445,7 @@ class AlphaLab:
         """Save model"""
         file_path: Path = self.model_path.joinpath(f"{name}.pkl")
 
+        f: BufferedWriter
         with open(file_path, mode="wb") as f:
             pickle.dump(model, f)
 
@@ -436,6 +456,7 @@ class AlphaLab:
             logger.error(f"Model file {name} does not exist")
             return None
 
+        f: BufferedReader
         with open(file_path, mode="rb") as f:
             model: AlphaModel = pickle.load(f)
             return model

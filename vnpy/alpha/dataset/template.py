@@ -8,6 +8,7 @@ from typing import cast
 from collections.abc import Callable
 from multiprocessing import get_context
 from multiprocessing.context import BaseContext
+from multiprocessing.pool import IMapIterator, Pool
 
 import polars as pl
 import pandas as pd
@@ -111,11 +112,13 @@ class AlphaDataset:
 
         context: BaseContext = get_context("spawn")
 
+        pool: Pool
         with context.Pool(processes=max_workers) as pool:
             # Calculate all expressions in parallel
-            it = pool.imap(calculate_feature, args)
+            it: IMapIterator[pl.Series] = pool.imap(calculate_feature, args)
 
             # Collect results
+            result: pl.Series
             for result in tqdm(it, total=len(args)):
                 results.append(result)
 
@@ -125,6 +128,8 @@ class AlphaDataset:
         logger.info("开始合并结果数据因子特征")
 
         label_exist: bool = "label" in self.result_df
+        name: str
+        feature_result: pl.DataFrame
         for name, feature_result in tqdm(self.feature_results.items()):
             feature_result = feature_result.rename({"data": name})
             self.result_df = self.result_df.join(feature_result, on=["datetime", "vt_symbol"], how="left")
@@ -135,16 +140,20 @@ class AlphaDataset:
             self.result_df = self.result_df.select(cols).sort(["datetime", "vt_symbol"])
 
         # Generate raw data
-        raw_df = self.result_df.fill_null(float("nan"))
+        raw_df: pl.DataFrame = self.result_df.fill_null(float("nan"))
 
         if filters:
             logger.info("开始筛选成分股数据")
 
             dfs: list[pl.DataFrame] = []
 
+            vt_symbol: str
+            ranges: list[tuple[datetime, datetime]]
             for vt_symbol, ranges in tqdm(filters.items(), total=len(filters)):
+                start: datetime
+                end: datetime
                 for start, end in ranges:
-                    temp_df = raw_df.filter(
+                    temp_df: pl.DataFrame = raw_df.filter(
                         (pl.col("vt_symbol") == vt_symbol)
                         & (pl.col("datetime") >= pl.lit(start))
                         & (pl.col("datetime") <= pl.lit(end))
@@ -165,6 +174,7 @@ class AlphaDataset:
         Process data
         """
         # Generate inference data
+        processor: Callable[..., pl.DataFrame]
         for processor in self.infer_processors:
             self.infer_df = processor(df=self.infer_df)
 
@@ -179,6 +189,8 @@ class AlphaDataset:
         """
         Get raw data for a specific segment
         """
+        start: str
+        end: str
         start, end = self.data_periods[segment]
         return query_by_time(self.raw_df, start, end)
 
@@ -186,6 +198,8 @@ class AlphaDataset:
         """
         Get inference data for a specific segment
         """
+        start: str
+        end: str
         start, end = self.data_periods[segment]
         return query_by_time(self.infer_df, start, end)
 
@@ -193,6 +207,8 @@ class AlphaDataset:
         """
         Get learning data for a specific segment
         """
+        start: str
+        end: str
         start, end = self.data_periods[segment]
         return query_by_time(self.learn_df, start, end)
 
@@ -203,6 +219,7 @@ class AlphaDataset:
         starts: list[datetime] = []
         ends: list[datetime] = []
 
+        period: tuple[str, str]
         for period in self.data_periods.values():
             starts.append(to_datetime(period[0]))
             ends.append(to_datetime(period[1]))
@@ -214,7 +231,7 @@ class AlphaDataset:
         result_df: pl.DataFrame = query_by_time(self.result_df, start, end)
         learn_df: pl.DataFrame = query_by_time(self.learn_df, start, end)
 
-        merged_df = (
+        merged_df: pl.DataFrame = (
             result_df
             .select(["datetime", "vt_symbol", "close"])
             .join(
@@ -294,16 +311,19 @@ def calculate_feature(args: tuple[pl.DataFrame, str, str | pl.expr.expr.Expr]) -
     """
     Calculate feature by expression
     """
-    start = time.time()
+    start: float = time.time()
 
+    df: pl.DataFrame
+    name: str
+    expression: str | pl.expr.expr.Expr
     df, name, expression = args
 
     if isinstance(expression, pl.expr.expr.Expr):
-        result = calculate_by_polars(df, expression)["data"].alias(name)
+        result: pl.Series = calculate_by_polars(df, expression)["data"].alias(name)
     else:
         result = calculate_by_expression(df, expression)["data"].alias(name)
 
-    end = time.time()
+    end: float = time.time()
     print(f"Feature calculation {name} took: {end - start} seconds | {expression}")
 
     return result

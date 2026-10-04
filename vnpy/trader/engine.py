@@ -129,6 +129,7 @@ class MainEngine:
         self.gateways[gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
+        exchange: Exchange
         for exchange in gateway.exchanges:
             if exchange not in self.exchanges:
                 self.exchanges.append(exchange)
@@ -325,9 +326,11 @@ class MainEngine:
         # Stop event engine first to prevent new timer event.
         self.event_engine.stop()
 
+        engine: BaseEngine
         for engine in self.engines.values():
             engine.close()
 
+        gateway: BaseGateway
         for gateway in self.gateways.values():
             gateway.close()
 
@@ -351,7 +354,7 @@ class LogEngine(BaseEngine):
         """
         super().__init__(main_engine, event_engine, "log")
 
-        self.active = SETTINGS["log.active"]
+        self.active: bool = SETTINGS["log.active"]
 
         self.register_log(EVENT_LOG)
 
@@ -666,6 +669,7 @@ class EmailEngine(BaseEngine):
                 msg: EmailMessage = self.queue.get(block=True, timeout=1)
 
                 try:
+                    smtp: smtplib.SMTP_SSL
                     with smtplib.SMTP_SSL(server, port) as smtp:
                         smtp.login(username, password)
                         smtp.send_message(msg)
@@ -854,6 +858,7 @@ class WechatEngine(BaseEngine):
             msgs: list[str] = list(self.pending_msgs)
             self.pending_msgs.clear()
 
+            exc: WeixinError
             try:
                 self.last_ts = time.monotonic()
                 send_text(

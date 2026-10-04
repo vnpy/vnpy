@@ -5,6 +5,7 @@ LightGBM model for alpha factor prediction.
 from typing import cast
 
 import numpy as np
+import pandas as pd
 import polars as pl
 import lightgbm as lgb
 import matplotlib.pyplot as plt
@@ -24,7 +25,7 @@ class LgbModel(AlphaModel):
         early_stopping_rounds: int = 50,
         log_evaluation_period: int = 1,
         seed: int | None = None
-    ):
+    ) -> None:
         """
         Initialize an MSE LightGBM booster with early stopping and periodic training logs.
         """
@@ -48,14 +49,15 @@ class LgbModel(AlphaModel):
         ds: list[lgb.Dataset] = []
 
         # Process training and validation separately
+        segment: Segment
         for segment in [Segment.TRAIN, Segment.VALID]:
             # Get data for learning
             df: pl.DataFrame = dataset.fetch_learn(segment)
             df = df.sort(["datetime", "vt_symbol"])
 
             # Convert to numpy arrays
-            data = df.select(df.columns[2: -1]).to_pandas()
-            label = np.array(df["label"])
+            data: pd.DataFrame = df.select(df.columns[2: -1]).to_pandas()
+            label: np.ndarray = np.array(df["label"])
 
             # Add training data
             ds.append(lgb.Dataset(data, label=label))
@@ -108,6 +110,7 @@ class LgbModel(AlphaModel):
         if not self.model:
             return
 
+        importance_type: str
         for importance_type in ["split", "gain"]:
             ax: plt.Axes = lgb.plot_importance(
                 self.model,

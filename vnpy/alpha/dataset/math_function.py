@@ -72,7 +72,7 @@ def sign(feature: DataProxy) -> DataProxy:
 
 def quesval(threshold: float, feature1: DataProxy, feature2: DataProxy | float | int, feature3: DataProxy | float | int) -> DataProxy:
     """Return feature2 if threshold < feature1, otherwise feature3"""
-    df_merged = feature1.df
+    df_merged: pl.DataFrame = feature1.df
 
     if isinstance(feature2, DataProxy):
         df_merged = df_merged.join(feature2.df, on=["datetime", "vt_symbol"], suffix="_true")
@@ -142,8 +142,8 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     return 0. Integers are detected with floor because casting NaN to Int64
     raises an error.
     """
-    base_renamed = base.df.rename({"data": "base_data"})
-    exp_renamed = exponent.df.rename({"data": "exp_data"})
+    base_renamed: pl.DataFrame = base.df.rename({"data": "base_data"})
+    exp_renamed: pl.DataFrame = exponent.df.rename({"data": "exp_data"})
 
     df_merged: pl.DataFrame = base_renamed.join(exp_renamed, on=["datetime", "vt_symbol"], how="left")
 
