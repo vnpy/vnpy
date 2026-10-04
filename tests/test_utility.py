@@ -1,4 +1,8 @@
+import json
 from datetime import datetime
+from pathlib import Path
+
+import pytest
 
 from vnpy.trader.constant import Exchange
 from vnpy.trader.object import BarData, TickData
@@ -8,6 +12,8 @@ from vnpy.trader.utility import (
     extract_vt_symbol,
     floor_to,
     generate_vt_symbol,
+    get_file_path,
+    load_json,
     round_to,
 )
 
@@ -117,3 +123,20 @@ def test_bar_generator_completes_five_minute_window() -> None:
     assert window_bar.close_price == 13
     assert window_bar.volume == 15
     assert window_bar.datetime == datetime(2024, 1, 2, 9, 0)
+
+
+def test_load_json_writes_empty_object_when_file_is_missing() -> None:
+    filename: str = "harness_missing_load_json.json"
+    path: Path = get_file_path(filename)
+    if path.exists():
+        path.unlink()
+
+    loaded: dict = load_json(filename)
+
+    assert loaded == {}
+    assert json.loads(path.read_text(encoding="UTF-8")) == {}
+
+
+def test_extract_vt_symbol_rejects_unknown_exchange() -> None:
+    with pytest.raises(ValueError):
+        extract_vt_symbol("SYM.BAD")
