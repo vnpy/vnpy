@@ -244,29 +244,21 @@ class BarGenerator:
                 close_price=tick.last_price,
                 open_interest=tick.open_interest
             )
-
-            if (self.last_tick and tick.high_price > self.last_tick.high_price) or (self.last_tick is None):
-                self.bar.high_price = max(self.bar.high_price, tick.high_price)
-            if (self.last_tick and tick.low_price < self.last_tick.low_price) or (self.last_tick is None):
-                self.bar.low_price = min(self.bar.low_price, tick.low_price)
-
-            if self.last_tick is None:
-                self.bar.volume = max(tick.volume, 0)
-                self.bar.turnover = max(tick.volume, 0)
         elif self.bar:
             self.bar.high_price = max(self.bar.high_price, tick.last_price)
-            if self.last_tick and tick.high_price > self.last_tick.high_price:
-                self.bar.high_price = max(self.bar.high_price, tick.high_price)
-
             self.bar.low_price = min(self.bar.low_price, tick.last_price)
-            if self.last_tick and tick.low_price < self.last_tick.low_price:
-                self.bar.low_price = min(self.bar.low_price, tick.low_price)
 
             self.bar.close_price = tick.last_price
             self.bar.open_interest = tick.open_interest
             self.bar.datetime = tick.datetime
 
         if self.last_tick and self.bar:
+            # Day high/low are cumulative. Absorb only a new non-zero extreme since the previous tick.
+            if tick.high_price != 0 and tick.high_price > self.last_tick.high_price:
+                self.bar.high_price = max(self.bar.high_price, tick.high_price)
+            if tick.low_price != 0 and tick.low_price < self.last_tick.low_price:
+                self.bar.low_price = min(self.bar.low_price, tick.low_price)
+
             volume_change: float = tick.volume - self.last_tick.volume
             self.bar.volume += max(volume_change, 0)
 
