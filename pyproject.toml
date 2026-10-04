@@ -117,6 +117,8 @@ warn_no_return = true
 module = [
     "polars",
     "lightgbm",
+    "torch",
+    "torch.*",
     "hatchling.*",
     "qrcode"
 ]
