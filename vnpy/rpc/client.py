@@ -176,6 +176,9 @@ class RpcClient:
         Subscribe data
         """
         self._socket_sub.setsockopt_string(zmq.SUBSCRIBE, topic)
+        # A non-empty prefix drops heartbeats, which the 30s disconnect check needs.
+        if not HEARTBEAT_TOPIC.startswith(topic):
+            self._socket_sub.setsockopt_string(zmq.SUBSCRIBE, HEARTBEAT_TOPIC)
 
     def on_disconnected(self) -> None:
         """
