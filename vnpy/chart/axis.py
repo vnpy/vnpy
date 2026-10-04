@@ -1,3 +1,7 @@
+"""
+Datetime axis for chart plots.
+"""
+
 from datetime import datetime
 from typing import Any
 
@@ -8,10 +12,14 @@ from .base import AXIS_WIDTH, NORMAL_FONT, QtGui
 
 
 class DatetimeAxis(pg.AxisItem):
-    """"""
+    """
+    Axis item that renders bar indexes as datetime strings.
+    """
 
     def __init__(self, manager: BarManager, *args: Any, **kwargs: Any) -> None:
-        """"""
+        """
+        Bind the axis to a bar manager.
+        """
         super().__init__(*args, **kwargs)
 
         self._manager: BarManager = manager
@@ -29,6 +37,7 @@ class DatetimeAxis(pg.AxisItem):
 
         strings: list = []
 
+        ix: int
         for ix in values:
             dt: datetime | None = self._manager.get_datetime(ix)
 

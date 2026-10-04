@@ -1,3 +1,7 @@
+"""
+Long-only equity demo strategy driven by alpha signals.
+"""
+
 from collections import defaultdict
 
 import polars as pl
@@ -44,6 +48,7 @@ class EquityDemoStrategy(AlphaStrategy):
         # Get position symbols and update holding days
         pos_symbols: list[str] = [vt_symbol for vt_symbol, pos in self.pos_data.items() if pos]
 
+        vt_symbol: str
         for vt_symbol in pos_symbols:
             self.holding_days[vt_symbol] += 1
 

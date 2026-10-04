@@ -1,3 +1,7 @@
+"""
+Qlib 158-factor dataset built from candlestick and rolling price expressions.
+"""
+
 import polars as pl
 
 from vnpy.alpha import AlphaDataset
@@ -33,12 +37,14 @@ class Alpha158(AlphaDataset):
         self.add_feature("ksft_2", "(close * 2 - high - low) / (high - low + 1e-12)")
 
         # Price change features
+        field: str
         for field in ["open", "high", "low", "vwap"]:
             self.add_feature(f"{field}_0", f"{field} / close")
 
         # Time series features
         windows: list[int] = [5, 10, 20, 30, 60]
 
+        w: int
         for w in windows:
             self.add_feature(f"roc_{w}", f"ts_delay(close, {w}) / close")
 

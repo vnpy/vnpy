@@ -1,3 +1,7 @@
+"""
+Configure the alpha package logger for colored terminal output.
+"""
+
 import sys
 
 from loguru import logger

@@ -1,3 +1,7 @@
+"""
+Abstract datafeed and loader for history data services.
+"""
+
 from types import ModuleType
 from collections.abc import Callable
 from importlib import import_module
@@ -37,7 +41,9 @@ datafeed: BaseDatafeed | None = None
 
 
 def get_datafeed() -> BaseDatafeed:
-    """"""
+    """
+    Return the configured datafeed, or a base datafeed when none is available.
+    """
     # Return datafeed object if already inited
     global datafeed
     if datafeed:

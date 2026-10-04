@@ -1,3 +1,7 @@
+"""
+Abstract base class for trading applications.
+"""
+
 from abc import ABC
 from pathlib import Path
 from typing import TYPE_CHECKING

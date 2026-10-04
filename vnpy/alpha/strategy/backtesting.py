@@ -1,3 +1,7 @@
+"""
+Backtesting engine for alpha portfolio strategies.
+"""
+
 from collections import defaultdict
 from datetime import date, datetime
 from copy import copy
@@ -10,7 +14,7 @@ import plotly.graph_objects as go               # type: ignore
 from plotly.subplots import make_subplots       # type: ignore
 from tqdm import tqdm
 
-from vnpy.trader.constant import Direction, Offset, Interval, Status
+from vnpy.trader.constant import Direction, Exchange, Offset, Interval, Status
 from vnpy.trader.object import OrderData, TradeData, BarData
 from vnpy.trader.utility import round_to, extract_vt_symbol
 
@@ -66,6 +70,7 @@ class BacktestingEngine:
 
         self.cash: float = 0
         self.signal_df: pl.DataFrame
+        self.fill_price: str
 
     def set_parameters(
         self,
@@ -75,9 +80,20 @@ class BacktestingEngine:
         end: datetime,
         capital: int = 1_000_000,
         risk_free: float = 0,
-        annual_days: int = 240
+        annual_days: int = 240,
+        fill_price: str = "open",
     ) -> None:
-        """Set parameters"""
+        """Set parameters.
+
+        Args:
+            fill_price: Match price mode. ``open`` keeps legacy open-based
+                fills; ``vwap`` uses ``turnover / volume`` when volume > 0.
+        """
+        if fill_price not in {"open", "vwap"}:
+            raise ValueError(
+                f"unsupported fill_price {fill_price!r}; expected 'open' or 'vwap'"
+            )
+
         self.vt_symbols = vt_symbols
         self.interval = interval
 
@@ -86,10 +102,12 @@ class BacktestingEngine:
         self.capital = capital
         self.risk_free = risk_free
         self.annual_days = annual_days
+        self.fill_price = fill_price
 
         self.cash = capital
 
         contract_settings: dict = self.lab.load_contract_setttings()
+        vt_symbol: str
         for vt_symbol in vt_symbols:
             setting: dict | None = contract_settings.get(vt_symbol, None)
             if not setting:
@@ -126,6 +144,7 @@ class BacktestingEngine:
 
         # Load historical data for each symbol
         empty_symbols: list[str] = []
+        vt_symbol: str
         for vt_symbol in tqdm(self.vt_symbols, total=len(self.vt_symbols)):
             data: list[BarData] = self.lab.load_bar_data(
                 vt_symbol,
@@ -134,11 +153,12 @@ class BacktestingEngine:
                 self.end
             )
 
+            bar: BarData
             for bar in data:
                 self.dts.add(bar.datetime)
                 self.history_data[(bar.datetime, vt_symbol)] = bar
 
-            data_count = len(data)
+            data_count: int = len(data)
             if not data_count:
                 empty_symbols.append(vt_symbol)
 
@@ -157,6 +177,7 @@ class BacktestingEngine:
         dts.sort()
 
         logger.info("开始回放历史数据")
+        dt: datetime
         for dt in dts:
             try:
                 self.new_bars(dt)
@@ -175,6 +196,7 @@ class BacktestingEngine:
             logger.info("成交记录为空，无法计算")
             return None
 
+        trade: TradeData
         for trade in self.trades.values():
             if not trade.datetime:
                 continue
@@ -206,8 +228,9 @@ class BacktestingEngine:
                 "commission", "trading_pnl",
                 "holding_pnl", "total_pnl", "net_pnl"
             ]
+            key: str
             for key in fields:
-                value = getattr(daily_result, key)
+                value: date | int | float = getattr(daily_result, key)
                 results[key].append(value)
 
         if results:
@@ -297,12 +320,12 @@ class BacktestingEngine:
             max_drawdown = cast(float, df["drawdown"].min())
             max_ddpercent = cast(float, df["ddpercent"].min())
 
-            max_drawdown_end_idx = cast(int, df["drawdown"].arg_min())
-            max_drawdown_end = df["date"][max_drawdown_end_idx]
+            max_drawdown_end_idx: int = cast(int, df["drawdown"].arg_min())
+            max_drawdown_end: date = df["date"][max_drawdown_end_idx]
 
             if isinstance(max_drawdown_end, date):
-                max_drawdown_start_idx = cast(int, df.slice(0, max_drawdown_end_idx + 1)["balance"].arg_max())
-                max_drawdown_start = df["date"][max_drawdown_start_idx]
+                max_drawdown_start_idx: int = cast(int, df.slice(0, max_drawdown_end_idx + 1)["balance"].arg_max())
+                max_drawdown_start: date = df["date"][max_drawdown_start_idx]
                 max_drawdown_duration = (max_drawdown_end - max_drawdown_start).days
             else:
                 max_drawdown_duration = 0
@@ -325,7 +348,7 @@ class BacktestingEngine:
             return_std = cast(float, df["return"].std()) * 100
 
             if return_std:
-                daily_risk_free = self.risk_free / np.sqrt(self.annual_days)
+                daily_risk_free: float = self.risk_free / np.sqrt(self.annual_days)
                 sharpe_ratio = (daily_return - daily_risk_free) / return_std * np.sqrt(self.annual_days)
             else:
                 sharpe_ratio = 0
@@ -393,6 +416,8 @@ class BacktestingEngine:
         }
 
         # Filter extreme values
+        key: str
+        value: str | int | float
         for key, value in statistics.items():
             if value in (np.inf, -np.inf):
                 value = 0
@@ -405,20 +430,20 @@ class BacktestingEngine:
         """Display chart"""
         df: pl.DataFrame = self.daily_df
 
-        fig = make_subplots(
+        fig: go.Figure = make_subplots(
             rows=4,
             cols=1,
             subplot_titles=["Balance", "Drawdown", "Daily Pnl", "Pnl Distribution"],
             vertical_spacing=0.06
         )
 
-        balance_line = go.Scatter(
+        balance_line: go.Scatter = go.Scatter(
             x=df["date"],
             y=df["balance"],
             mode="lines",
             name="Balance"
         )
-        drawdown_scatter = go.Scatter(
+        drawdown_scatter: go.Scatter = go.Scatter(
             x=df["date"],
             y=df["drawdown"],
             fillcolor="red",
@@ -426,8 +451,8 @@ class BacktestingEngine:
             mode="lines",
             name="Drawdown"
         )
-        pnl_bar = go.Bar(y=df["net_pnl"], name="Daily Pnl")
-        pnl_histogram = go.Histogram(x=df["net_pnl"], nbinsx=100, name="Days")
+        pnl_bar: go.Bar = go.Bar(y=df["net_pnl"], name="Daily Pnl")
+        pnl_histogram: go.Histogram = go.Histogram(x=df["net_pnl"], nbinsx=100, name="Days")
 
         fig.add_trace(balance_line, row=1, col=1)
         fig.add_trace(drawdown_scatter, row=2, col=1)
@@ -443,6 +468,7 @@ class BacktestingEngine:
         benchmark_bars: list[BarData] = self.lab.load_bar_data(benchmark_symbol, self.interval, self.start, self.end)
 
         benchmark_prices: list[float] = []
+        bar: BarData
         for bar in benchmark_bars:
             benchmark_prices.append(bar.close_price)
 
@@ -563,6 +589,7 @@ class BacktestingEngine:
         d: date = dt.date()
 
         close_prices: dict[str, float] = {}
+        bar: BarData
         for bar in bars.values():
             if not bar.close_price:
                 close_prices[bar.vt_symbol] = self.pre_closes[bar.vt_symbol]
@@ -581,8 +608,9 @@ class BacktestingEngine:
         self.datetime = dt
 
         bars: dict[str, BarData] = {}
+        vt_symbol: str
         for vt_symbol in self.vt_symbols:
-            last_bar = self.bars.get(vt_symbol, None)
+            last_bar: BarData | None = self.bars.get(vt_symbol, None)
             if last_bar:
                 if last_bar.close_price:
                     self.pre_closes[vt_symbol] = last_bar.close_price
@@ -618,6 +646,7 @@ class BacktestingEngine:
 
     def cross_order(self) -> None:
         """Match limit orders"""
+        order: OrderData
         for order in list(self.active_limit_orders.values()):
             bar: BarData = self.bars[order.vt_symbol]
 
@@ -667,7 +696,9 @@ class BacktestingEngine:
             # Generate trade information
             self.trade_count += 1
 
-            if long_cross:
+            if self.fill_price == "vwap":
+                trade_price = self.get_bar_vwap(bar)
+            elif long_cross:
                 trade_price = min(order.price, long_best_price)
             else:
                 trade_price = max(order.price, short_best_price)
@@ -706,6 +737,12 @@ class BacktestingEngine:
             self.strategy.update_trade(trade)
             self.trades[trade.vt_tradeid] = trade
 
+    def get_bar_vwap(self, bar: BarData) -> float:
+        """Return bar VWAP, falling back to close when volume is zero."""
+        if bar.volume > 0:
+            return bar.turnover / bar.volume
+        return bar.close_price
+
     def get_signal(self) -> pl.DataFrame:
         """Get model prediction signal for current time"""
         if not self.datetime:
@@ -731,6 +768,8 @@ class BacktestingEngine:
     ) -> list[str]:
         """Send order"""
         price = round_to(price, self.priceticks[vt_symbol])
+        symbol: str
+        exchange: Exchange
         symbol, exchange = extract_vt_symbol(vt_symbol)
 
         self.limit_order_count += 1
@@ -787,6 +826,8 @@ class BacktestingEngine:
         """Get current holding market value"""
         holding_value: float = 0
 
+        vt_symbol: str
+        pos: float
         for vt_symbol, pos in self.strategy.pos_data.items():
             bar: BarData = self.bars[vt_symbol]
             size: float = self.sizes[vt_symbol]
@@ -847,6 +888,7 @@ class ContractDailyResult:
         # Calculate trading profit and loss
         self.trade_count = len(self.trades)
 
+        trade: TradeData
         for trade in self.trades:
             if trade.direction == Direction.LONG:
                 pos_change: float = trade.volume
@@ -885,6 +927,8 @@ class PortfolioDailyResult:
 
         self.contract_results: dict[str, ContractDailyResult] = {}
 
+        vt_symbol: str
+        close_price: float
         for vt_symbol, close_price in close_prices.items():
             self.contract_results[vt_symbol] = ContractDailyResult(result_date, close_price)
 
@@ -913,6 +957,8 @@ class PortfolioDailyResult:
         self.pre_closes = pre_closes
         self.start_poses = start_poses
 
+        vt_symbol: str
+        contract_result: ContractDailyResult
         for vt_symbol, contract_result in self.contract_results.items():
             contract_result.calculate_pnl(
                 pre_closes.get(vt_symbol, 0),
@@ -936,6 +982,8 @@ class PortfolioDailyResult:
         """Update daily close prices"""
         self.close_prices.update(close_prices)
 
+        vt_symbol: str
+        close_price: float
         for vt_symbol, close_price in close_prices.items():
             contract_result: ContractDailyResult | None = self.contract_results.get(vt_symbol, None)
             if contract_result:

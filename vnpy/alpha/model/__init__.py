@@ -1,3 +1,7 @@
+"""
+Alpha model interface.
+"""
+
 from .template import AlphaModel
 
 

@@ -1,0 +1,3 @@
+"""
+Example alpha trading strategies.
+"""

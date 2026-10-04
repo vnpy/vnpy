@@ -1,3 +1,7 @@
+"""
+Example RPC server that adds two numbers and publishes the current time.
+"""
+
 from time import sleep, time
 
 from vnpy.rpc import RpcServer

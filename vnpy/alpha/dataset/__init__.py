@@ -1,3 +1,7 @@
+"""
+Dataset templates, data segments, and feature preprocessing functions.
+"""
+
 from .template import AlphaDataset
 from .utility import Segment, to_datetime, register_functions
 from .processor import (

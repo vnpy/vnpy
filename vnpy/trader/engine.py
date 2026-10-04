@@ -1,3 +1,7 @@
+"""
+Engines for gateway routing, order management, logging, email, and WeChat.
+"""
+
 import smtplib
 import os
 import time
@@ -68,13 +72,17 @@ class BaseEngine(ABC):
         event_engine: EventEngine,
         engine_name: str,
     ) -> None:
-        """"""
+        """
+        Store the main engine, event engine, and engine name.
+        """
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
         self.engine_name: str = engine_name
 
     def close(self) -> None:
-        """"""
+        """
+        Do nothing when the engine is closed.
+        """
         return
 
 
@@ -84,7 +92,9 @@ class MainEngine:
     """
 
     def __init__(self, event_engine: EventEngine | None = None) -> None:
-        """"""
+        """
+        Start the event engine and initialize the built-in function engines.
+        """
         if event_engine:
             self.event_engine: EventEngine = event_engine
         else:
@@ -119,6 +129,7 @@ class MainEngine:
         self.gateways[gateway_name] = gateway
 
         # Add gateway supported exchanges into engine
+        exchange: Exchange
         for exchange in gateway.exchanges:
             if exchange not in self.exchanges:
                 self.exchanges.append(exchange)
@@ -315,9 +326,11 @@ class MainEngine:
         # Stop event engine first to prevent new timer event.
         self.event_engine.stop()
 
+        engine: BaseEngine
         for engine in self.engines.values():
             engine.close()
 
+        gateway: BaseGateway
         for gateway in self.gateways.values():
             gateway.close()
 
@@ -336,10 +349,12 @@ class LogEngine(BaseEngine):
     }
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Read whether logging is active and register the log event handler.
+        """
         super().__init__(main_engine, event_engine, "log")
 
-        self.active = SETTINGS["log.active"]
+        self.active: bool = SETTINGS["log.active"]
 
         self.register_log(EVENT_LOG)
 
@@ -363,7 +378,9 @@ class OmsEngine(BaseEngine):
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Create order-management caches and register event handlers.
+        """
         super().__init__(main_engine, event_engine, "oms")
 
         self.ticks: dict[str, TickData] = {}
@@ -382,7 +399,9 @@ class OmsEngine(BaseEngine):
         self.register_event()
 
     def register_event(self) -> None:
-        """"""
+        """
+        Register handlers for tick, order, trade, position, account, contract, and quote events.
+        """
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
@@ -392,12 +411,16 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_QUOTE, self.process_quote_event)
 
     def process_tick_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the latest tick by vt_symbol.
+        """
         tick: TickData = event.data
         self.ticks[tick.vt_symbol] = tick
 
     def process_order_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the order, track active orders, and update the offset converter.
+        """
         order: OrderData = event.data
         self.orders[order.vt_orderid] = order
 
@@ -414,7 +437,9 @@ class OmsEngine(BaseEngine):
             converter.update_order(order)
 
     def process_trade_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the trade and update the offset converter.
+        """
         trade: TradeData = event.data
         self.trades[trade.vt_tradeid] = trade
 
@@ -424,7 +449,9 @@ class OmsEngine(BaseEngine):
             converter.update_trade(trade)
 
     def process_position_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the position and update the offset converter.
+        """
         position: PositionData = event.data
         self.positions[position.vt_positionid] = position
 
@@ -434,12 +461,16 @@ class OmsEngine(BaseEngine):
             converter.update_position(position)
 
     def process_account_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the latest account by vt_accountid.
+        """
         account: AccountData = event.data
         self.accounts[account.vt_accountid] = account
 
     def process_contract_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the contract and create an offset converter for its gateway.
+        """
         contract: ContractData = event.data
         self.contracts[contract.vt_symbol] = contract
 
@@ -448,7 +479,9 @@ class OmsEngine(BaseEngine):
             self.offset_converters[contract.gateway_name] = OffsetConverter(self)
 
     def process_quote_event(self, event: Event) -> None:
-        """"""
+        """
+        Cache the quote and track active quotes.
+        """
         quote: QuoteData = event.data
         self.quotes[quote.vt_quoteid] = quote
 
@@ -497,7 +530,7 @@ class OmsEngine(BaseEngine):
 
     def get_quote(self, vt_quoteid: str) -> QuoteData | None:
         """
-        Get latest quote data by vt_orderid.
+        Get latest quote data by vt_quoteid.
         """
         return self.quotes.get(vt_quoteid, None)
 
@@ -593,7 +626,9 @@ class EmailEngine(BaseEngine):
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Create the email queue and sender thread without starting it.
+        """
         super().__init__(main_engine, event_engine, "email")
 
         self.thread: Thread = Thread(target=self.run)
@@ -601,7 +636,9 @@ class EmailEngine(BaseEngine):
         self.active: bool = False
 
     def send_email(self, subject: str, content: str, receiver: str | None = None) -> None:
-        """"""
+        """
+        Queue an email and start the sender thread on first use.
+        """
         # Start email engine when sending first email.
         if not self.active:
             self.start()
@@ -619,7 +656,9 @@ class EmailEngine(BaseEngine):
         self.queue.put(msg)
 
     def run(self) -> None:
-        """"""
+        """
+        Send queued emails over SMTP SSL while the engine is active.
+        """
         server: str = SETTINGS["email.server"]
         port: int = SETTINGS["email.port"]
         username: str = SETTINGS["email.username"]
@@ -630,6 +669,7 @@ class EmailEngine(BaseEngine):
                 msg: EmailMessage = self.queue.get(block=True, timeout=1)
 
                 try:
+                    smtp: smtplib.SMTP_SSL
                     with smtplib.SMTP_SSL(server, port) as smtp:
                         smtp.login(username, password)
                         smtp.send_message(msg)
@@ -641,12 +681,16 @@ class EmailEngine(BaseEngine):
                 pass
 
     def start(self) -> None:
-        """"""
+        """
+        Mark the engine active and start the sender thread.
+        """
         self.active = True
         self.thread.start()
 
     def close(self) -> None:
-        """"""
+        """
+        Stop the sender thread and wait until it finishes.
+        """
         if not self.active:
             return
 
@@ -662,7 +706,9 @@ class WechatEngine(BaseEngine):
     setting_filename: str = "wechat_setting.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Load WeChat settings and start the worker when a binding already exists.
+        """
         super().__init__(main_engine, event_engine, "wechat")
 
         self.creds: Credentials | None = None
@@ -812,6 +858,7 @@ class WechatEngine(BaseEngine):
             msgs: list[str] = list(self.pending_msgs)
             self.pending_msgs.clear()
 
+            exc: WeixinError
             try:
                 self.last_ts = time.monotonic()
                 send_text(
@@ -834,5 +881,7 @@ class WechatEngine(BaseEngine):
                 )
 
     def close(self) -> None:
-        """"""
+        """
+        Stop the WeChat sending worker.
+        """
         self.deactivate()

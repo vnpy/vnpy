@@ -1,0 +1,3 @@
+"""
+Concrete alpha model implementations.
+"""
