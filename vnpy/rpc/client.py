@@ -1,7 +1,4 @@
-"""
-ZeroMQ RPC client.
-"""
-
+import pickle
 import threading
 from time import time
 from functools import lru_cache
@@ -149,11 +146,14 @@ class RpcClient:
                 self.on_disconnected()
                 continue
 
-            # Receive data from subscribe socket
-            topic: str
-            # 订阅消息由对端 pickle 反序列化，载荷类型无法静态命名
-            data: Any
-            topic, data = self._socket_sub.recv_pyobj(flags=zmq.NOBLOCK)
+            # Receive multipart message for ZMQ topic filtering
+            frames: list = self._socket_sub.recv_multipart(flags=zmq.NOBLOCK)
+
+            if len(frames) != 2:
+                continue
+
+            topic: str = frames[0].decode("utf-8")
+            data: Any = pickle.loads(frames[1])
 
             if topic == HEARTBEAT_TOPIC:
                 self._last_received_ping = data
