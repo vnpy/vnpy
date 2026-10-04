@@ -43,7 +43,9 @@ class MainWindow(QtWidgets.QMainWindow):
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
-        """"""
+        """
+        Create the main window and build its UI.
+        """
         super().__init__()
 
         self.main_engine: MainEngine = main_engine
@@ -57,7 +59,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """
+        Set up the title, docks, toolbar, menu, and window state.
+        """
         self.setWindowTitle(self.window_title)
         self.init_dock()
         self.init_toolbar()
@@ -65,28 +69,46 @@ class MainWindow(QtWidgets.QMainWindow):
         self.load_window_setting("custom")
 
     def init_dock(self) -> None:
-        """"""
+        """
+        Create the default trading docks.
+        """
+        self.trading_widget: TradingWidget
+        trading_dock: QtWidgets.QDockWidget
         self.trading_widget, trading_dock = self.create_dock(
             TradingWidget, _("交易"), QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
         )
+        tick_widget: TickMonitor
+        tick_dock: QtWidgets.QDockWidget
         tick_widget, tick_dock = self.create_dock(
             TickMonitor, _("行情"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
+        order_widget: OrderMonitor
+        order_dock: QtWidgets.QDockWidget
         order_widget, order_dock = self.create_dock(
             OrderMonitor, _("委托"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
+        active_widget: ActiveOrderMonitor
+        active_dock: QtWidgets.QDockWidget
         active_widget, active_dock = self.create_dock(
             ActiveOrderMonitor, _("活动"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
+        trade_widget: TradeMonitor
+        trade_dock: QtWidgets.QDockWidget
         trade_widget, trade_dock = self.create_dock(
             TradeMonitor, _("成交"), QtCore.Qt.DockWidgetArea.RightDockWidgetArea
         )
+        log_widget: LogMonitor
+        log_dock: QtWidgets.QDockWidget
         log_widget, log_dock = self.create_dock(
             LogMonitor, _("日志"), QtCore.Qt.DockWidgetArea.BottomDockWidgetArea
         )
+        account_widget: AccountMonitor
+        account_dock: QtWidgets.QDockWidget
         account_widget, account_dock = self.create_dock(
             AccountMonitor, _("资金"), QtCore.Qt.DockWidgetArea.BottomDockWidgetArea
         )
+        position_widget: PositionMonitor
+        position_dock: QtWidgets.QDockWidget
         position_widget, position_dock = self.create_dock(
             PositionMonitor, _("持仓"), QtCore.Qt.DockWidgetArea.BottomDockWidgetArea
         )
@@ -99,7 +121,9 @@ class MainWindow(QtWidgets.QMainWindow):
         position_widget.itemDoubleClicked.connect(self.trading_widget.update_with_cell)
 
     def init_menu(self) -> None:
-        """"""
+        """
+        Create the menu bar and its actions.
+        """
         bar: QtWidgets.QMenuBar = self.menuBar()
         bar.setNativeMenuBar(False)     # for mac and linux
 
@@ -107,6 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
         sys_menu: QtWidgets.QMenu = bar.addMenu(_("系统"))
 
         gateway_names: list = self.main_engine.get_all_gateway_names()
+        name: str
         for name in gateway_names:
             func: Callable = partial(self.connect_gateway, name)
             self.add_action(
@@ -129,6 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
         app_menu: QtWidgets.QMenu = bar.addMenu(_("功能"))
 
         all_apps: list[BaseApp] = self.main_engine.get_all_apps()
+        app: BaseApp
         for app in all_apps:
             ui_module: ModuleType = import_module(app.app_module + ".ui")
             widget_class: type[QtWidgets.QWidget] = getattr(ui_module, app.widget_name)
@@ -188,7 +214,9 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def init_toolbar(self) -> None:
-        """"""
+        """
+        Create the left toolbar.
+        """
         self.toolbar: QtWidgets.QToolBar = QtWidgets.QToolBar(self)
         self.toolbar.setObjectName(_("工具栏"))
         self.toolbar.setFloatable(False)
@@ -196,7 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Set button size
         w: int = 40
-        size = QtCore.QSize(w, w)
+        size: QtCore.QSize = QtCore.QSize(w, w)
         self.toolbar.setIconSize(size)
 
         # Set button spacing
@@ -214,7 +242,9 @@ class MainWindow(QtWidgets.QMainWindow):
         func: Callable,
         toolbar: bool = False
     ) -> None:
-        """"""
+        """
+        Add a menu action and optionally show it on the toolbar.
+        """
         icon: QtGui.QIcon = QtGui.QIcon(icon_name)
 
         action: QtGui.QAction = QtGui.QAction(action_name, self)
@@ -257,7 +287,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Call main engine close function before exit.
         """
-        reply = QtWidgets.QMessageBox.question(
+        reply: QtWidgets.QMessageBox.StandardButton = QtWidgets.QMessageBox.question(
             self,
             _("退出"),
             _("确认退出？"),
@@ -266,9 +296,11 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         if reply == QtWidgets.QMessageBox.StandardButton.Yes:
+            widget: QtWidgets.QWidget
             for widget in self.widgets.values():
                 widget.close()
 
+            monitor: BaseMonitor
             for monitor in self.monitors.values():
                 monitor.save_setting()
 
@@ -282,7 +314,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_widget(self, widget_class: type[QtWidgets.QWidget], name: str) -> None:
         """
-        Open contract manager.
+        Open a widget by class and name.
         """
         widget: QtWidgets.QWidget | None = self.widgets.get(name, None)
         if not widget:
@@ -307,8 +339,8 @@ class MainWindow(QtWidgets.QMainWindow):
         Load previous window size and state by trader path and setting name.
         """
         settings: QtCore.QSettings = QtCore.QSettings(self.window_title, name)
-        state = settings.value("state")
-        geometry = settings.value("geometry")
+        state: QtCore.QByteArray = settings.value("state")
+        geometry: QtCore.QByteArray = settings.value("geometry")
 
         if isinstance(state, QtCore.QByteArray):
             self.restoreState(state)
@@ -330,11 +362,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_forum(self) -> None:
         """
+        Open the community forum in a web browser.
         """
         webbrowser.open("https://www.vnpy.com/forum/")
 
     def edit_global_setting(self) -> None:
         """
+        Open the global configuration dialog.
         """
         dialog: GlobalDialog = GlobalDialog()
         dialog.exec()

@@ -37,5 +37,10 @@ jobs:
       - name: Type check
         run: mypy vnpy
 
+      - name: Test
+        run: |
+          python -m pip install pytest
+          python -m pytest tests
+
       - name: Build
         run: uv build

@@ -72,7 +72,7 @@ def sign(feature: DataProxy) -> DataProxy:
 
 def quesval(threshold: float, feature1: DataProxy, feature2: DataProxy | float | int, feature3: DataProxy | float | int) -> DataProxy:
     """Return feature2 if threshold < feature1, otherwise feature3"""
-    df_merged = feature1.df
+    df_merged: pl.DataFrame = feature1.df
 
     if isinstance(feature2, DataProxy):
         df_merged = df_merged.join(feature2.df, on=["datetime", "vt_symbol"], suffix="_true")
@@ -133,17 +133,17 @@ def pow1(base: DataProxy, exponent: float) -> DataProxy:
 
 
 def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
-    """Power operation between two DataProxy objects (base^exponent)
-
-    handle logic:
-    - base > 0: calculate base^exponent
-    - base < 0 and exponent is integer: calculate -1 * |base|^exponent
-    - other cases (base = 0, exponent is NaN, negative base and non-integer exponent): return 0
-
-    Note: use floor method to check integer rather than cast(Int64) method, because NaN cannot be converted to integer will report an error
     """
-    base_renamed = base.df.rename({"data": "base_data"})
-    exp_renamed = exponent.df.rename({"data": "exp_data"})
+    Power operation between two DataProxy objects (base^exponent).
+
+    A positive base uses base^exponent. A negative base with an integer
+    exponent uses -1 * abs(base)^exponent. Other cases, including a zero
+    base, a NaN exponent, and a negative base with a non-integer exponent,
+    return 0. Integers are detected with floor because casting NaN to Int64
+    raises an error.
+    """
+    base_renamed: pl.DataFrame = base.df.rename({"data": "base_data"})
+    exp_renamed: pl.DataFrame = exponent.df.rename({"data": "exp_data"})
 
     df_merged: pl.DataFrame = base_renamed.join(exp_renamed, on=["datetime", "vt_symbol"], how="left")
 
@@ -163,5 +163,4 @@ def pow2(base: DataProxy, exponent: DataProxy) -> DataProxy:
     ).select(["datetime", "vt_symbol", "data"])
 
     return DataProxy(df)
-
 

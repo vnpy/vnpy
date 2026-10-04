@@ -49,8 +49,8 @@ def cs_sum(feature: DataProxy) -> DataProxy:
 
 def cs_scale(feature: DataProxy) -> DataProxy:
     """Scale the feature by the sum of absolute values in the cross section"""
-    abs_feature = abs(feature)
-    sum_abs = cs_sum(abs_feature)
+    abs_feature: DataProxy = abs(feature)
+    sum_abs: DataProxy = cs_sum(abs_feature)
 
     df_merged: pl.DataFrame = feature.df.join(sum_abs.df, on=["datetime", "vt_symbol"], suffix="_sum")
 

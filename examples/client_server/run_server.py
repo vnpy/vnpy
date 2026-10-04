@@ -1,3 +1,7 @@
+"""
+Run an RPC service over the CTP gateway with or without a GUI.
+"""
+
 from time import sleep
 
 from vnpy.event import EventEngine, Event
@@ -11,7 +15,9 @@ from vnpy_rpcservice.rpc_service.engine import RpcEngine, EVENT_RPC_LOG
 
 
 def main_ui() -> None:
-    """"""
+    """
+    Open the main window with the CTP gateway and the RPC service app.
+    """
     qapp = create_qapp()
 
     event_engine = EventEngine()
@@ -28,14 +34,18 @@ def main_ui() -> None:
 
 
 def process_log_event(event: Event) -> None:
-    """"""
+    """
+    Print a log event as a timestamp and a message.
+    """
     log: LogData = event.data
     msg: str = f"{log.time}\t{log.msg}"
     print(msg)
 
 
 def main_terminal() -> None:
-    """"""
+    """
+    Connect to CTP and start the RPC service from the terminal.
+    """
     event_engine: EventEngine = EventEngine()
     event_engine.register(EVENT_LOG, process_log_event)
     event_engine.register(EVENT_RPC_LOG, process_log_event)

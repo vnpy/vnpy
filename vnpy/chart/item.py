@@ -1,3 +1,7 @@
+"""
+Candlestick and volume graphics items.
+"""
+
 from abc import abstractmethod
 
 import pyqtgraph as pg      # type: ignore
@@ -10,10 +14,14 @@ from .manager import BarManager
 
 
 class ChartItem(pg.GraphicsObject):
-    """"""
+    """
+    Base graphics item that draws bars on a chart.
+    """
 
     def __init__(self, manager: BarManager) -> None:
-        """"""
+        """
+        Create pens, brushes, and the bar picture cache.
+        """
         super().__init__()
 
         self._manager: BarManager = manager
@@ -79,6 +87,7 @@ class ChartItem(pg.GraphicsObject):
 
         bars: list[BarData] = self._manager.get_all_bars()
 
+        ix: int
         for ix, _ in enumerate(bars):
             self._bar_picutures[ix] = None
 
@@ -141,6 +150,7 @@ class ChartItem(pg.GraphicsObject):
         self._item_picuture = QtGui.QPicture()
         painter: QtGui.QPainter = QtGui.QPainter(self._item_picuture)
 
+        ix: int
         for ix in range(min_ix, max_ix):
             bar_picture: QtGui.QPicture | None = self._bar_picutures[ix]
 
@@ -166,10 +176,14 @@ class ChartItem(pg.GraphicsObject):
 
 
 class CandleItem(ChartItem):
-    """"""
+    """
+    Chart item that draws candlesticks.
+    """
 
     def __init__(self, manager: BarManager) -> None:
-        """"""
+        """
+        Initialize the candlestick item.
+        """
         super().__init__(manager)
 
     def _draw_bar_picture(self, ix: int, bar: BarData) -> QtGui.QPicture:
@@ -213,7 +227,11 @@ class CandleItem(ChartItem):
         return candle_picture
 
     def boundingRect(self) -> QtCore.QRectF:
-        """"""
+        """
+        Get the bounding rectangle of all candle prices.
+        """
+        min_price: float
+        max_price: float
         min_price, max_price = self._manager.get_price_range()
         rect: QtCore.QRectF = QtCore.QRectF(
             0,
@@ -229,6 +247,8 @@ class CandleItem(ChartItem):
 
         If min_ix and max_ix not specified, then return range with whole data set.
         """
+        min_price: float
+        max_price: float
         min_price, max_price = self._manager.get_price_range(min_ix, max_ix)
         return min_price, max_price
 
@@ -266,10 +286,14 @@ class CandleItem(ChartItem):
 
 
 class VolumeItem(ChartItem):
-    """"""
+    """
+    Chart item that draws volume bars.
+    """
 
     def __init__(self, manager: BarManager) -> None:
-        """"""
+        """
+        Initialize the volume item.
+        """
         super().__init__(manager)
 
     def _draw_bar_picture(self, ix: int, bar: BarData) -> QtGui.QPicture:
@@ -300,7 +324,11 @@ class VolumeItem(ChartItem):
         return volume_picture
 
     def boundingRect(self) -> QtCore.QRectF:
-        """"""
+        """
+        Get the bounding rectangle of all volume bars.
+        """
+        min_volume: float
+        max_volume: float
         min_volume, max_volume = self._manager.get_volume_range()
         rect: QtCore.QRectF = QtCore.QRectF(
             0,
@@ -316,6 +344,8 @@ class VolumeItem(ChartItem):
 
         If min_ix and max_ix not specified, then return range with whole data set.
         """
+        min_volume: float
+        max_volume: float
         min_volume, max_volume = self._manager.get_volume_range(min_ix, max_ix)
         return min_volume, max_volume
 

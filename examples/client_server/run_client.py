@@ -1,3 +1,7 @@
+"""
+Launch a GUI client that connects through the RPC gateway.
+"""
+
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
@@ -7,7 +11,9 @@ from vnpy_ctastrategy import CtaStrategyApp
 
 
 def main():
-    """"""
+    """
+    Start the RPC client window with the CTA strategy app.
+    """
     qapp = create_qapp()
 
     event_engine = EventEngine()

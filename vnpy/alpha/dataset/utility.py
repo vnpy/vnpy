@@ -1,3 +1,7 @@
+"""
+Expression registry, feature data proxy, and helpers for alpha calculations.
+"""
+
 from datetime import datetime
 from enum import Enum
 from numbers import Real
@@ -12,6 +16,7 @@ EXPRESSION_FUNCTIONS: dict[str, Callable] = {}
 
 def register_functions(functions: list[Callable]) -> None:
     """Register custom expression functions by function name."""
+    func: Callable
     for func in functions:
         EXPRESSION_FUNCTIONS[func.__name__] = func
 
@@ -56,7 +61,7 @@ class DataProxy:
     def __add__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Addition operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"] + other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"] + other.df["data"])
         else:
             s = self._as_series(self.df["data"] + other)
         return self.result(s)
@@ -64,7 +69,7 @@ class DataProxy:
     def __radd__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Right addition operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(other.df["data"] + self.df["data"])
+            s: pl.Series = self._as_series(other.df["data"] + self.df["data"])
         else:
             s = self._as_series(other + self.df["data"])
         return self.result(s)
@@ -72,7 +77,7 @@ class DataProxy:
     def __sub__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Subtraction operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"] - other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"] - other.df["data"])
         else:
             s = self._as_series(self.df["data"] - other)
         return self.result(s)
@@ -80,7 +85,7 @@ class DataProxy:
     def __rsub__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Right subtraction operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(other.df["data"] - self.df["data"])
+            s: pl.Series = self._as_series(other.df["data"] - self.df["data"])
         else:
             s = self._as_series(other - self.df["data"])
         return self.result(s)
@@ -88,7 +93,7 @@ class DataProxy:
     def __mul__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Multiplication operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"] * other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"] * other.df["data"])
         else:
             s = self._as_series(self.df["data"] * other)
         return self.result(s)
@@ -96,7 +101,7 @@ class DataProxy:
     def __rmul__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Right multiplication operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"]  * other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"]  * other.df["data"])
         else:
             s = self._as_series(self.df["data"] * other)
         return self.result(s)
@@ -104,7 +109,7 @@ class DataProxy:
     def __truediv__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Division operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"] / other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"] / other.df["data"])
         else:
             s = self._as_series(self.df["data"] / other)
         return self.result(s)
@@ -112,7 +117,7 @@ class DataProxy:
     def __rtruediv__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Right division operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(other.df["data"] / self.df["data"])
+            s: pl.Series = self._as_series(other.df["data"] / self.df["data"])
         else:
             s = self._as_series(other / self.df["data"])
         return self.result(s)
@@ -120,7 +125,7 @@ class DataProxy:
     def __floordiv__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Floor division operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"] // other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"] // other.df["data"])
         else:
             s = self._as_series(self.df["data"] // other)
         return self.result(s)
@@ -128,7 +133,7 @@ class DataProxy:
     def __mod__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Modulo operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"] % other.df["data"])
+            s: pl.Series = self._as_series(self.df["data"] % other.df["data"])
         else:
             s = self._as_series(self.df["data"] % other)
         return self.result(s)
@@ -136,7 +141,7 @@ class DataProxy:
     def __pow__(self, other: Union["DataProxy", Real]) -> "DataProxy":
         """Power operation"""
         if isinstance(other, DataProxy):
-            s = self._as_series(self.df["data"].pow(other.df["data"]))
+            s: pl.Series = self._as_series(self.df["data"].pow(other.df["data"]))
         else:
             s = self._as_series(self.df["data"].pow(cast(int | float, other)))
         return self.result(s)
@@ -239,13 +244,14 @@ def calculate_by_expression(df: pl.DataFrame, expression: str) -> pl.DataFrame:
     d: dict = locals()
     d.update(EXPRESSION_FUNCTIONS)
 
+    column: str
     for column in df.columns:
         # Filter index columns
         if column in {"datetime", "vt_symbol"}:
             continue
 
         # Cache feature df
-        column_df = df[["datetime", "vt_symbol", column]]
+        column_df: pl.DataFrame = df[["datetime", "vt_symbol", column]]
         d[column] = DataProxy(column_df)
 
     # Use eval to execute calculation

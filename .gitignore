@@ -41,3 +41,7 @@ _templates
 # Alpha
 lab/
 /.mypy_cache
+
+# Type checker / linter / test caches
+.ruff_cache/
+.pytest_cache/

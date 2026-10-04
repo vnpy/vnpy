@@ -95,10 +95,6 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
         * :arrow_up: TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): Domestic securities (A shares), ETF options
         
-        * OST ([ost](https://www.github.com/vnpy/vnpy_ost)): Domestic securities (A shares)
-        
-        * EMT ([emt](https://www.github.com/vnpy/vnpy_emt)): Domestic securities (A shares)
-        
         * SGIT ([sgit](https://www.github.com/vnpy/vnpy_sgit)): Gold TD, domestic futures
 
         * :arrow_up: KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): Gold TD
@@ -109,8 +105,6 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
         * :arrow_up: Jees ([jees](https://www.github.com/vnpy/vnpy_jees)): Futures asset management
 
-        * ComStar ([comstar](https://www.github.com/vnpy/vnpy_comstar)): Interbank market
-        
         * :arrow_up: TTS ([tts](https://www.github.com/vnpy/vnpy_tts)): Domestic futures (simulation)
 
     * Overseas market

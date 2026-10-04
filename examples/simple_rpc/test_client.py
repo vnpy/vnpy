@@ -1,3 +1,7 @@
+"""
+Example RPC client that calls a remote add and prints published messages.
+"""
+
 from time import sleep
 from typing import Any
 from vnpy.rpc import RpcClient

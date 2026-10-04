@@ -1,3 +1,7 @@
+"""
+ZeroMQ RPC client.
+"""
+
 import threading
 from time import time
 from functools import lru_cache
@@ -27,7 +31,9 @@ class RemoteException(Exception):
 
 
 class RpcClient:
-    """"""
+    """
+    Client for remote procedure calls over ZeroMQ.
+    """
 
     def __init__(self) -> None:
         """Constructor"""
@@ -41,6 +47,7 @@ class RpcClient:
         self._socket_sub: zmq.Socket = self._context.socket(zmq.SUB)
 
         # Set socket option to keepalive
+        socket: zmq.Socket
         for socket in [self._socket_req, self._socket_sub]:
             socket.setsockopt(zmq.TCP_KEEPALIVE, 1)
             socket.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 60)
@@ -59,6 +66,9 @@ class RpcClient:
         """
         # Perform remote call task
         def dorpc(*args: Any, **kwargs: Any) -> Any:
+            """
+            Perform the remote call and return its result.
+            """
             # Get timeout value from kwargs, default value is 30 seconds
             timeout: int = kwargs.pop("timeout", 30000)
 
@@ -75,7 +85,7 @@ class RpcClient:
                     msg: str = f"Timeout of {timeout}ms reached for {req}"
                     raise RemoteException(msg)
 
-                rep = self._socket_req.recv_pyobj()
+                rep: tuple[bool, object] = self._socket_req.recv_pyobj()
 
             # Return response if successed; Trigger exception if failed
             if rep[0]:
@@ -120,6 +130,9 @@ class RpcClient:
         self._active = False
 
     def join(self) -> None:
+        """
+        Wait for the client thread to exit.
+        """
         # Wait for RpcClient thread to exit
         if self._thread and self._thread.is_alive():
             self._thread.join()
@@ -137,6 +150,9 @@ class RpcClient:
                 continue
 
             # Receive data from subscribe socket
+            topic: str
+            # 订阅消息由对端 pickle 反序列化，载荷类型无法静态命名
+            data: Any
             topic, data = self._socket_sub.recv_pyobj(flags=zmq.NOBLOCK)
 
             if topic == HEARTBEAT_TOPIC:

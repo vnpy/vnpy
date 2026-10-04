@@ -1,3 +1,7 @@
+"""
+WorldQuant 101-factor dataset built from price and volume expressions.
+"""
+
 import polars as pl
 
 from vnpy.alpha import AlphaDataset

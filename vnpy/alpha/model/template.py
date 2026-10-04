@@ -1,3 +1,7 @@
+"""
+Abstract interface for alpha machine-learning models.
+"""
+
 from abc import ABCMeta, abstractmethod
 from typing import Any
 

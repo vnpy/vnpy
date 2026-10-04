@@ -1,3 +1,7 @@
+"""
+Abstract gateway for connections to trading systems.
+"""
+
 from abc import ABC, abstractmethod
 
 from vnpy.event import Event, EventEngine
@@ -79,7 +83,9 @@ class BaseGateway(ABC):
     exchanges: list[Exchange] = []
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
-        """"""
+        """
+        Store the event engine and gateway name.
+        """
         self.event_engine: EventEngine = event_engine
         self.gateway_name: str = gateway_name
 

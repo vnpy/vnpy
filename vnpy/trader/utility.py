@@ -9,7 +9,7 @@ from pathlib import Path
 from collections.abc import Callable
 from decimal import Decimal
 from math import floor, ceil
-from typing import overload, Literal
+from typing import TextIO, overload, Literal
 
 import numpy as np
 import talib
@@ -24,6 +24,8 @@ def extract_vt_symbol(vt_symbol: str) -> tuple[str, Exchange]:
     """
     :return: (symbol, exchange)
     """
+    symbol: str
+    exchange_str: str
     symbol, exchange_str = vt_symbol.rsplit(".", 1)
     return symbol, Exchange(exchange_str)
 
@@ -58,6 +60,8 @@ def _get_trader_dir(temp_name: str) -> tuple[Path, Path]:
     return home_path, temp_path
 
 
+TRADER_DIR: Path
+TEMP_DIR: Path
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
 sys.path.append(str(TRADER_DIR))
 
@@ -95,6 +99,7 @@ def load_json(filename: str) -> dict:
     filepath: Path = get_file_path(filename)
 
     if filepath.exists():
+        f: TextIO
         with open(filepath, encoding="UTF-8") as f:
             data: dict = json.load(f)
         return data
@@ -108,6 +113,7 @@ def save_json(filename: str, data: dict) -> None:
     Save data into json file in temp path.
     """
     filepath: Path = get_file_path(filename)
+    f: TextIO
     with open(filepath, mode="w+", encoding="UTF-8") as f:
         json.dump(
             data,
@@ -154,6 +160,7 @@ def get_digits(value: float) -> int:
     value_str: str = str(value)
 
     if "e-" in value_str:
+        buf: str
         _, buf = value_str.split("e-")
         return int(buf)
     elif "." in value_str:
@@ -271,7 +278,9 @@ class BarGenerator:
             self.update_bar_daily_window(bar)
 
     def update_bar_minute_window(self, bar: BarData) -> None:
-        """"""
+        """
+        Aggregate minute bars into a window bar and push it when the window completes.
+        """
         # If not inited, create window bar object
         if not self.window_bar:
             dt: datetime = bar.datetime.replace(second=0, microsecond=0)
@@ -309,7 +318,9 @@ class BarGenerator:
             self.window_bar = None
 
     def update_bar_hour_window(self, bar: BarData) -> None:
-        """"""
+        """
+        Aggregate minute bars into an hour bar and push it when the hour finishes.
+        """
         # If not inited, create window bar object
         if not self.hour_bar:
             dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
@@ -388,7 +399,9 @@ class BarGenerator:
             self.on_hour_bar(finished_bar)
 
     def on_hour_bar(self, bar: BarData) -> None:
-        """"""
+        """
+        Push a one-hour bar, or fold it into a multi-hour window bar.
+        """
         if self.window == 1:
             if self.on_window_bar:
                 self.on_window_bar(bar)
@@ -428,7 +441,9 @@ class BarGenerator:
                 self.window_bar = None
 
     def update_bar_daily_window(self, bar: BarData) -> None:
-        """"""
+        """
+        Aggregate minute bars into a daily bar and push it at the session end.
+        """
         # If not inited, create daily bar object
         if not self.daily_bar:
             self.daily_bar = BarData(
@@ -575,7 +590,7 @@ class ArrayManager:
     @property
     def open_interest(self) -> np.ndarray:
         """
-        Get trading volume time series.
+        Get open interest time series.
         """
         return self.open_interest_array
 
@@ -890,6 +905,9 @@ class ArrayManager:
         """
         MACD.
         """
+        macd: np.ndarray
+        signal: np.ndarray
+        hist: np.ndarray
         macd, signal, hist = talib.MACD(
             self.close, fast_period, slow_period, signal_period
         )
@@ -1106,6 +1124,8 @@ class ArrayManager:
         """
         Aroon indicator.
         """
+        aroon_down: np.ndarray
+        aroon_up: np.ndarray
         aroon_down, aroon_up = talib.AROON(self.high, self.low, n)
 
         if array:
@@ -1242,6 +1262,8 @@ class ArrayManager:
         """
         Stochastic Indicator
         """
+        k: np.ndarray
+        d: np.ndarray
         k, d = talib.STOCH(
             self.high,
             self.low,
