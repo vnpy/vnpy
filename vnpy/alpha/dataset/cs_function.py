@@ -8,11 +8,18 @@ from .utility import DataProxy
 
 
 def cs_rank(feature: DataProxy) -> DataProxy:
-    """Perform cross-sectional ranking"""
-    df: pl.DataFrame = feature.df.select(
-        pl.col("datetime"),
-        pl.col("vt_symbol"),
-        pl.col("data").rank().over("datetime")
+    """Calculate WorldQuant cross-sectional rank (method=min, pct=True)."""
+    df: pl.DataFrame = (
+        feature.df
+        .with_columns(pl.col("data").fill_nan(None).alias("data"))
+        .select(
+            pl.col("datetime"),
+            pl.col("vt_symbol"),
+            (
+                pl.col("data").rank(method="min").over("datetime")
+                / pl.col("data").count().over("datetime")
+            ).alias("data"),
+        )
     )
     return DataProxy(df)
 
