@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from typing import cast
 
-from scipy import stats    # type: ignore[import-untyped]
+from scipy import stats
 from numpy.lib.stride_tricks import sliding_window_view
 import polars as pl
 import numpy as np

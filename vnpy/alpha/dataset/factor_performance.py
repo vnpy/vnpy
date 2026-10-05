@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 from datetime import date
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -8,8 +9,9 @@ import plotly.graph_objects as go  # type: ignore[import-untyped]
 from pandas.tseries.offsets import CustomBusinessDay
 from plotly.subplots import make_subplots  # type: ignore[import-untyped]
 from scipy import stats
-from statsmodels.regression.linear_model import OLS
-from statsmodels.tools.tools import add_constant
+# statsmodels 没有 py.typed，按未标注导入处理。
+from statsmodels.regression.linear_model import OLS  # type: ignore[import-untyped]
+from statsmodels.tools.tools import add_constant  # type: ignore[import-untyped]
 
 
 # Plot style
@@ -138,16 +140,24 @@ def prepare_factor_data(
         )
 
     result = merged_data[["label", "1D", "factor", "factor_quantile"]]
-    date_idx = result.index.names.index("date")
-    date_level = result.index.levels[date_idx]
-    existing_freq = getattr(date_level, "freq", None)
-    if existing_freq is not None:
-        freq: pd.DateOffset = existing_freq
+    result_index = cast(pd.MultiIndex, result.index)
+    date_idx = result_index.names.index("date")
+    date_level = cast(pd.DatetimeIndex, result_index.levels[date_idx])
+    if date_level.freq is not None:
+        freq = date_level.freq
     else:
-        factor_dates = factor_copy.index.levels[factor_copy.index.names.index("date")]
-        freq = _infer_trading_calendar(factor_dates, prices.index)
+        factor_index = cast(pd.MultiIndex, factor_copy.index)
+        factor_dates = cast(
+            pd.DatetimeIndex,
+            factor_index.levels[factor_index.names.index("date")],
+        )
+        freq = _infer_trading_calendar(
+            factor_dates,
+            cast(pd.DatetimeIndex, prices.index),
+        )
     # asfreq(freq) 只保留交易日，避免按自然日插周末空值。
-    result.index.levels[date_idx].freq = freq
+    # pandas-stubs 把 DatetimeIndex.freq 标成只读，运行时可以赋值。
+    date_level.freq = freq  # type: ignore[misc]
     return result
 
 
@@ -451,8 +461,8 @@ def create_full_tear_sheet(
         ],
     )
 
-    alpha_value = float(metrics.alpha_beta.loc["Ann. alpha", "label"])
-    beta_value = float(metrics.alpha_beta.loc["beta", "label"])
+    alpha_value = float(cast(float, metrics.alpha_beta.loc["Ann. alpha", "label"]))
+    beta_value = float(cast(float, metrics.alpha_beta.loc["beta", "label"]))
     _add_table(
         fig,
         12,
@@ -531,16 +541,27 @@ def create_full_tear_sheet(
     return fig
 
 
+def _custom_business_day(
+    weekmask: str,
+    holidays: list[date] | None = None,
+) -> CustomBusinessDay:
+    """Build a trading-day offset. pandas-stubs omits ``weekmask``."""
+    # pandas-stubs 的 CustomBusinessDay 没有 weekmask，运行时支持该参数。
+    if holidays is None:
+        return CustomBusinessDay(weekmask=weekmask)  # type: ignore[call-arg]
+    return CustomBusinessDay(weekmask=weekmask, holidays=holidays)  # type: ignore[call-arg]
+
+
 def _infer_trading_calendar(
-    factor_idx: pd.Index,
-    prices_idx: pd.Index,
+    factor_idx: pd.DatetimeIndex,
+    prices_idx: pd.DatetimeIndex,
 ) -> CustomBusinessDay:
     """Infer a trading calendar from factor and price dates.
 
     Weekdays that never appear are dropped from the weekmask; missing weekdays
     inside the span become holidays.
     """
-    full_idx = factor_idx.union(prices_idx)
+    full_idx = cast(pd.DatetimeIndex, factor_idx.union(prices_idx))
     traded_weekdays: list[str] = []
     holidays: list[date] = []
     days_of_the_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -553,19 +574,22 @@ def _infer_trading_calendar(
         all_weekdays = pd.date_range(
             full_idx.min(),
             full_idx.max(),
-            freq=CustomBusinessDay(weekmask=day_str),
+            freq=_custom_business_day(day_str),
         ).normalize()
         missing = all_weekdays.difference(used_weekdays)
         holidays.extend(timestamp.date() for timestamp in missing)
 
     weekmask = " ".join(traded_weekdays)
-    return CustomBusinessDay(weekmask=weekmask, holidays=holidays)
+    return _custom_business_day(weekmask, holidays)
 
 
-def _date_index_freq(index: pd.MultiIndex) -> pd.DateOffset | None:
+def _date_index_freq(index: pd.Index) -> pd.DateOffset:
     """Return the calendar frequency of the MultiIndex ``date`` level."""
-    date_idx = index.names.index("date")
-    return index.levels[date_idx].freq
+    multi_index = cast(pd.MultiIndex, index)
+    date_idx = multi_index.names.index("date")
+    date_level = cast(pd.DatetimeIndex, multi_index.levels[date_idx])
+    # 未设置频率时 freq 为 None，调用方仍把原值传给 asfreq。
+    return cast(pd.DateOffset, date_level.freq)
 
 
 def _compute_1d_forward_returns(
@@ -574,8 +598,9 @@ def _compute_1d_forward_returns(
     filter_zscore: float | None,
 ) -> pd.Series:
     """Compute 1D forward returns close(t)->close(t+1) aligned to factor index."""
-    factor_dates = factor.index.get_level_values("date")
-    if getattr(factor_dates, "tz", None) != prices.index.tz:
+    factor_dates = cast(pd.DatetimeIndex, factor.index.get_level_values("date"))
+    price_dates = cast(pd.DatetimeIndex, prices.index)
+    if factor_dates.tz != price_dates.tz:
         raise ValueError(
             "The timezone of 'factor' is not the same as the timezone of 'prices'."
         )
@@ -593,7 +618,7 @@ def _compute_1d_forward_returns(
         forward_returns = forward_returns.copy()
         forward_returns[mask] = np.nan
 
-    one_day = forward_returns.stack()
+    one_day = cast(pd.Series, forward_returns.stack())
     one_day.index.names = ["date", "asset"]
     one_day = one_day.reindex(factor.index)
     one_day.name = "1D"
@@ -626,7 +651,7 @@ def _quantize_factor(
         group_keys=False,
     )["factor"]:
         pieces.append(_daily_factor_quantiles(day_factor, quantiles, no_raise))
-    factor_quantile = pd.concat(pieces)
+    factor_quantile = cast(pd.Series, pd.concat(pieces))
     factor_quantile.name = "factor_quantile"
     return factor_quantile.dropna()
 
@@ -671,7 +696,7 @@ def _quantile_statistics_table(factor_data: pd.DataFrame) -> pd.DataFrame:
 def _factor_to_weights(group: pd.Series) -> pd.Series:
     """Build dollar-neutral weights from one cross-section of factor values."""
     weighted = group - group.mean()
-    return weighted / weighted.abs().sum()
+    return cast(pd.Series, weighted / weighted.abs().sum())
 
 
 def _factor_returns_on_column(factor_data: pd.DataFrame, column: str) -> pd.Series:
@@ -685,7 +710,10 @@ def _factor_returns_on_column(factor_data: pd.DataFrame, column: str) -> pd.Seri
     )["factor"].apply(_factor_to_weights)
 
     weighted_returns = factor_data[column].multiply(weights, axis=0)
-    returns = weighted_returns.groupby(level="date").sum(min_count=1).asfreq(freq)
+    returns = cast(
+        pd.Series,
+        weighted_returns.groupby(level="date").sum(min_count=1).asfreq(freq),
+    )
     returns.name = column
     return returns
 
@@ -727,7 +755,7 @@ def _factor_alpha_beta_label(
     universe_ret = (
         factor_data.groupby(level="date", observed=True)["label"]
         .mean()
-        .reindex(returns.index, axis=0)
+        .reindex(returns.index)
     )
 
     x_values = universe_ret.values
@@ -760,13 +788,13 @@ def _compute_mean_returns_spread(
     std_err: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compute top-minus-bottom quantile mean return spread."""
-    mean_return_difference = mean_returns.xs(
-        upper_quant, level="factor_quantile"
-    ) - mean_returns.xs(lower_quant, level="factor_quantile")
+    upper_returns = cast(pd.DataFrame, mean_returns.xs(upper_quant, level="factor_quantile"))
+    lower_returns = cast(pd.DataFrame, mean_returns.xs(lower_quant, level="factor_quantile"))
+    mean_return_difference = upper_returns - lower_returns
 
-    std1 = std_err.xs(upper_quant, level="factor_quantile")
-    std2 = std_err.xs(lower_quant, level="factor_quantile")
-    joint_std_err = np.sqrt(std1**2 + std2**2)
+    std1 = cast(pd.DataFrame, std_err.xs(upper_quant, level="factor_quantile"))
+    std2 = cast(pd.DataFrame, std_err.xs(lower_quant, level="factor_quantile"))
+    joint_std_err = cast(pd.DataFrame, np.sqrt(std1**2 + std2**2))
     return mean_return_difference, joint_std_err
 
 
@@ -1006,7 +1034,8 @@ def _apply_symlog_yaxis(fig: go.Figure, cumulative: pd.DataFrame, row: int) -> N
 def _add_monthly_ic(fig: go.Figure, metrics: FactorMetrics, row: int) -> None:
     """Add monthly mean IC heatmap."""
     ic_series = metrics.monthly_ic["label"]
-    years = sorted({index.year for index in ic_series.index})
+    ic_index = cast(pd.DatetimeIndex, ic_series.index)
+    years = sorted({index.year for index in ic_index})
     month_labels = [f"{month:02d}" for month in range(1, 13)]
     z_values: list[list[float | None]] = []
     text_values: list[list[str]] = []
@@ -1014,7 +1043,7 @@ def _add_monthly_ic(fig: go.Figure, metrics: FactorMetrics, row: int) -> None:
         row_values: list[float | None] = []
         row_text: list[str] = []
         for month in range(1, 13):
-            mask = (ic_series.index.year == year) & (ic_series.index.month == month)
+            mask = (ic_index.year == year) & (ic_index.month == month)
             matched = ic_series.loc[mask]
             if matched.empty:
                 row_values.append(None)
