@@ -7,7 +7,7 @@
 💬 Want to read this in **chinese** ? Go [**here**](README.md)
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-4.4.0-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-4.5.0-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.10|3.11|3.12|3.13-blue.svg" />
     <img src ="https://img.shields.io/github/actions/workflow/status/vnpy/vnpy/pythonapp.yml?branch=master"/>
@@ -18,10 +18,18 @@ VeighNa is a Python-based open source quantitative trading system development fr
 
 If you have any questions about using VeighNa for secondary development (strategies, modules, etc.), please check the [**VeighNa Project Documentation**](https://www.vnpy.com/docs/cn/index.html). If you can't solve it, please go to the [Questions and Help] section of the [**Official Community Forum**](https://www.vnpy.com/forum/) for help, or share your experience in the [Experience Sharing] section!
 
-**Want to get more information about VeighNa?** Please scan the QR code below to add the assistant and join the [VeighNa Community Exchange WeChat Group]:
+**Want an easier start with futures quantitative trading?** VeighNa Fusion is now available through partner futures brokers, bringing one-stop CTA quantitative trading and intelligent research:
+
+* **Ready to use**: Apply for access through a partner futures broker, without completing a lengthy connectivity test yourself
+* **Data center**: Download and manage historical data, lowering the data-preparation barrier for beginners
+* **Intelligent research**: Turn a strategy description into structured logic and code, then continue into historical backtesting and parameter optimization
+
+Read the [product introduction](https://mp.weixin.qq.com/s/VknqBMnR3tUpWoKuTA8V4A) or the [VeighNa Fusion documentation](https://www.vnpy.com/docs/cn/fusion/index.html).
+
+To ask about access, scan the QR code below and add the [Fusion assistant]:
 
 <p align="center">
-  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/github_wx.png"/, width=250>
+  <img src="https://vnpy.oss-cn-shanghai.aliyuncs.com/Fusion%E5%B0%8F%E5%8A%A9%E6%89%8B.png" width="250" alt="Fusion assistant">
 </p>
 
 
@@ -37,6 +45,7 @@ On the tenth anniversary of VeighNa's release, version 4.0 officially introduces
 
     * Designed specifically for ML algorithm training optimization, supporting efficient batch feature calculation and processing
     * Built-in rich factor feature expression calculation engine, enabling rapid one-click generation of training data
+    * Supports registering custom expression functions, and provides common data processing functions such as missing-value filling, infinity replacement, time-series normalization, and feature removal
     * [Alpha 158](./vnpy/alpha/dataset/datasets/alpha_158.py): A collection of stock market features from Microsoft's Qlib project, covering multiple dimensions of quantitative factors including K-line patterns, price trends, and time-series volatility
 
 * :bulb: **[model](./vnpy/alpha/model)**: Prediction Model Training
@@ -91,10 +100,12 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
         * :arrow_up: APEX HTS ([hts](https://www.github.com/vnpy/vnpy_hts)): ETF options
 
+        * :arrow_up: APEX SEC ([sec](https://www.github.com/vnpy/vnpy_sec)): ETF options
+
         * :arrow_up: XTP ([xtp](https://www.github.com/vnpy/vnpy_xtp)): Domestic securities (A shares), ETF options
 
         * :arrow_up: TORA ([tora](https://www.github.com/vnpy/vnpy_tora)): Domestic securities (A shares), ETF options
-        
+
         * SGIT ([sgit](https://www.github.com/vnpy/vnpy_sgit)): Gold TD, domestic futures
 
         * :arrow_up: KsGold ([ksgold](https://www.github.com/vnpy/vnpy_ksgold)): Gold TD
@@ -143,7 +154,7 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
     * :arrow_up: [chart_wizard](https://www.github.com/vnpy/vnpy_chartwizard): K-line chart module, based on RQData data service (futures) or trading interface to obtain historical data, and combined with Tick push to display real-time market changes
 
-    * :arrow_up: [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager): Portfolio module, for various fundamental trading strategies, based on separate strategy sub-accounts, providing automatic tracking of trading positions and real-time profit and loss statistics
+    * :arrow_up: [portfolio_manager](https://www.github.com/vnpy/vnpy_portfoliomanager): Portfolio management module, based on independent strategy portfolios (sub-accounts), providing order and trade record management, automatic position tracking, and real-time daily profit and loss statistics
 
     * :arrow_up: [rpc_service](https://www.github.com/vnpy/vnpy_rpcservice): RPC service module, allowing a VeighNa Trader process to be started as a server, serving as a unified routing channel for quotes and trades, allowing multiple clients to connect simultaneously, realizing a multi-process distributed system
 
@@ -179,7 +190,7 @@ Modules marked with :arrow_up: have completed the upgrade compatibility testing 
 
     * NoSQL classes
     
-        * QuestDB ([questdb](https://www.github.com/vnpy/vnpy_questdb)): Open source high-performance columnar time-series database compatible with the PostgreSQL wire protocol and SQL queries, well suited for high-throughput ingestion and low-latency analytics
+        * :arrow_up: QuestDB ([questdb](https://www.github.com/vnpy/vnpy_questdb)): Open source high-performance columnar time-series database compatible with the PostgreSQL wire protocol and SQL queries, well suited for high-throughput ingestion and low-latency analytics
 
         * DolphinDB ([dolphindb](https://www.github.com/vnpy/vnpy_dolphindb)): A high-performance distributed temporal database especially suitable for low latency or real-time tasks with high speed requirements
         
@@ -330,6 +341,12 @@ When submitting code, please observe the following rules to improve the quality 
 * [Community Conduct Guidelines](https://github.com/vnpy/vnpy/blob/dev/.github/CODE_OF_CONDUCT.md)
 * [Issue templates](https://github.com/vnpy/vnpy/blob/dev/.github/ISSUE_TEMPLATE.md)
 * [PR templates](https://github.com/vnpy/vnpy/blob/dev/.github/PULL_REQUEST_TEMPLATE.md)
+
+**Want more news about the VeighNa open-source community?** Please scan the QR code below to add the assistant and join the [VeighNa Community WeChat Group]:
+
+<p align="center">
+  <img src="https://vnpy.oss-cn-shanghai.aliyuncs.com/github_wx.png" width="250" alt="VeighNa Community WeChat Group">
+</p>
 
 
 ## Copyright statement

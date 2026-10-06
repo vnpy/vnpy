@@ -1,3 +1,44 @@
+# 4.5.0版本
+
+## 新增
+
+1. vnpy_ctabacktester的回测配置按策略名分组保存，切换策略时自动恢复；没有历史配置时回到界面初始值
+
+## 调整
+
+1. 交易接口、功能模块、数据库和数据服务补充公开接口文档与类型注解，增加离线测试并纳入持续集成
+2. vnpy.alpha的cs_rank改为横截面百分位排名
+3. 重构vnpy.alpha的因子和信号绩效分析，移除alphalens-reloaded
+4. vnpy.alpha回测增加fill_price参数，新增vwap撮合模式支持
+5. 标签周期解析支持ts_delay的任意价格字段
+6. 重构vnpy.alpha的ts_mean、ts_std、ts_rank、ts_argmax、ts_argmin、ts_quantile函数，大幅优化性能
+7. vnpy_polygon改名为vnpy_massive，通过Massive REST获取美股K线
+8. vnpy_mini更新API至1.7.7、交易API至1.7.7
+9. vnpy_tap更新API至9.3.1.11、交易API至9.3.9.18
+10. vnpy_ctp增加登录时的ProductInfo产品信息传参支持
+11. vnpy_ctp的MdApi.subscribeMarketData支持一次传入合约列表
+12. vnpy_ctp的纯ASCII字符串的编码转换不再走GBK
+13. vnpy_ib更新API至10.45.1
+
+## 修复
+
+1. 修复界面时间列点击无法排序的问题（TimeCell写入时间戳）
+2. 修复vnpy.alpha的ta_rsi、ta_atr在多合约数据上串算的问题，改为按合约分别计算
+3. 修复BarGenerator.update_tick，最高价和最低价只反映相对上一笔Tick的变化
+4. 修复RPC的主题过滤，并保持心跳，避免发布套接字卡住
+5. vnpy_ctp在init、join、exit、release期间释放GIL，避免退出死锁
+6. vnpy_ctp行情毫秒不足三位时补零
+7. vnpy_ctp确保本地SUBMITTING先于该笔柜台回报入队
+8. vnpy_femas修正委托时间字段名
+9. vnpy_rohon补上Windows运行库，并修正Linux rpath
+10. vnpy_sqlite读取时把带时区的查询起止时间转成朴素时间
+11. vnpy_questdb将空的database.host和localhost改为127.0.0.1，避免Windows上连接超时
+12. vnpy_tushare日线下载使用trade_date
+13. vnpy_tushare分钟和小时数据满页后按最早时间再向前翻页，避免重复请求同一页
+14. vnpy_xt将深圳创业板合约识别为股票
+15. vnpy_portfoliostrategy的分钟K线按完整分钟切片
+
+
 # 4.4.0版本
 
 ## 新增
