@@ -220,7 +220,8 @@ class TimeCell(BaseCell):
             timestamp = f"{timestamp}.{millisecond}"
         else:
             timestamp = f"{timestamp}.000"
-
+            
+        self._text = timestamp
         self.setText(timestamp)
         # 单元格绑定的业务对象没有统一类型
         self._data: Any = data
