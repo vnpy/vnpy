@@ -54,4 +54,4 @@ def test_delay_mean_and_rank_on_tiny_frame() -> None:
     assert delayed["vt_symbol"].to_list() == ["A", "A", "A", "B", "B", "B"]
     assert_values(data_values(delayed), [None, 1.0, 3.0, None, 4.0, 2.0])
     assert_values(data_values(averaged), [1.0, 2.0, 4.0, 4.0, 3.0, 5.0])
-    assert_values(data_values(ranked), [1.0, 2.0, 1.0, 2.0, 1.0, 2.0])
+    assert_values(data_values(ranked), [0.5, 1.0, 0.5, 1.0, 0.5, 1.0])

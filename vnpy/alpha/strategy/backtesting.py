@@ -70,7 +70,8 @@ class BacktestingEngine:
 
         self.cash: float = 0
         self.signal_df: pl.DataFrame
-        self.fill_price: str
+        # Same default as set_parameters: match against the bar open.
+        self.fill_price: str = "open"
 
     def set_parameters(
         self,

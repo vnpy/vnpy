@@ -107,11 +107,11 @@ def prepare_factor_data(
     initial_amount = float(len(factor.index))
 
     factor_copy = factor.copy()
-    factor_copy.index = factor_copy.index.rename(["date", "asset"])
+    factor_copy.index = factor_copy.index.set_names(["date", "asset"])
     factor_copy = factor_copy[np.isfinite(factor_copy)]
 
     label_copy = label.copy()
-    label_copy.index = label_copy.index.rename(["date", "asset"])
+    label_copy.index = label_copy.index.set_names(["date", "asset"])
     label_copy.name = "label"
 
     one_day = _compute_1d_forward_returns(factor_copy, prices, filter_zscore)
@@ -545,11 +545,10 @@ def _custom_business_day(
     weekmask: str,
     holidays: list[date] | None = None,
 ) -> CustomBusinessDay:
-    """Build a trading-day offset. pandas-stubs omits ``weekmask``."""
-    # pandas-stubs 的 CustomBusinessDay 没有 weekmask，运行时支持该参数。
+    """Build a trading-day offset from a weekmask and optional holidays."""
     if holidays is None:
-        return CustomBusinessDay(weekmask=weekmask)  # type: ignore[call-arg]
-    return CustomBusinessDay(weekmask=weekmask, holidays=holidays)  # type: ignore[call-arg]
+        return CustomBusinessDay(weekmask=weekmask)
+    return CustomBusinessDay(weekmask=weekmask, holidays=holidays)
 
 
 def _infer_trading_calendar(
@@ -561,7 +560,7 @@ def _infer_trading_calendar(
     Weekdays that never appear are dropped from the weekmask; missing weekdays
     inside the span become holidays.
     """
-    full_idx = cast(pd.DatetimeIndex, factor_idx.union(prices_idx))
+    full_idx = factor_idx.union(prices_idx)
     traded_weekdays: list[str] = []
     holidays: list[date] = []
     days_of_the_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -696,7 +695,7 @@ def _quantile_statistics_table(factor_data: pd.DataFrame) -> pd.DataFrame:
 def _factor_to_weights(group: pd.Series) -> pd.Series:
     """Build dollar-neutral weights from one cross-section of factor values."""
     weighted = group - group.mean()
-    return cast(pd.Series, weighted / weighted.abs().sum())
+    return weighted / weighted.abs().sum()
 
 
 def _factor_returns_on_column(factor_data: pd.DataFrame, column: str) -> pd.Series:
@@ -738,7 +737,7 @@ def _quantile_date_means_with_stderr(
         observed=True,
     )[column]
     mean_ret = grouped.mean().to_frame(column)
-    stderr = (grouped.std() / np.sqrt(grouped.count())).to_frame(column)
+    stderr: pd.DataFrame = (grouped.std() / np.sqrt(grouped.count())).to_frame(column)
     return mean_ret, stderr
 
 
@@ -1080,8 +1079,9 @@ def _ic_normality_stats(ic: pd.Series) -> tuple[float, float, float, float]:
         return 0.0, float("nan"), float("nan"), float("nan")
     skew = float(stats.skew(values))
     kurtosis = float(stats.kurtosis(values))
-    jb_stat, jb_pvalue = stats.jarque_bera(values)
-    return skew, kurtosis, float(jb_stat), float(jb_pvalue)
+    # scipy.stats 的兼容重载把返回值标成 object，运行时是 (statistic, pvalue)。
+    jb_stat, jb_pvalue = cast(tuple[float, float], stats.jarque_bera(values))
+    return skew, kurtosis, jb_stat, jb_pvalue
 
 
 def _add_ic_histogram(
