@@ -223,6 +223,7 @@ class BarGenerator:
         elif (
             (self.bar.datetime.minute != tick.datetime.minute)
             or (self.bar.datetime.hour != tick.datetime.hour)
+            or (self.bar.datetime.date() != tick.datetime.date())
         ):
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
