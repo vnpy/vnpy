@@ -109,7 +109,7 @@ def quesval2(threshold: DataProxy, feature1: DataProxy, feature2: DataProxy | fl
         df_merged = df_merged.with_columns(pl.lit(feature3).alias("data_false"))
 
     df: pl.DataFrame = df_merged.with_columns(
-        pl.when(pl.col("data_cond") < pl.col("data"))
+        pl.when(pl.col("data") < pl.col("data_cond"))
         .then(pl.col("data_true"))
         .otherwise(pl.col("data_false"))
         .alias("data")
