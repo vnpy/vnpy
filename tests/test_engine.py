@@ -196,3 +196,15 @@ def test_send_order_keeps_one_gateway_order_when_conversion_splits() -> None:
         assert gateway.orders == [request]
     finally:
         main_engine.close()
+
+
+def test_gateway_contract_inited_flag() -> None:
+    main_engine: MainEngine = MainEngine()
+    try:
+        gateway: BaseGateway = main_engine.add_gateway(FakeGateway)
+        assert gateway.contract_inited is False
+
+        gateway.on_contract_inited()
+        assert gateway.contract_inited is True
+    finally:
+        main_engine.close()

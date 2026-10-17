@@ -88,6 +88,7 @@ class BaseGateway(ABC):
         """
         self.event_engine: EventEngine = event_engine
         self.gateway_name: str = gateway_name
+        self.contract_inited: bool = False
 
     def on_event(self, type: str, data: object = None) -> None:
         """
@@ -155,6 +156,12 @@ class BaseGateway(ABC):
         Contract event push.
         """
         self.on_event(EVENT_CONTRACT, contract)
+
+    def on_contract_inited(self) -> None:
+        """
+        Mark that all contracts of the gateway have been pushed.
+        """
+        self.contract_inited = True
 
     def write_log(self, msg: str) -> None:
         """
