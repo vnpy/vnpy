@@ -8,7 +8,7 @@
 - datafeed.username：数据服务的用户名；
 - datafeed.password：数据服务的密码。
 
-以上字段对于所有数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前VeighNa Trader支持以下七种数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
+以上字段对于大多数数据服务都是必填的，如果是token方式授权请填写在datafeed.password字段中。目前VeighNa Trader支持以下数据服务，**具体每个数据服务的细节可在对应的项目地址中找到**。
 
 ## 迅投研
 
@@ -29,13 +29,13 @@
 **请注意，配置信息里的username和password不是米筐官网登录用的账号和密码。**
 
 
-## UData
+## MultiCharts
 
-恒有数UData是由恒生电子推出的云端数据服务，提供不限次、不限量的多种金融数据获取：
-- 项目地址：[vnpy_udata](https://github.com/vnpy/vnpy_udata)
-- 数据分类：股票、期货
-- 数据周期：分钟线（盘后更新）
-- 注册申请：[恒有数UData](https://udata.hs.net/home)
+MultiCharts是由艾杨软件推出的专业程序化交易软件，通过vnpy_mcdata接口可以直接读取MultiCharts客户端的数据服务：
+- 项目地址：[vnpy_mcdata](https://github.com/vnpy/vnpy_mcdata)
+- 数据分类：期货、期货期权、股票、ETF期权
+- 数据周期：日线、小时线、分钟线、TICK（实时更新）
+- 配置说明：`datafeed.name`填写`mcdata`，`datafeed.username`填写MultiCharts安装所在目录（如`C:/MCTrader14/APPs`）
 
 
 ## TuShare
@@ -75,8 +75,6 @@ TuShare是国内知名的开源Python金融数据接口项目，由大神Jimmy�
 - 数据分类：期货
 - 数据周期：分钟线（实时更新）
 - 注册申请：[天软.NET金融分析平台](http://www.tinysoft.com.cn/TSDN/HomePage.tsl)
-
-请注意，因为Tinysoft目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供Tinysoft支持。
 
 ## 脚本使用
 脚本使用前，请先按照上文配置好使用的数据服务, 使用时调用相应的函数接口(具体接口支持请参考上文中支持的数据周期)。

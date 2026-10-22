@@ -37,7 +37,9 @@
 
   * 飞马（femas）：期货
 
-  * CTP期权（sopt）：ETF期权
+  * CTP期权（sopt）：ETF期权（实盘）
+
+  * CTP期权测试（sopttest）：ETF期权（测试）
 
   * 顶点飞创（sec）：ETF期权
 
@@ -49,27 +51,21 @@
 
   * 中泰XTP（xtp）：A股、两融、ETF期权
 
-  * 国泰君安统一交易网关（hft）：A股、两融
-
   * 华鑫奇点股票（torastock）：A股
 
   * 华鑫奇点期权（toraoption）：ETF期权
 
-  * 中亿汇达Comstar（comstar）：银行间市场
-
-  * 东方证券OST（ost）：A股
+  * 利星资管（lstar）：期货资管
 
   * 融航（rohon）：期货资管
 
-  * TTS（tts）：期货
+  * 杰宜斯（jees）：期货资管
 
-  * 飞鼠（sgit）：黄金TD
-
-  * 金仕达黄金（ksgold）：黄金TD
+  * TTS（tts）：期货仿真
 
 * 海外市场
 
-  * 盈透证券（ib）：海外多品种
+  * 盈透证券（ib）：海外全品种
 
   * 易盛9.0外盘（tap）：外盘期货
 
@@ -77,7 +73,11 @@
 
 * 特殊应用
 
-  * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
+  * 迅投研（xt）：跨市场行情和仿真交易
+
+  * RQData（rqdata）：跨市场行情
+
+  * RPC服务（rpc）：RPC交易路由
 
 
 ## 支持的应用

@@ -56,7 +56,7 @@ DataManager模块提供了一键下载历史数据的功能，点击右上角【
   - WEEKLY（周K线）
   - TICK（一个Tick）
 - 开始日期
-  - 格式为yy/mm/dd
+  - 格式为yyyy/m/d
   - 如2018/2/25
 
 </span>

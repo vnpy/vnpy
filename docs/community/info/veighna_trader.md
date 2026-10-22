@@ -242,10 +242,10 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 字段如图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/17.png)
 
-目前支持七种datafeed：
+目前支持以下datafeed：
 - [XT]
 - [RQData]
-- [Udata]
+- [MCData]
 - [TuShare]
 - [TQSDK]
 - [Wind]
@@ -254,7 +254,7 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 
 [XT]:https://github.com/vnpy/vnpy_xt
 [RQData]:https://github.com/vnpy/vnpy_rqdata
-[Udata]: https://github.com/vnpy/vnpy_udata
+[MCData]:https://github.com/vnpy/vnpy_mcdata
 [TuShare]: https://github.com/vnpy/vnpy_tushare
 [TQSDK]: https://github.com/vnpy/vnpy_tqsdk
 [Wind]:https://github.com/vnpy/vnpy_wind
@@ -264,4 +264,4 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、QuestDB和TDengine六种数据库。具体配置方法详见项目文档的数据库配置部分。
