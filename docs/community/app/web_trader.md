@@ -57,7 +57,7 @@ main_engine.add_app(WebTraderApp)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_0.png)
 
-即可进入RPC服务模块的UI界面，如下图所示：
+即可进入Web服务模块的UI界面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_3.png)
 
@@ -97,7 +97,7 @@ token = r.json()["access_token"]
 ```
 r = requests.post(url + "tick/" + "cu2112.SHFE", headers={"Authorization":"Bearer " + token})
 ```
-通过上述命令可实现对合约cu2112.SHFE的订阅，同时可以在图形界面收到该合约的行情数据推送，入下图所示：
+通过上述命令可实现对合约cu2112.SHFE的订阅，同时可以在图形界面收到该合约的行情数据推送，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/web_trader/web_trader_4.png)
 
@@ -165,7 +165,7 @@ r = requests.delete(
 ### Websocket测试
 
 ```python3
-# Weboscket测试
+# Websocket测试
 from websocket import create_connection
 
 ws = create_connection("ws://127.0.0.1:8000/ws/?token=" + token)

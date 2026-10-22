@@ -40,7 +40,7 @@ VeighNa支持的Windows系统包括：
 
  - 勾选【将“通过Code打开”操作添加到Windows资源管理器文件上下文菜单】后，用户可以直接通过右键菜单在VSCode中打开单个文件；
  - 勾选【将“通过Code打开”操作添加到Windows资源管理器目录上下文菜单】后，用户可以直接通过右键菜单在VSCode中打开整个文件夹及其内容；
- - 勾选【将Code注册为受支持的文件类型的编辑器】之后，VSCode将被设置为系统打开默认打开支持的文件类型（如.py、.txt等）的编辑器；
+ - 勾选【将Code注册为受支持的文件类型的编辑器】之后，VSCode将被设置为系统默认打开支持的文件类型（如.py、.txt等）的编辑器；
  - 勾选【添加到PATH（重启后生效）】后，系统将会在安装完成后把VSCode的安装目录添加到PATH环境变量中。
 
 点击【下一步】进入准备安装页面，会显示之前选择的安装设置内容：
@@ -175,9 +175,9 @@ VSCode提供了强大的断点调试功能，这里使用一个VeighNa的策略�
 
 通常情况下，VSCode只能在Python解释器中启动的线程里进行代码断点调试。用户如果想要在C++回调函数（如CTP API接口、PySide图形库等）中打断点，可以通过在代码中设置断点的方式，来实现对非Python线程（即C++线程）的断点调试。
 
-点击【New File】，在界面上方弹出的窗口中选择【Python File】, 创建geteway_test.py。
+点击【New File】，在界面上方弹出的窗口中选择【Python File】, 创建gateway_test.py。
 
-在创建成功的geteway_test.py中添加一段脚本策略的代码（可参考[该文件](https://github.com/vnpy/vnpy/blob/master/examples/veighna_trader/demo_script.py)），然后按住Ctrl同时用鼠标左键点击代码中的CtpGateway，跳转至ctp_gateway.py的源码中，在想要调试的回调函数内打上断点（注意不要打在函数定义的def那一行）。回到gateway_test.py开始调试，会发现并没有进入之前设定的断点，如下图所示：
+在创建成功的gateway_test.py中添加一段脚本策略的代码（可参考[该文件](https://github.com/vnpy/vnpy/blob/master/examples/veighna_trader/demo_script.py)），然后按住Ctrl同时用鼠标左键点击代码中的CtpGateway，跳转至ctp_gateway.py的源码中，在想要调试的回调函数内打上断点（注意不要打在函数定义的def那一行）。回到gateway_test.py开始调试，会发现并没有进入之前设定的断点，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/vscode/39.png)
 

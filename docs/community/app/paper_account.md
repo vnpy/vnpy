@@ -72,7 +72,7 @@ main_engine.add_app(PaperAccountApp)
 
 在对某一合约进行下单和撤单操作前，用户必须先**订阅**该合约的行情。
 
-下图中【委托】、【成交】、【持仓】三个监控组件中显示的信息，其接口列均为PAPER（本地模拟数据)：
+下图中【委托】、【成交】、【持仓】三个监控组件中显示的信息，其接口列均为PAPER（本地模拟数据）：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/paper_account/3.png)
 

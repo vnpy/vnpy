@@ -3,7 +3,7 @@
 ## 功能简介
 
 ExcelRtd是用于**在Excel中访问VeighNa程序内任意数据信息**的功能模块，
-RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时数据需求设计的Excel数据对接方案。ExcelRtd依赖于PyXLLC模块（www.pyxll.com），该模块属于商业软件，需要购买才能使用（提供30天免费使用）。
+RTD全称是RealTimeData，是微软提供的主要面向金融行业中实时数据需求设计的Excel数据对接方案。ExcelRtd依赖于PyXLL模块（www.pyxll.com），该模块属于商业软件，需要购买才能使用（提供30天免费试用）。
 
 ## 安装PyXLL
 为了使用ExcelRtd模块，需要安装PyXLL插件。步骤如下：
@@ -64,7 +64,7 @@ main_engine.add_app(ExcelRtdApp)
 
 请注意，IB接口因为登录时无法自动获取所有的合约信息，只有在用户手动订阅行情时才能获取。因此需要在主界面上先行手动订阅合约行情，再启动模块。
 
-成功连接交易接口后，在菜单栏中点击【功能】 -> 【Excel RTD】，或者点击左侧按钮栏的图表：
+成功连接交易接口后，在菜单栏中点击【功能】 -> 【Excel RTD】，或者点击左侧按钮栏的图标：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/excel_rtd/excel_rtd_6.png)
 

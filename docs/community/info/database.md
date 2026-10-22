@@ -133,7 +133,7 @@ MongoDB的带认证配置示例如下所示：
 
 ### QuestDB
 
-QuestDB是一款开源高性能列式时序数据库，兼容PostgreSQL协议和SQL查询，擅长高吞吐写入与低延时分析场景，其特点如下：
+QuestDB是一款开源高性能列式时序数据库，兼容PostgreSQL协议和SQL查询，擅长高吞吐写入与低延迟分析场景，其特点如下：
 - 通过QuestDB ILP/HTTP高速写入K线和Tick数据；
 - 通过PGWire执行建表、查询、汇总和逻辑删除；
 - 使用QuestDB WAL表和`DEDUP UPSERT KEYS`支持重复数据覆盖。

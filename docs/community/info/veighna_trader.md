@@ -181,7 +181,7 @@ font.family和font.size参数用于配置GUI界面，各参数含义如下所示
 
 log.active, log.level, log.console和log.file用于对日志输出进行配置，各参数含义如下所示：
 
-- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VeighNa Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）；
+- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VeighNa Trader运行时不再输出日志或生成日志文件（可以降低部分系统延迟）；
 
 - log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
