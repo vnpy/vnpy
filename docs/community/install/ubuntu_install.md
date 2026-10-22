@@ -2,7 +2,7 @@
 
 ## 检查Python
 
-检查本地Python版本，需要需要3.7版本以上的版本，可在命令行运行python命令查看。
+检查本地Python版本，需要3.10版本以上的版本，可在命令行运行python命令查看。
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/40.png)
 
@@ -49,7 +49,7 @@ sudo bash install.sh
 sudo bash install.sh 你的python软连接
 ```
 
-一键安装过程整体分为3步：
+一键安装过程整体分为2步：
 
 1. 下载安装ta-lib库和numpy；
 2. 安装VeighNa本身。

@@ -99,7 +99,7 @@ main_engine.add_app(SpreadTradingApp)
 
 请注意，在多条腿并且期货合约规模不等时，构建价差合约会相对困难一些，如构建虚拟钢厂套利所用到的价差合约时，计算公式如下：
 
-- 螺纹钢生产技艺是16吨铁矿石加上5吨焦炭练成10吨螺纹钢。
+- 螺纹钢生产技艺是16吨铁矿石加上5吨焦炭炼成10吨螺纹钢。
 - 基于价格乘数的价差spread = 1* RB - 1.6\*I  - 0.5\*J。
 - 但是由于螺纹是10吨/手，铁矿石和焦炭都是100吨/手，所以他们交易乘数是1：10：10；
 - 故基于最大公约数规则，其实际交易手数关系是每买入100手螺纹钢（1000吨），需要卖出16手铁矿石（1600吨）和5手焦炭（500吨）完成对冲。
@@ -173,7 +173,7 @@ main_engine.add_app(SpreadTradingApp)
 - 算法组件
   - 委托状态为【未成交】，要结束算法只需鼠标双击【SpreadTaker_000002】单元格即可。
 
-仅当卖价低于-300时，才触发该限价单，已超价5跳，即-290去主动成交。
+仅当卖价低于-300时，才触发该限价单，以超价5跳，即-290去主动成交。
 
 ### 撤销委托
 
@@ -405,7 +405,7 @@ from vnpy_spreadtrading import (
 
 ### 类的初始化
 
-入参：strategy_engine, strategy_name: str, spread: SpreadData, setting: dict
+入参：strategy_engine: Any, strategy_name: str, spread: SpreadData, setting: dict
 
 出参：无
 
@@ -414,7 +414,13 @@ __init__函数是策略类的构造函数，需要与继承的SpreadStrategyTemp
 在这个继承的策略类里，初始化一般分三步，如下方代码所示：
 
 ```python3
-    def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
+    def __init__(
+        self,
+        strategy_engine: Any,
+        strategy_name: str,
+        spread: SpreadData,
+        setting: dict
+    ) -> None:
         """"""
         super().__init__(
             strategy_engine, strategy_name, spread, setting
@@ -631,22 +637,6 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 收到算法状态更新时on_spread_algo函数会被调用。
 
-**on_order**
-
-* 入参：order: OrderData
-
-* 出参：无
-
-收到策略委托回报时on_order函数会被调用。
-
-**on_trade**
-
-* 入参：trade: TradeData
-
-* 出参：无
-
-收到策略成交回报时on_trade函数会被调用。
-
 ### 主动函数
 
 **start_long_algo**
@@ -661,12 +651,12 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
 
 * 出参：algoid: str
 
-与CTA策略模块不同，价差交易的示例策略都是通过调用star_long_algo/start_short_algo函数（针对价差）而不是buy/sell/short/cover函数（针对特定合约）来发出委托的。在价差交易模块中，算法负责价差交易的执行，策略负责价差算法的调度。价差算法将价差交易简化为了普通委托，封装掉了所有主动腿下单和被动腿对冲的细节。
+与CTA策略模块不同，价差交易的示例策略都是通过调用start_long_algo/start_short_algo函数（针对价差）而不是buy/sell/short/cover函数（针对特定合约）来发出委托的。在价差交易模块中，算法负责价差交易的执行，策略负责价差算法的调度。价差算法将价差交易简化为了普通委托，封装掉了所有主动腿下单和被动腿对冲的细节。
 
-以下方star_long_algo函数的代码为例，可以看到，价格、数量、超价的数值、时间间隔是必填的参数，锁仓转换和开平方向则分别默认为False和Offset.NONE。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
+以下方start_long_algo函数的代码为例，可以看到，价格、数量、超价的数值、时间间隔是必填的参数，锁仓转换和额外参数则分别默认为False和None。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的start_algo函数来发单（因为是long指令，则自动把方向填成了LONG）
 
 ```python3
-     def start_long_algo(
+    def start_long_algo(
         self,
         price: float,
         volume: float,
@@ -676,11 +666,8 @@ SpreadStrategyTemplate中以on开头的函数称为回调函数，在编写策�
         extra: dict = None
     ) -> str:
         """"""
-        if not extra:
-            extra = None
-
         return self.start_algo(
-            Direction.SHORT, price, volume,
+            Direction.LONG, price, volume,
             payup, interval, lock, extra
         )
 ```
@@ -707,59 +694,9 @@ start_algo函数是价差策略引擎调用的启动新的价差交易算法的�
 
 * 出参：无
 
-stop_algo和stop_all_algos都是负责停止价差算法的交易请求类函数。stop_algo是停止策略内指定的价差算法，stop_all_algos是停止策略所有的活动价差算法。
+stop_algo和stop_all_algos都是负责停止价差算法的交易请求类函数。stop_algo是停止策略内指定的价差算法，stop_all_algos是停止策略所有的活动价差算法（价差算法模板SpreadAlgoTemplate内部则通过cancel_leg_order和cancel_all_order函数撤销单腿或全部腿的活动委托）。
 
-请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能撤单。
-
-**buy**：买入开仓（Direction：LONG，Offset：OPEN）
-
-**sell**：卖出平仓（Direction：SHORT，Offset：CLOSE）
-
-**short**：卖出开仓（Direction：SHORT，Offset：OPEN）
-
-**cover**：买入平仓（Direction：LONG，Offset：CLOSE）
-
-* 入参：vt_symbol: str, price: float, volume: float, lock: bool = False
-
-* 出参：vt_orderids: List[vt_orderid] / 无 
-
-buy/sell/short/cover都是策略内部的负责针对特定合约发出底层交易委托的请求类函数。策略可以通过这些函数给价差策略引擎发送交易信号来达到下单的目的。
-
-以下方buy函数的代码为例，可以看到，本地代码、价格和数量是必填的参数，锁仓转换则默认为False。也可以看到，函数内部收到传进来的参数之后就调用了SpreadStrategyTemplate里的send_order函数来发单（因为是buy指令，则自动把方向填成了LONG，开平填成了OPEN）
-
-如果lock设置为True，那么该笔订单则会进行锁仓委托转换（在有今仓的情况下，如果想平仓，则会先平掉所有的昨仓，然后剩下的部分都进行反向开仓来代替平今仓，以避免平今的手续费惩罚）。
-
-```python3
-    def buy(self, vt_symbol: str, price: float, volume: float, lock: bool = False) -> List[str]:
-        """"""
-        return self.send_order(vt_symbol, price, volume, Direction.LONG, Offset.OPEN, lock)
-```
-
-**send_order**
-
-* 入参：vt_symbol: str, price: float, volume: float, direction: Direction, offset: Offset, lock: bool = False
-
-* 出参：vt_orderids / 无
-
-send_order函数是价差策略引擎调用的针对特定合约（**而不是价差**）发送委托的函数。一般在策略编写的时候不需要单独调用，通过buy/sell/short/cover函数发送委托即可。
-
-请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能发出交易委托。如果策略的Trading状态为【False】时调用了该函数，只会返回[]。
-
-**cancel_order**
-
-* 入参：vt_orderid: str
-
-* 出参：无
-
-**cancel_all**
-
-* 入参：无
-
-* 出参：无
-
-cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_order是撤掉策略内指定的活动委托，cancel_all是撤掉策略所有的活动委托。
-
-请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能撤单。
+请注意，要在策略启动之后，也就是策略的trading状态变为【True】之后，才能停止算法。
 
 ### 功能函数
 
@@ -833,7 +770,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略中调用load_bar函数，可以在策略初始化时加载价差K线数据。
 
-如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
+如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。10天指的是10个自然日（日历日），因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
 
 请注意，回测期内每条腿的K线数据（1分钟最佳），若有某条腿缺失一段，则所有腿的这一段数据都会被弃用。
 

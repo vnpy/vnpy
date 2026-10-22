@@ -181,7 +181,7 @@ font.family和font.size参数用于配置GUI界面，各参数含义如下所示
 
 log.active, log.level, log.console和log.file用于对日志输出进行配置，各参数含义如下所示：
 
-- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VeighNa Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）；
+- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VeighNa Trader运行时不再输出日志或生成日志文件（可以降低部分系统延迟）；
 
 - log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
@@ -242,10 +242,10 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 字段如图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/17.png)
 
-目前支持七种datafeed：
+目前支持以下datafeed：
 - [XT]
 - [RQData]
-- [Udata]
+- [MCData]
 - [TuShare]
 - [TQSDK]
 - [Wind]
@@ -254,7 +254,7 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 
 [XT]:https://github.com/vnpy/vnpy_xt
 [RQData]:https://github.com/vnpy/vnpy_rqdata
-[Udata]: https://github.com/vnpy/vnpy_udata
+[MCData]:https://github.com/vnpy/vnpy_mcdata
 [TuShare]: https://github.com/vnpy/vnpy_tushare
 [TQSDK]: https://github.com/vnpy/vnpy_tqsdk
 [Wind]:https://github.com/vnpy/vnpy_wind
@@ -264,4 +264,4 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、QuestDB和TDengine六种数据库。具体配置方法详见项目文档的数据库配置部分。

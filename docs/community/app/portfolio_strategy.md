@@ -152,7 +152,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 编辑完策略参数之后，点击下方的【确定】按钮，相应的修改会立即更新在参数表格中。
 
-但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下porfolio_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
+但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下portfolio_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
 修改前，json文件如下图所示：
 
@@ -179,7 +179,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 1. 调用put_event函数
 
-   策略实例中所有的的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
+   策略实例中所有的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
 
    有时用户会发现自己写的策略无论跑多久，变量信息都不发生变化，这种情况请检查策略中是否漏掉了对put_event函数的调用。
 
@@ -655,17 +655,17 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 * 入参：无
 
-* 出参：List[OrderData] / 无
+* 出参：List[str]
 
 在策略里调用get_all_active_orderids函数，可以获取当前全部活动委托号。
 
 **get_pricetick**
 
-* 入参：vt_symbol
+* 入参：vt_symbol: str
 
 * 出参：pricetick: float / None
 
-在策略里调用get_price函数，可以获取特定合约的最小价格跳动。
+在策略里调用get_pricetick函数，可以获取特定合约的最小价格跳动。
 
 **write_log**
 
@@ -683,7 +683,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略中调用load_bars函数，可以在策略初始化时加载K线数据。
 
-如下方代码所示，load_bars函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
+如下方代码所示，load_bars函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。10天指的是10个自然日（日历日），因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
 
 ```python3
     def load_bars(self, days: int, interval: Interval = Interval.MINUTE) -> None:
@@ -767,7 +767,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 * 入参：vt_symbol: str, direction: Direction, reference: float
 
-* 出参：pricetick: float
+* 出参：price: float
 
 在策略里重载calculate_price函数，可以按需设定特定合约的目标价格（如固定价格超价、固定pricetick超价、百分比超价等）。
 
@@ -851,7 +851,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 * 入参：vt_symbol: str, direction: Direction, reference: float
 
-* 出参：prcie: float
+* 出参：price: float
 
 当rebalance_portfolio函数检测到目标仓位与实际仓位存在差别的时候，会调用calculate_price函数计算调仓委托价格。
 

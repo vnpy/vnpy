@@ -15,7 +15,7 @@ RpcService是用于**将VeighNa Trader进程转化为RPC服务器**的功能模�
 ### 脚本加载
 
 在启动脚本中添加如下代码：
-›
+
 ```python3
 # 写在顶部
 from vnpy_rpcservice import RpcServiceApp
@@ -70,7 +70,7 @@ RPC服务支持的通讯协议包括：
     * 只能在Linux系统上使用（POSIX本地端口通讯）
     * 只能用于本机通讯，后缀为任意字符串内容
 
-一般推荐直接使用TCP协议（以及默认地址），对于使用Ubuntu系统且希望追求更低通讯延时的用户可以使用IPC协议。
+一般推荐直接使用TCP协议（以及默认地址），对于使用Ubuntu系统且希望追求更低通讯延迟的用户可以使用IPC协议。
 
 ### 运行RPC服务
 
@@ -78,7 +78,7 @@ RPC服务支持的通讯协议包括：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/rpc_service/3.png) 
 
-启动成功后，即可在另一VeighNa Trader进程中（客户端）使用RpcGateway来连接
+启动成功后，即可在另一VeighNa Trader进程中（客户端）使用RpcGateway来连接。
 
 如需停止RPC服务可以点击【停止】按钮，此时日志输出"RPC服务已停止"。
 

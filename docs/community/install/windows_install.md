@@ -2,8 +2,8 @@
 
 本文档中安装步骤适用的Windows系统包括：
 
-- Windows 10/11
-- Windows Server 2019
+- Windows 11
+- Windows Server 2022
 
 > 其他版本的Windows系统安装时可能遇到各种依赖库问题，不推荐使用。
 
@@ -11,7 +11,7 @@
 
 作为一站式的量化投研交易Python环境，VeighNa Studio整合了：
 
-- Python 3.10 64位（Python官网版本）
+- Python 3.13 64位（Python官网版本）
 - VeighNa和其他相关依赖库
 - VeighNa Station（VeighNa框架的图形化管理工具）
 
@@ -118,7 +118,7 @@ examples.run()
 
 ### 准备Python环境
 
-首先请在电脑上准备好Python 3.10 64位环境（**注意必须是64位版本**），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
+首先请在电脑上准备好Python 3.10以上 64位环境（**注意必须是64位版本**，推荐使用Python 3.13），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
 
 这里我们以Python官网的发行版为例，首先在[Python官网](https://www.python.org/downloads/windows/)下载安装文件，选择【Windows installer (64-bit)】，如下图所示：
 
@@ -142,7 +142,7 @@ examples.run()
 install.bat
 ```
 
-一键安装过程整体分为3步：
+一键安装过程整体分为2步：
 
 1. 下载安装ta-lib库；
 2. 安装VeighNa本身。
