@@ -2,9 +2,7 @@
 
 ## 检查Python
 
-检查本地Python版本，需要3.10版本以上的版本，可在命令行运行python命令查看。
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/40.png)
+检查本地Python版本，推荐使用3.13及以上版本，可在命令行运行python命令查看。
 
 
 ## 安装VeighNa
@@ -16,9 +14,11 @@
 - [VeighNa Github下载地址](https://github.com/vnpy/vnpy/releases)
 - [VeighNa Gitee下载地址](https://gitee.com/mirrors/vn-py/releases)
 
-下载完成后用tar命令解压文件，如下图所示。
+下载完成后，在压缩包所在目录打开终端，用tar命令解压，文件名换成实际下载的压缩包：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/41.png)
+```
+tar -xzf vnpy-版本号.tar.gz
+```
 
 ### 执行一键安装
 
@@ -29,21 +29,13 @@ sudo apt-get update
 sudo apt-get install build-essential
 ```
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/39.png)
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/43.png)
-
-然后进入之前解压出来的VeighNa源代码目录（包含install.sh文件）
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/42.png)
-
-打开终端运行如下命令执行一键安装：
+然后`ls`进入之前解压出来的VeighNa源代码目录（包含install.sh文件），打开终端运行如下命令执行一键安装：
 
 ```
 sudo bash install.sh
 ```
 
-请注意，如果python软连接名不为python，比如python3或python3.10，请执行如下命令：
+请注意，如果python软连接名不为python，比如python3或python3.13，请执行如下命令：
 
 ```
 sudo bash install.sh 你的python软连接

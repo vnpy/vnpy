@@ -330,7 +330,7 @@ bar_data: List[BarData] = None
 
 database.save_bar_data(bar_data)
 
-# 需要存入的k线数据，请自行获取并转换成所需的形式
+# 需要存入的Tick数据，请自行获取并转换成所需的形式
 tick_data: List[TickData] = None
 
 # 将tick数据存入数据库
@@ -339,7 +339,7 @@ database.save_tick_data(tick_data)
 
 #### 数据库删除操作
 
-无法恢复，请谨慎操作
+无法恢复，请谨慎操作。上面的start、end只用于读取。delete_bar_data会删掉该合约、该周期的全部K线，delete_tick_data会删掉该合约的全部Tick，都不看时间范围。
 
 ```python3
 # 删除数据库中k线数据

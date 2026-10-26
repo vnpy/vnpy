@@ -68,7 +68,7 @@ main_engine.add_app(SpreadTradingApp)
 
 ### 构建价差合约
 
-在价差交易的界面左侧，点击【价差创建】按钮，弹出创建价差界面，如下图所示：
+在价差交易的界面左侧，点击【创建价差】按钮，弹出创建价差界面，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/4.png)
 
@@ -264,7 +264,7 @@ main_engine.add_app(SpreadTradingApp)
 
 #### 停止
 
-若要停止策略，点击策略实例下的【停止】按钮，即可停止该策略实例的自动交易。【日志】组件输出“算法已停止”，如下图所示：
+若要停止策略，点击策略实例下的【停止】按钮，即可停止该策略实例的自动交易。【日志】组件会先输出“策略停止”，随后停止该策略已经启动的算法并撤销未成交委托，再输出“算法已停止”，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/15.png)
 
@@ -288,14 +288,6 @@ main_engine.add_app(SpreadTradingApp)
 
 但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下spread_trading_strategy.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
-修改前，json文件如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/26-1.png)
-
-修改后，json文件如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/27-1.png)
-
 若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/28.png)
@@ -311,26 +303,6 @@ main_engine.add_app(SpreadTradingApp)
 ### 批量操作
 
 在策略经过充分测试，实盘运行较为稳定，不需要经常进行调整的情况下，如果有多个需要运行的价差策略实例，可以使用界面左下角的【全部初始化】、【全部启动】和【全部停止】功能来执行盘前批量初始化、启动策略实例以及盘后批量停止策略实例的操作。
-
-#### 全部初始化
-
-在所有策略实例创建成功后，点击左下角的【全部初始化】按钮，则可批量初始化策略实例，如下图所示：
-
-点击【全部初始化】后，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/31.png)
-
-#### 全部启动
-
-在所有策略实例初始化成功后，点击左下角的【全部启动】按钮，则可批量启动策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/32.png)
-
-#### 全部停止
-
-在所有策略实例启动成功后，点击左下角的【全部停止】按钮，则可批量停止策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/33.png)
 
 
 ## 价差交易策略模板（SpreadStrategyTemplate）
@@ -752,15 +724,25 @@ stop_algo和stop_all_algos都是负责停止价差算法的交易请求类函数
 
 在策略里调用get_leg_pos函数，可以获取特定合约的持仓数据，用于处理瘸腿后的细粒度调整。
 
+**get_engine_type**
+
+* 入参：无
+
+* 出参：engine_type: EngineType
+
+如果策略对于回测和实盘时有不同的逻辑处理，可以调用get_engine_type函数获取当下使用的引擎类型来进行逻辑判断。
+
+请注意，如果要调用该函数进行逻辑判断，请在策略文件顶部导入“EngineType”。
+
 **send_email**
 
 * 入参：msg: str
 
 * 出参：无
 
-配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以发送指定内容的邮件到自己的邮箱。
+配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以把指定内容发到自己的邮箱；若已完成微信绑定，也会同时发到微信。
 
-请注意，要策略初始化完成，inited状态变为【True】之后，才能发送邮件。
+请注意，要策略初始化完成，inited状态变为【True】之后，才能发送。
 
 **load_bar**
 
@@ -770,7 +752,7 @@ stop_algo和stop_all_algos都是负责停止价差算法的交易请求类函数
 
 在策略中调用load_bar函数，可以在策略初始化时加载价差K线数据。
 
-如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。10天指的是10个自然日（日历日），因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
+如下方代码所示，load_bar函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。10天指的是10个自然日（日历日），因此建议加载的天数宁可多一些也不要太少。实盘加载时，会先向数据服务查询各腿K线，查不到再从数据库读取，然后合成价差K线。
 
 请注意，回测期内每条腿的K线数据（1分钟最佳），若有某条腿缺失一段，则所有腿的这一段数据都会被弃用。
 

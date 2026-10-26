@@ -66,7 +66,7 @@ main_engine.add_app(PaperAccountApp)
 
 用户可以通过【查询合约】来查询确认合约的交易接口状态：
 
-点击菜单栏的【帮助】->【合约查询】，在弹出的对话框中直接点击右上角的【查询】按钮，发现所有合约的【交易接口】列均显示为PAPER，如下图所示：
+点击菜单栏的【帮助】->【查询合约】，在弹出的对话框中直接点击右上角的【查询】按钮，发现所有合约的【交易接口】列均显示为PAPER，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/paper_account/2.png)
 
