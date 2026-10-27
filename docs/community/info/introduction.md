@@ -25,104 +25,102 @@
 
 ## 支持的接口
 
-**vnpy.gateway**，覆盖国内外所有交易品种的交易接口：
-
 * 国内市场
 
-  * CTP（ctp）：期货、期货期权
+  * CTP（vnpy_ctp）：期货、期货期权
 
-  * CTP测试（ctptest）：期货、期货期权
+  * CTP测试（vnpy_ctptest）：期货、期货期权
 
-  * CTP Mini（mini）：期货、期货期权
+  * CTP Mini（vnpy_mini）：期货、期货期权
 
-  * 飞马（femas）：期货
+  * 飞马（vnpy_femas）：期货
 
-  * CTP期权（sopt）：ETF期权
+  * CTP期权（vnpy_sopt）：ETF期权（实盘）
 
-  * 顶点飞创（sec）：ETF期权
+  * CTP期权测试（vnpy_sopttest）：ETF期权（测试）
 
-  * 顶点HTS（hts）：ETF期权
+  * 顶点飞创（vnpy_sec）：ETF期权
 
-  * 恒生UFT（uft）：期货、ETF期权
+  * 顶点HTS（vnpy_hts）：ETF期权
 
-  * 易盛（esunny）：期货、黄金TD
+  * 恒生UFT（vnpy_uft）：期货、ETF期权
 
-  * 中泰XTP（xtp）：A股、两融、ETF期权
+  * 易盛（vnpy_esunny）：期货、黄金TD
 
-  * 国泰君安统一交易网关（hft）：A股、两融
+  * 中泰XTP（vnpy_xtp）：A股、两融、ETF期权
 
-  * 华鑫奇点股票（torastock）：A股
+  * 华鑫奇点股票（vnpy_tora）：A股
 
-  * 华鑫奇点期权（toraoption）：ETF期权
+  * 华鑫奇点期权（vnpy_tora）：ETF期权
 
-  * 中亿汇达Comstar（comstar）：银行间市场
+  * 利星资管（vnpy_lstar）：期货资管
 
-  * 东方证券OST（ost）：A股
+  * 融航（vnpy_rohon）：期货资管
 
-  * 融航（rohon）：期货资管
+  * 杰宜斯（vnpy_jees）：期货资管
 
-  * TTS（tts）：期货
-
-  * 飞鼠（sgit）：黄金TD
-
-  * 金仕达黄金（ksgold）：黄金TD
+  * TTS（vnpy_tts）：期货仿真
 
 * 海外市场
 
-  * 盈透证券（ib）：海外多品种
+  * 盈透证券（vnpy_ib）：海外全品种
 
-  * 易盛9.0外盘（tap）：外盘期货
+  * 易盛9.0外盘（vnpy_tap）：外盘期货
 
-  * 直达期货（da）：外盘期货
+  * 直达期货（vnpy_da）：外盘期货
 
 * 特殊应用
 
-  * RPC服务（rpc）：跨进程通讯接口，用于分布式架构
+  * 迅投研（vnpy_xt）：跨市场行情和仿真交易
+
+  * RQData（vnpy_rqdata）：跨市场行情
+
+  * RPC服务（vnpy_rpcservice）：RPC交易路由
 
 
 ## 支持的应用
 
-**vnpy.app**，开箱即用的各类量化策略交易应用：
+开箱即用的各类量化策略交易应用，可按需安装：
 
-* cta_strategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
+* vnpy_ctastrategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
-* cta_backtester：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
+* vnpy_ctabacktester：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
 
-* spread_trading：多合约价差套利模块，除了允许用户通过手动的方式来启动算法买卖价差外，也同样支持用户使用策略模板SpreadStrategyTemplate来开发各种价差类的量化交易策略
+* vnpy_spreadtrading：多合约价差套利模块，除了允许用户通过手动的方式来启动算法买卖价差外，也同样支持用户使用策略模板SpreadStrategyTemplate来开发各种价差类的量化交易策略
 
-* algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等。支持常用算法配置保存
+* vnpy_algotrading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等。支持常用算法配置保存
 
-* option_master：期权波动率交易模块，提供波动率曲线图表，允许用户作出相应的判断分析，进而使用波动率管理组件设置定价参考波动率，然后就可以通过期权电子眼算法自动扫描市场上的交易机会并瞬时完成交易
+* vnpy_optionmaster：期权波动率交易模块，提供波动率曲线图表，允许用户作出相应的判断分析，进而使用波动率管理组件设置定价参考波动率，然后就可以通过期权电子眼算法自动扫描市场上的交易机会并瞬时完成交易
 
-* portfolio_strategy：多合约组合策略模块，专门针对需要同时交易多合约的量化策略设计，满足其历史数据回测和实盘自动交易的需求
+* vnpy_portfoliostrategy：多合约组合策略模块，专门针对需要同时交易多合约的量化策略设计，满足其历史数据回测和实盘自动交易的需求
 
-* script_trader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
+* vnpy_scripttrader：脚本策略模块，针对多标的组合类交易策略设计，同时也可以直接在命令行中实现REPL指令形式的交易，不支持回测功能
 
-* chart_wizard：实时K线图表模块，可以实现简单的实时K线行情显示，直接在本地合约代码的编辑框中输入vt_symbol，点击【新建图表】的按钮就会打开对应合约的图表
+* vnpy_chartwizard：实时K线图表模块，可以实现简单的实时K线行情显示，直接在本地合约代码的编辑框中输入vt_symbol，点击【新建图表】的按钮就会打开对应合约的图表
 
-* rpc_service：RPC服务模块，允许将某一VeighNa Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
+* vnpy_rpcservice：RPC服务模块，允许将某一VeighNa Trader进程启动为服务端，作为统一的行情和交易路由通道，允许多客户端同时连接，实现多进程分布式系统
 
-* excel_rtd：EXCEL RTD模块，RTD全称是RealTimeData，是微软主要为金融行业的实时数据需求设计的Excel数据对接方案。该模块用于实现在Excel中访问VeighNa程序内任意数据信息的功能
+* vnpy_excelrtd：EXCEL RTD模块，RTD全称是RealTimeData，是微软主要为金融行业的实时数据需求设计的Excel数据对接方案。该模块用于实现在Excel中访问VeighNa程序内任意数据信息的功能
 
-* data_manager：历史数据管理模块，是VeighNa Trader内部针对历史数据的多功能管理工具。可以支持数据导入、数据查看以及数据导出等功能，支持自定义数据表头格式
+* vnpy_datamanager：历史数据管理模块，是VeighNa Trader内部针对历史数据的多功能管理工具。可以支持数据导入、数据查看以及数据导出等功能，支持自定义数据表头格式
 
-* data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
+* vnpy_datarecorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
-* risk_manager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
+* vnpy_riskmanager：风险管理模块，提供包括交易流控、下单数量、活动委托、撤单总数等规则的统计和限制，有效实现前端风控功能
 
-* web_trader：Web服务模块，针对B-S架构需求设计，实现了提供主动函数调用（REST）和被动数据推送（Websocket）的Web服务器
+* vnpy_webtrader：Web服务模块，针对B-S架构需求设计，实现了提供主动函数调用（REST）和被动数据推送（Websocket）的Web服务器
 
-* portfolio_manager：投资组合管理模块，该模块主要面向各种采用基本面策略的投资者，针对每个投资策略，创建一个独立的投资组合策略对象
+* vnpy_portfoliomanager：投资组合管理模块，该模块主要面向各种采用基本面策略的投资者，针对每个投资策略，创建一个独立的投资组合策略对象
 
-* paper_account：模拟交易账户模块，是为了解决目前各类需要依赖服务端功能的仿真交易账户的问题，直接在交易客户端内部提供一套本地化的模拟交易环境，同时基于实盘行情的盘口数据进行委托撮合
+* vnpy_paperaccount：模拟交易账户模块，是为了解决目前各类需要依赖服务端功能的仿真交易账户的问题，直接在交易客户端内部提供一套本地化的模拟交易环境，同时基于实盘行情的盘口数据进行委托撮合
 
 
 ## 通用类组件
 
-**vnpy.event**，简洁易用的事件驱动引擎，作为事件驱动型交易程序的核心。
+* 事件驱动引擎：简洁易用，作为事件驱动型交易程序的核心
 
-**vnpy.chart**，Python高性能K线图表，支持大数据量图表显示以及实时数据更新功能。
+* K线图表：支持大数据量图表显示以及实时数据更新
 
-**vnpy.trader.database**，集成了几大数据库管理端模块，以支持数据库读写性能和未来的新数据库扩展。
+* 数据库驱动：可按需安装，用于保存行情和业务数据，例如 vnpy_sqlite
 
-**vnpy.trader.datafeed**，提供标准化接口BaseDataFeed，带来了更加灵活的数据服务支持。
+* 数据服务：可按需安装，用于接入不同的历史数据源，例如 vnpy_rqdata

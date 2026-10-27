@@ -63,7 +63,7 @@ VeighNa适用的Windows系统包括：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/11.png)
 
-点击site_packages文件夹，往下滚动就能扎到VeighNa Studio中vnpy核心框架包以及vnpy_前缀的插件模块包。此时可以通过点击对应图标来查看每个包中的文件源码，如下图所示：
+点击site_packages文件夹，往下滚动就能找到VeighNa Studio中vnpy核心框架包以及vnpy_前缀的插件模块包。此时可以通过点击对应图标来查看每个包中的文件源码，如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/13.png)
 
@@ -188,9 +188,9 @@ PyCharm的断点调试功能十分强大，这里使用一个VeighNa的策略历
 
 通常情况下，PyCharm只能在Python解释器中启动的线程里进行代码断点调试。之前有部分用户反馈过尝试在C++回调函数（如CTP API接口、PySide图形库等）中打断点但无法起效的问题。针对这种情况，可以通过在代码中设置断点的方式，来实现对非Python线程（即C++）的断点调试。
 
-在项目左侧导航栏中点击鼠标右键，选择【New】-【File】, 创建geteway_test.py。
+在项目左侧导航栏中点击鼠标右键，选择【New】-【File】, 创建gateway_test.py。
 
-在创建成功的geteway_test.py中添加一段脚本策略的代码（可参考[该文件](https://github.com/vnpy/vnpy/blob/master/examples/veighna_trader/demo_script.py)），然后按住Ctrl同时用鼠标左键点击代码中的CtpGateway，跳转至ctp_gateway.py的源码中，在想要调试的回调函数内打上断点（注意不要打在函数定义的def那一行），如下图所示：
+在创建成功的gateway_test.py中添加一段脚本策略的代码（可参考[该文件](https://github.com/vnpy/vnpy/blob/master/examples/veighna_trader/demo_script.py)），然后按住Ctrl同时用鼠标左键点击代码中的CtpGateway，跳转至ctp_gateway.py的源码中，在想要调试的回调函数内打上断点（注意不要打在函数定义的def那一行），如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/pycharm/50.png)
 

@@ -2,8 +2,8 @@
 
 本文档中安装步骤适用的Windows系统包括：
 
-- Windows 10/11
-- Windows Server 2019
+- Windows 11
+- Windows Server 2022
 
 > 其他版本的Windows系统安装时可能遇到各种依赖库问题，不推荐使用。
 
@@ -11,7 +11,7 @@
 
 作为一站式的量化投研交易Python环境，VeighNa Studio整合了：
 
-- Python 3.10 64位（Python官网版本）
+- Python 3.13 64位（Python官网版本）
 - VeighNa和其他相关依赖库
 - VeighNa Station（VeighNa框架的图形化管理工具）
 
@@ -24,19 +24,21 @@
 
 在[VeighNa官网](https://www.vnpy.com/)可以下载VeighNa Studio安装包。
 
-下载完成后，双击安装包进入VeighNa Studio安装向导（推荐点击右键，选择【使用管理员身份运行】进行安装），使用默认设置点击【快速安装】按钮即可进行VeighNa Studio安装，如下图所示：
+下载完成后，双击安装包进入VeighNa Studio 4.5.0安装程序（推荐点击右键，选择【使用管理员身份运行】进行安装）。
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/21.png)
+首先进入欢迎页面【欢迎使用 VeighNa Studio 4.5.0 安装程序】，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/44.png)
+
+然后进入选择安装位置页面，如下图所示：
+
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/45.png)
 
 > 推荐将VeighNa Studio安装在默认路径的C:\veighna_studio，其他VeighNa文档和教程中均使用该目录作为VeighNa安装目录进行讲解。
 
-如果想进行个性化安装，可点击【自定义安装】进入高级选项页面，如下图所示：
+确认安装位置后进入安装进度页面。安装结束后进入【VeighNa Studio 4.5.0 安装程序结束】页面，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/24.png)
-
-安装完成后，会转换到安装成功页面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/26.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/46.png)
 
 此时桌面会出现VeighNa Station的图标，双击图标即可运行VeighNa Station。
 
@@ -46,7 +48,7 @@
 
 输入python即可进入python的交互式环境，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/29.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/47.png)
 
 此时在命令行中输入python代码就会立即执行。如果想运行pyqtgraph的自带的例子，可以依次输入以下代码：
 
@@ -69,64 +71,20 @@ examples.run()
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/38.png)
 
-### 修改
-
-如果安装之后，想要添加或者移除某项功能，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
-
-点击【修改】，进入修改页面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/35.png)
-
-选择完可选功能后，点击【下一步】，进入高级选项页面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/37.png)
-
-选择完毕，即可重新安装。
-
-### 修复
-
-如果安装之后，出现安装不完整或者其他需要修复的情况，可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
-
-点击【修复】，进入修复界面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/34.png)
-
-修复完成后，会转换到修复成功页面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/15.png)
-
-### 卸载
-
-如果想卸载VeighNa Studio， 可以双击VeighNa Studio的安装包，进入VeighNa Studio安装界面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/33.png)
-
-点击【卸载】，进入卸载界面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/27.png)
-
-卸载完成后，会转换到卸载成功页面，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/28.png)
-
 
 ## 手动安装方案
 
 ### 准备Python环境
 
-首先请在电脑上准备好Python 3.10 64位环境（**注意必须是64位版本**），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
+首先请在电脑上准备好64位Python环境（**注意必须是64位版本**，推荐使用Python 3.13及以上），推荐使用Python官网的发行版，也可以使用Anaconda、Miniconda、Canopy等发行版。
 
 这里我们以Python官网的发行版为例，首先在[Python官网](https://www.python.org/downloads/windows/)下载安装文件，选择【Windows installer (64-bit)】，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/22.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/48.png)
 
-下载完毕后，双击文件进入Python安装向导，勾选【Add Python3.10 to PATH】选项后，点击【Install Now】进行安装，推荐使用默认设置一路点击【下一步】直到安装完成即可：
+下载完毕后，双击文件进入Python安装向导，勾选【Add python.exe to PATH】选项后，点击【Install Now】进行安装，推荐使用默认设置一路点击【下一步】直到安装完成即可：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/23.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/install/49.png)
 
 
 ### 下载安装VeighNa  
@@ -142,7 +100,7 @@ examples.run()
 install.bat
 ```
 
-一键安装过程整体分为3步：
+一键安装过程整体分为2步：
 
 1. 下载安装ta-lib库；
 2. 安装VeighNa本身。

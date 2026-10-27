@@ -1,6 +1,6 @@
 # 数据库
 
-VeighNa Trader目前支持以下八种数据库：
+VeighNa Trader目前支持以下六种数据库：
 
 ## SQL类数据库简介
 
@@ -131,122 +131,70 @@ MongoDB的带认证配置示例如下所示：
 
 [AuthSource]: https://docs.mongodb.com/manual/core/security-users/#user-authentication-database
 
-### InfluxDB
+### QuestDB
 
-InfluxDB是专门针对时间序列数据存储设计的非关系型数据库，其特点如下：
-- 列式数据存储提供极高的读写效率；
-- 采用独立服务进程的模式运行，也能支持多进程的并发访问需求。
+QuestDB是一款开源高性能列式时序数据库，兼容PostgreSQL协议和SQL查询，擅长高吞吐写入与低延迟分析场景，其特点如下：
+- 通过QuestDB ILP/HTTP高速写入K线和Tick数据；
+- 通过PGWire执行建表、查询、汇总和逻辑删除；
+- 使用QuestDB WAL表和`DEDUP UPSERT KEYS`支持重复数据覆盖。
 
-在安装时需要选择2.0版本的InfluxDB。
+请注意，QuestDB接口会同时使用两个服务端口：
+- `database.port`：PGWire SQL端口（默认`8812`），用于建表、读取数据、查询汇总和逻辑删除；
+- `database.http_port`：HTTP端口（默认`9000`），用于通过ILP/HTTP写入K线和Tick数据。
 
-请注意，运行influxd.exe的cmd需要保持运行，如果关闭则会导致InfluxDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务。
+#### QuestDB配置字段
 
-#### InfluxDB配置字段
-InfluxDB在VeighNa Trader中配置时，需要填写以下字段信息：
+QuestDB在VeighNa Trader中配置时，需要填写以下字段信息：
 
 | 字段名            | 值 | 是否必填 |
-|---------           |---- | ---- |
-|database.name     | "influxdb" | 必填 |
-|database.host       | 地址| 必填 |
-|database.port       | 端口| 必填 |
-|database.database   | 数据库名| 必填 |
-|database.user       | 用户名| 必填 |
-|database.password   | 密码| 必填 |
-
-InfluxDB配置示例如下所示：
-
-| 字段名             | 值 |
-|---------           |----  |
-|database.name     | influxdb |
-|database.host       | localhost |
-|database.port       | 8086 |
-|database.database   | vnpy |
-|database.user       | root |
-|database.password   | 12345678 |
-
-### DolphinDB
-
-DolphinDB是浙江智臾科技有限公司研发的一款高性能分布式时序数据库，特别适用于对速度要求极高的低延时或实时性任务，其特点如下：
-- 列式分析型（OLAP）数据库，采用混合引擎（基于内存和硬盘），充分利用缓存来加速；
-- 原生分区表存储，合理的分区方案可以让CPU多线程并行加载每个分区内的数据；
-- 支持高效的数据压缩，显著减小硬盘存储空间的同时，还能大幅降低IO通讯的开销。
-
-尽管DolphinDB是商业软件，但是也提供了免费的社区版，在安装时需要选择[2.0 Beta](https://github.com/dolphindb/release/blob/master/2.00/README.md)版本。
-
-请注意：
- - 运行dolphindb.exe的cmd需要保持运行，如果关闭则会导致DolphinDB退出，或者也可以使用一些辅助工具将其注册为后台运行的Windows服务；
- - 因为DolphinDB目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供DolphinDB支持。
-
-#### DolphinDB配置字段
-
-需要填写以下字段：
-
-| 字段名        | 值 | 是否必填 |
 |---------          |---- | ---- |
-|database.name      | "dolphindb"| 必填 |
+|database.name      | "questdb" | 必填 |
+|database.host      | 地址 | 必填 |
+|database.port      | PGWire SQL端口 | 必填 |
+|database.http_port | HTTP端口 | 必填 |
+|database.database  | 数据库名 | 必填 |
+|database.user      | 用户名 | 必填 |
+|database.password  | 密码 | 必填 |
+
+QuestDB配置示例如下所示：
+
+| 字段名            | 值 |
+|---------          |----  |
+|database.name      | questdb |
+|database.host      | localhost |
+|database.port      | 8812 |
+|database.http_port | 9000 |
+|database.database  | qdb |
+|database.user      | admin |
+|database.password  | quest |
+
+### TDengine
+
+TDengine是一款分布式、高性能、支持SQL的时序数据库，带有内建的缓存、流式计算、数据订阅等系统功能，能大幅减少研发和运维的复杂度（需要使用TDengine 3.3.4.8以上版本）。
+
+#### TDengine配置字段
+
+TDengine在VeighNa Trader中配置时，需要填写以下字段信息：
+
+| 字段名            | 值 | 是否必填 |
+|---------          |---- | ---- |
+|database.name      | "taos" | 必填 |
 |database.host      | 地址 | 必填 |
 |database.port      | 端口 | 必填 |
 |database.database  | 数据库名 | 必填 |
 |database.user      | 用户名 | 必填 |
 |database.password  | 密码 | 必填 |
 
-DolphinDB配置示例如下所示：
+TDengine配置示例如下所示：
 
 | 字段名            | 值 |
 |---------          |----  |
-|database.name      | dolphindb |
+|database.name      | taos |
 |database.host      | localhost |
-|database.port      | 8848 |
+|database.port      | 6030 |
 |database.database  | vnpy |
-|database.user      | admin |
-|database.password  | 123456|
-
-### Arctic
-
-Arctic是由英国量化对冲基金Man AHL基于MongoDB开发的高性能金融时序数据库，其特点如下：
-- 支持直接存储pandas的DataFrame和numpy的ndaaray对象；
-- 允许对数据进行版本化管理（类似于数据库中的git），便于因子挖掘过程中的数据迭代管理；
-- 基于分块化存储和LZ4压缩，在网络和磁盘IO方面节省大量资源，实现超高性能的数据查询。
-
-请注意，因为Arctic目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供Arctic支持。
-
-#### Artic配置字段
-
-| 字段名          | 值 | 是否必填 |
-|---------        |---- | ---- |
-|database.name    | "arctic"| 必填 |
-|database.host    | 地址 | 必填 |
-|database.port    | 端口 | 必填 |
-
-Arctic配置示例如下所示：
-
-| 字段名          | 值 |
-|---------        |----  |
-|database.name    | arctic |
-|database.host    | localhost |
-|database.database    | vnpy |
-
-### Level DB
-LevelDB是由Google推出的高性能Key/Value数据库，其特点如下：
-- 定位为通用型数据存储方案；
-- 基于LSM算法实现进程内存储引擎；
-- 支持数十亿级别的海量数据。
-
-请注意，因为LevelDB目前不支持Python3.10，所以VeighNa Studio 3.0.0没有提供LevelDB支持。
-
-#### LevelDB配置字段
-| 字段名            | 值 | 是否必填 |
-|---------          |---- | ---- |
-|database.name      | "leveldb"| 必填 |
-|database.database  | 数据库名 | 必填 |
-|database.port    | 端口 | 必填 |
-
-LevelDB配置示例如下所示：
-
-| 字段名            | 值 |
-|---------          |  ----  |
-|database.name      | leveldb |
-|database.database  | vnpy_data |
+|database.user      | root |
+|database.password  | taosdata |
 
 
 ## 数据库配置（以MySQL为例）
@@ -382,7 +330,7 @@ bar_data: List[BarData] = None
 
 database.save_bar_data(bar_data)
 
-# 需要存入的k线数据，请自行获取并转换成所需的形式
+# 需要存入的Tick数据，请自行获取并转换成所需的形式
 tick_data: List[TickData] = None
 
 # 将tick数据存入数据库
@@ -391,7 +339,7 @@ database.save_tick_data(tick_data)
 
 #### 数据库删除操作
 
-无法恢复，请谨慎操作
+无法恢复，请谨慎操作。上面的start、end只用于读取。delete_bar_data会删掉该合约、该周期的全部K线，delete_tick_data会删掉该合约的全部Tick，都不看时间范围。
 
 ```python3
 # 删除数据库中k线数据

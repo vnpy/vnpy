@@ -152,16 +152,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 编辑完策略参数之后，点击下方的【确定】按钮，相应的修改会立即更新在参数表格中。
 
-但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下porfolio_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
-
-修改前，json文件如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/18.png)
-
-
-修改后，json文件如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/17.png)
+但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下portfolio_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
 若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例。
 
@@ -179,7 +170,7 @@ main_engine.add_app(PortfolioStrategyApp)
 
 1. 调用put_event函数
 
-   策略实例中所有的的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
+   策略实例中所有的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
 
    有时用户会发现自己写的策略无论跑多久，变量信息都不发生变化，这种情况请检查策略中是否漏掉了对put_event函数的调用。
 
@@ -217,23 +208,6 @@ main_engine.add_app(PortfolioStrategyApp)
 
 在策略经过充分测试，实盘运行较为稳定，不需要经常进行调整的情况下，如果有多个需要运行的组合策略实例，可以使用界面右上角的【全部初始化】、【全部启动】和【全部停止】功能来执行盘前批量初始化、启动策略实例以及盘后批量停止策略实例的操作。
 
-### 全部初始化
-
-在所有策略实例创建成功后，点击右上角的【全部初始化】按钮，则可批量初始化策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/19.png)
-
-### 全部启动
-
-在所有策略实例初始化成功后，点击右上角的【全部启动】按钮，则可批量启动策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/20.png)
-
-### 全部停止
-
-在所有策略实例启动成功后，点击右上角的【全部停止】按钮，则可批量停止策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/portfolio_strategy/21.png)
 
 ## 多合约组合策略模板（StrategyTemplate）-- 基础
 
@@ -655,17 +629,35 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 * 入参：无
 
-* 出参：List[OrderData] / 无
+* 出参：List[str]
 
 在策略里调用get_all_active_orderids函数，可以获取当前全部活动委托号。
 
 **get_pricetick**
 
-* 入参：vt_symbol
+* 入参：vt_symbol: str
 
 * 出参：pricetick: float / None
 
-在策略里调用get_price函数，可以获取特定合约的最小价格跳动。
+在策略里调用get_pricetick函数，可以获取特定合约的最小价格跳动。
+
+**get_size**
+
+* 入参：vt_symbol: str
+
+* 出参：size: int / None
+
+在策略里调用get_size函数，可以获取特定合约的合约乘数。取不到合约信息时返回空。
+
+**get_engine_type**
+
+* 入参：无
+
+* 出参：engine_type: EngineType
+
+如果策略对于回测和实盘时有不同的逻辑处理，可以调用get_engine_type函数获取当下使用的引擎类型来进行逻辑判断。
+
+请注意，如果要调用该函数进行逻辑判断，请在策略文件顶部导入“EngineType”。
 
 **write_log**
 
@@ -683,7 +675,7 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略中调用load_bars函数，可以在策略初始化时加载K线数据。
 
-如下方代码所示，load_bars函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。在回测时，10天指的是10个交易日，而在实盘时，10天则是指的是自然日，因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
+如下方代码所示，load_bars函数调用时，默认加载的天数是10，频率是一分钟，对应也就是加载10天的1分钟K线数据。10天指的是10个自然日（日历日），因此建议加载的天数宁可多一些也不要太少。加载时会先依次尝试通过交易接口、数据服务、数据库获取历史数据，直到获取历史数据或返回空。
 
 ```python3
     def load_bars(self, days: int, interval: Interval = Interval.MINUTE) -> None:
@@ -709,9 +701,9 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 * 出参：无
 
-配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以发送指定内容的邮件到自己的邮箱。
+配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以把指定内容发到自己的邮箱；若已完成微信绑定，也会同时发到微信。
 
-请注意，要策略初始化完成，inited状态变为【True】之后，才能发送邮件。
+请注意，要策略初始化完成，inited状态变为【True】之后，才能发送。
 
 **sync_data**
 
@@ -767,7 +759,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 * 入参：vt_symbol: str, direction: Direction, reference: float
 
-* 出参：pricetick: float
+* 出参：price: float
 
 在策略里重载calculate_price函数，可以按需设定特定合约的目标价格（如固定价格超价、固定pricetick超价、百分比超价等）。
 
@@ -851,7 +843,7 @@ PortfolioStrategy模块针对的是多标的投资组合类的量化策略，这
 
 * 入参：vt_symbol: str, direction: Direction, reference: float
 
-* 出参：prcie: float
+* 出参：price: float
 
 当rebalance_portfolio函数检测到目标仓位与实际仓位存在差别的时候，会调用calculate_price函数计算调仓委托价格。
 

@@ -5,20 +5,20 @@
 ### 图形模式
 
 启动登录VeighNa Station后，用户可通过点击【交易】按钮，勾选所需的交易接口和应用模块，点击【启动】按钮进入VeighNa Trader，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/22.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/28.png)
 
 ### 脚本模式
 
 在文件夹examples/veighna_trader中找到run.py文件(不是veighna_studio下的，需要在github上下载源码）。运行run.py即可进入VeighNa Trader。
 
-- 以Win10系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VeighNa Trader。
+- 以Win11系统为例，用户可在run.py所在文件夹内按住【Shift】，同时点击鼠标右键，选择【在此处打开 powershell 窗口】，在弹出窗口中，输入如下命令，即可启动VeighNa Trader。
    ```bash
         python run.py
    ```
    ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/3.png)
 
 启动成功的VeighNa Trader如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/23.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/26.png)
 
 ## 连接接口
 
@@ -26,19 +26,21 @@
 
 以使用SimNow仿真交易账号登录**CTP**接口为例，在VeighNa Trader上的菜单栏中点击【系统】->【连接CTP】，会弹出账号配置窗口，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/1.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/gateway/6.png)
 
 其中，各字段填写要求如下：
 - 用户名：xxxxxx （6位纯数字账号）
-- 密码：xxxxxx （需要修改一次密码用于盘后测试）
+- 密码：xxxxxx （需要修改一次密码后才能登录）
 - 经纪商代码：9999 （SimNow默认经纪商编号）
-- 交易服务器：182.254.243.31:30001 （盘中测试）
-- 行情服务器：182.254.243.31:30011 （盘中测试）
+- 交易服务器：请到SimNow官网（simnow.com.cn）查询当前交易前置，以官网为准
+- 行情服务器：请到SimNow官网查询当前行情前置，以官网为准
 - 产品名称：simnow_client_test
 - 授权编码：0000000000000000 （16个0）
+- 柜台环境：实盘
 
 请注意：
- - 用户名需填写InvestorID（6位纯数字），而不是Simnow网站注册时的账号（手机号）。此外，Simnow注册的账号需要修改一次密码后才能登录。
+ - 用户名需填写InvestorID（6位纯数字），而不是Simnow网站注册时的账号（手机号）。
+ - 只有穿透式测试的时候，【CTP】接口的【柜台环境】才选【测试】。
  - 如果点击连接接口之后，没有在VeighNa Trader主界面【日志】组件看到任何输出，可以用telnet工具测试一下交易服务器/行情服务器的端口是否开启。
 
 连接成功以后，VeighNa Trader主界面【日志】组件会立刻输出登录相关信息，同时用户也可以看到账号信息，持仓信息，合约查询等相关信息。如下图所示：
@@ -49,7 +51,7 @@
 ## 合约查询
 
 成功连接交易接口后，用户可以通过合约查询功能查询合约信息：
-点击菜单栏的【帮助】->【合约查询】，在弹出的对话框中直接点击右上角的【查询】按钮，即可查询合约信息（留空则查询所有合约的价格信息），如下图所示：
+点击菜单栏的【帮助】->【查询合约】，在弹出的对话框中直接点击右上角的【查询】按钮，即可查询合约信息（留空则查询所有合约），如下图所示：
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/spread_trading/3.png)
 
@@ -58,7 +60,7 @@
 
 ## 订阅行情
 
-在交易组件输入交易所和合约代码，按回车键即可订阅行情。如订阅股指期货时，交易所填写CFFEX，代码填写对应合约代码IF2206。
+在交易组件输入交易所和合约代码，按回车键即可订阅行情。如订阅股指期货时，交易所填写CFFEX，代码以合约查询结果为准。
 
 订阅成功后，交易组件会显示合约名称，并且在下方显示深度行情报价，如最新价、买一价和卖一价，行情组件会显示最新行情信息，如下图所示：
 
@@ -160,7 +162,7 @@
 
 VeighNa官方提供了开箱即用的量化交易应用模块，在启动VeighNa Trader时勾选所需的功能模块，启动成功后在菜单栏中点击【功能】按钮，即可显示所勾选的功能模块，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/25.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/27.png)
 
 
 ## 全局配置
@@ -173,7 +175,7 @@ VeighNa官方提供了开箱即用的量化交易应用模块，在启动VeighNa
 
 font.family和font.size参数用于配置GUI界面，各参数含义如下所示：
 
-- font.family：设置VeighNa Trader图形界面的字体类型，除了默认的Arial字体，也支持Courier New和System字体；
+- font.family：设置VeighNa Trader图形界面的字体类型；
 
 - font.size：设置VeighNa Trader图形界面的字体大小，用户可以根据自己显示器的实际分辨率对字体大小进行修改。
 
@@ -181,7 +183,7 @@ font.family和font.size参数用于配置GUI界面，各参数含义如下所示
 
 log.active, log.level, log.console和log.file用于对日志输出进行配置，各参数含义如下所示：
 
-- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VeighNa Trader运行时不再输出日志或生成日志文件（可以降低部分系统延时）；
+- log.active：控制是否启动LogEngine，默认为True。如果该项修改为False，则后续几项参数都将失效，同时VeighNa Trader运行时不再输出日志或生成日志文件（可以降低部分系统延迟）；
 
 - log.level：控制日志输出的级别，日志可以从轻到严重分成DEBUG、INFO、WARNING、ERROR、CRITICAL五个级别，分别对应10、20、30、40、50的整数值。如果日志等级低于该项设置值，将会被忽略。如果想要记录更详细的系统运行信息，建议将该项整数值调低；
 
@@ -242,10 +244,10 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 字段如图所示：
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/quick_start/17.png)
 
-目前支持七种datafeed：
+目前支持以下datafeed：
 - [XT]
 - [RQData]
-- [Udata]
+- [MCData]
 - [TuShare]
 - [TQSDK]
 - [Wind]
@@ -254,7 +256,7 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 
 [XT]:https://github.com/vnpy/vnpy_xt
 [RQData]:https://github.com/vnpy/vnpy_rqdata
-[Udata]: https://github.com/vnpy/vnpy_udata
+[MCData]:https://github.com/vnpy/vnpy_mcdata
 [TuShare]: https://github.com/vnpy/vnpy_tushare
 [TQSDK]: https://github.com/vnpy/vnpy_tqsdk
 [Wind]:https://github.com/vnpy/vnpy_wind
@@ -264,4 +266,4 @@ VeighNa Trader提供了微信消息通知功能。用户完成微信绑定后，
 
 ### 数据库
 
-以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、InfluxDB、DolphinDB、Arctic和LevelDB八种数据库。具体配置方法详见项目文档的数据库配置部分。
+以database为前缀的参数用于配置数据库服务。目前，VeighNa支持SQLite、MySQL、PostgreSQL、MongoDB、QuestDB和TDengine六种数据库。具体配置方法详见项目文档的数据库配置部分。

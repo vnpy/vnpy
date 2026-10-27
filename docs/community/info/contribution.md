@@ -11,7 +11,7 @@ PR流程大致如下：
 ---
 1. [创建 Issue][CreateIssue] - 对于较大的改动(如新功能，大型重构等)建议先开issue讨论一下， 较小的improvement(如文档改进，bugfix等)直接发PR即可
 
-2. Fork [VeighNa][#GithubVnpy] - 点击右上角**Fork**按钮
+2. Fork [VeighNa][GithubVnpy] - 点击右上角**Fork**按钮
 
 3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
 	

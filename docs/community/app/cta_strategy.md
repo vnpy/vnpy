@@ -51,11 +51,11 @@ C:\Users\Administrator\strategies
 
 即可进入CTA策略模块的UI界面，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/2.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/81.png)
 
 如果配置了数据服务（配置方法详见基本使用篇的全局配置部分），打开CTA策略模块时会自动执行数据服务登录初始化。若成功登录，则会输出“数据服务初始化成功”的日志，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/ctas.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/80.png)
 
 
 ## 添加策略
@@ -88,7 +88,7 @@ C:\Users\Administrator\strategies
 
 参数配置完成后，点击【添加】按钮，则开始创建策略实例。创建成功后可在左侧的策略监控组件中看到该策略实例，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/47.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/82.png)
 
 策略监控组件顶部显示的是策略实例名、合约品种名、策略类名以及策略作者名（在策略里定义的author）。顶部按钮用于控制和管理策略实例，第一行表格显示了策略内部的参数信息（参数名需要写在策略的parameters列表中图形界面才会显示），第二行表格则显示了策略运行过程中的变量信息（变量名需要写在策略的variables列表中图形界面才会显示）。【inited】字段表示当前策略的初始化状态（是否已经完成了历史数据回放），【trading】字段表示策略当前是否能够开始交易。
 
@@ -102,7 +102,7 @@ C:\Users\Administrator\strategies
 
 - 如果添加了同名的策略实例，则会创建失败，图形界面输出“创建策略失败，存在重名”的日志信息，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/48.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/83.png)
 
 ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/49.png)
 
@@ -125,7 +125,7 @@ C:\Users\Administrator\strategies
 
 策略实例创建成功后，就可以对该实例进行初始化了。点击该策略实例下的【初始化】按钮，若初始化成功，则如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/54.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/84.png)
 
 初始化过程中，主要按顺序完成了以下三步任务：
 
@@ -154,30 +154,24 @@ C:\Users\Administrator\strategies
 ### 初始化失败
 
 以下为创建策略实例失败的几种可能情况：  
-- 即使交易所填的是VeighNa支持的交易所的名字，成功创建了策略实例。但是如果该合约名字输入错误（比如大小写错误，合约与交易所对不上或者已经退市），导致实盘交易系统找不到该合约，则会初始化失败。此时图形界面输出“行情订阅失败，找不到合约”的日志。如下图所示：
+- 即使交易所填的是VeighNa支持的交易所的名字，成功创建了策略实例。但是如果该合约名字输入错误（比如大小写错误，合约与交易所对不上或者已经退市），导致实盘交易系统找不到该合约，则会初始化失败。此时图形界面输出“行情订阅失败，找不到合约”的日志。
 
-  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/55.png)
+- 即使合约代码填写正确，成功创建了策略实例。但是如果此时还没有连接接口，或者接口合约信息查询合约操作还没有完成，导致实盘交易系统找不到该合约，也会初始化失败。此时图形界面输出“行情订阅失败，找不到合约”的日志。
 
-- 即使合约代码填写正确，成功创建了策略实例。但是如果此时还没有连接接口，或者接口合约信息查询合约操作还没有完成，导致实盘交易系统找不到该合约，也会初始化失败。此时图形界面输出“行情订阅失败，找不到合约”的日志。如下图所示：
-
-  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/56.png)
-
-  如果出现了“行情订阅失败，找不到合约”这类问题，可以通过VeighNa Trader的主界面点击【帮助】-【查询合约】进行查询，找到正确的合约信息。如下图所示：
-
-  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/57.png)
+  如果出现了“行情订阅失败，找不到合约”这类问题，可以通过VeighNa Trader的主界面点击【帮助】-【查询合约】进行查询，找到正确的合约信息。
 
 - 如果策略内用到了K线时间序列管理模块（ArrayManager）来计算变量指标的值，那么请确保历史数据的长度足够ArrayManager进行初始化（默认的ArrayManager需要100条数据才能初始化成功）。如果历史数据的长度不够ArrayManager初始化，即使图形界面上输出了日志“初始化完成”，该策略实例的初始化也是失败的。
 
-  - 如果策略逻辑是基于示例策略中的，一但ArrayManager没有初始化成功(if not am.inited)就返回了逻辑写的话，那么由下图可观察到，图形界面左侧的策略实例中基于ArrayManager计算的策略指标的值都是0。说明此时该策略实例虽然启动之后就可以开始自动交易了，但是因为ArrayManager没有初始化成功，策略内的逻辑每次走到ArrayManager初始化状态判断时就返回了，走不到计算指标进而发出交易信号的逻辑。进而该策略实例需要一直等到推进策略实例的数据足够ArrayManager初始化之后，满足ArrayManager初始化的判断条件，才能真正发出交易信号。
-  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/58.png)
+  - 如果策略逻辑是基于示例策略中的，一旦ArrayManager没有初始化成功(if not am.inited)就返回的逻辑写的话，那么由下图可观察到，图形界面输出“查询K线数据失败：没有正确配置数据服务”，同时左侧的策略实例中基于ArrayManager计算的策略指标的值都是0。这条日志只说明没有配置数据服务。即使出现这条输出，只要本地有足够的历史数据，或者实时缓存的K线长度足够ArrayManager初始化，该策略实例仍然可以满足初始化条件。在ArrayManager没有初始化成功之前，该策略实例虽然启动之后就可以开始自动交易，但是策略内的逻辑每次走到ArrayManager初始化状态判断时就返回了，走不到计算指标进而发出交易信号的逻辑，需要一直等到推进策略实例的数据足够ArrayManager初始化之后，才能真正发出交易信号。
+  ![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/85.png)
 
-  - 如果策略逻辑不是基于示例策略中的，一但ArrayManager没有初始化成功(if not am.inited)就返回的逻辑写的话，那么虽然图形界面左侧的策略实例中的策略指标有具体数值，而且此时启动可以发出交易信号，无需等待ArrayManager初始化完成。但是因为ArrayManager没有初始化成功，该策略实例计算出来的变量指标值是不准确的，进而可能会发出不符合策略预期的交易信号。
+  - 如果策略逻辑不是基于示例策略中的，一旦ArrayManager没有初始化成功(if not am.inited)就返回的逻辑写的话，那么虽然图形界面左侧的策略实例中的策略指标有具体数值，而且此时启动可以发出交易信号，无需等待ArrayManager初始化完成。但是因为ArrayManager没有初始化成功，该策略实例计算出来的变量指标值是不准确的，进而可能会发出不符合策略预期的交易信号。
 
 ### 启动
 
 策略实例初始化成功，【inited】状态为【True】时，才能启动自动交易功能。点击策略实例下的【启动】按钮，即可启动该策略实例。成功后如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/59.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/86.png)
 
 可观察到此时该策略实例的【inited】和【trading】状态都为【True】。说明此时该策略实例已经调用过load_bar函数，完成了历史数据回放，而且此时策略内部的交易请求类函数（buy/sell/short/cover/cancel_order等），以及信息输出类函数（send_email/put_event等），才会真正执行并发出对应的请求指令到底层接口中（真正执行交易）。
 
@@ -189,7 +183,7 @@ C:\Users\Administrator\strategies
 
 如果启动策略之后，由于某些情况（如到了市场收盘时间，或盘中遇到紧急情况）想要停止、编辑或者移除策略，可以点击策略实例下的【停止】按钮，即可停止该策略实例的自动交易。成功后如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/60.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/87.png)
 
 CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤销，以保证在策略停止后不会有失去控制的委托存在。同时该策略实例最新的变量信息会被保存到.vntrader文件夹下的cta_strategy_data.json文件中。
 
@@ -201,31 +195,23 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 
 如果创建策略实例之后，想要编辑某个策略实例的参数（若已启动策略，需要先点击策略实例下的【停止】按钮，停止策略），可以点击该策略实例下的【编辑】按钮，会弹出参数编辑对话框，以供修改策略参数。如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/61.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/88.png)
 
 编辑完策略参数之后，点击下方的【确定】按钮，相应的修改会立即更新在参数表格中，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/62.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/89.png)
 
 但是策略实例的交易合约代码无法修改，同时修改完后也不会重新执行初始化操作。也请注意，此时修改的只是.vntrader文件夹下cta_strategy_setting.json文件中该策略实例的参数值，并没有修改原策略文件下的参数。
 
-修改前，json文件如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/63.png)
-
-修改后，json文件如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/64.png)
-
 若盘中编辑后想要再次启动策略，点击策略实例下的【启动】按钮即可再次启动该策略实例，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/65.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/90.png)
 
 ### 移除
 
 如果创建策略实例之后，想要移除某个策略实例（若已启动策略，需要先点击策略实例下的【停止】按钮，停止策略），可以点击该策略实例下的【移除】按钮。移除成功后，图形界面左侧的策略监控组件中将不会再显示该策略实例的信息。如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/66.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/91.png)
 
 此时.vntrader文件夹下的cta_strategy_setting.json文件也移除了该策略实例的配置信息。
 
@@ -235,7 +221,7 @@ CTA策略引擎会自动将该策略之前发出的所有活动委托全部撤�
 
 1. 调用put_event函数
 
-   策略实例中所有的的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
+   策略实例中所有的变量信息，都需要把变量名写在策略的variables列表中，才能在图形界面显示。如果想跟踪变量的状态变化，则需要在策略中调用put_event函数，界面上才会进行数据刷新。
 
    有时用户会发现自己写的策略无论跑多久，变量信息都不发生变化，这种情况请检查策略中是否漏掉了对put_event函数的调用。
 
@@ -267,11 +253,11 @@ CTA策略引擎一般输出的是全局信息。下图中除了以带中括号�
 
 点击【清空日志】前，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/66.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/91.png)
 
 点击【清空日志】后，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/70.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/92.png)
 
 
 ## 停止单
@@ -284,7 +270,7 @@ VeighNa的本地停止单有三个特点：
 
 1. 保存在本地电脑上，关机后则失效；
 2. 只有交易员本人能够看到，不必担心泄露底牌；
-3. 停止单触发有延时，导致一定的滑点。
+3. 停止单触发有延迟，导致一定的滑点。
 
 **停止单信息**
 
@@ -307,44 +293,23 @@ VeighNa的本地停止单有三个特点：
 
 在策略经过充分测试，实盘运行较为稳定，不需要经常进行调整的情况下，如果有多个需要运行的CTA策略实例，可以使用界面右上角的【全部初始化】、【全部启动】和【全部停止】功能来执行盘前批量初始化、启动策略实例以及盘后批量停止策略实例的操作。
 
-### 全部初始化
-
-在所有策略实例创建成功后，点击右上角的【全部初始化】按钮，则可批量初始化策略实例。
-
-点击【全部初始化】前，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/72.png)
-
-点击【全部初始化】后，如下图所示：
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/73.png)
-
-### 全部启动
-
-在所有策略实例初始化成功后，点击右上角的【全部启动】按钮，则可批量启动策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/74.png)
-
-### 全部停止
-
-在所有策略实例启动成功后，点击右上角的【全部停止】按钮，则可批量停止策略实例，如下图所示：
-
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/75.png)
-
 
 ## 移仓助手
 
 如需使用自动移仓助手，请在完成策略初始化之后，对要执行移仓的策略先点击【移仓助手】按钮，则会弹出移仓助手对话框，如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/76.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/93.png)
 
-首先请在在左侧区域配置要执行的移仓任务，其中：
+首先请在左侧区域配置要执行的移仓任务，其中：
 
 - 移仓合约：该下拉框中，显示当前CTA策略模块下所有策略实例所交易的合约本地代码，选择要平仓掉的老合约；
-- 目标合约：要将老的仓位和策略，移仓过去的的合约本地代码（vt_symbol），输入要开仓的新合约；
-- 委托超价：执行移仓交易时，委托价格相对于当时盘口对价超出的pricetick。
+- 目标合约：要将老的仓位和策略，移仓过去的合约本地代码（vt_symbol），输入要开仓的新合约；
+- 委托超价：执行移仓交易时，委托价格相对于当时盘口对价超出的pricetick；
+- 单笔上限：移仓时每笔委托的手数上限，默认100，范围1到10000。仓位超过该上限时会拆成多笔委托。
 
 完成配置确认无误后，点击【移仓】按钮开始执行，移仓过程中会有下图所示的日志输出，完成后该对话框会被设为锁死（变灰无法再点击）：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/77.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/94.png)
 
 可以看到几乎1秒内就完成了移仓合约对应的全部仓位和策略的移仓操作，同时CTA策略模块界面上的策略交易代码已经变为目标合约。
 
@@ -363,7 +328,7 @@ VeighNa的本地停止单有三个特点：
 
 回到VeighNa Trader主界面，也可以查看到详细的移仓委托和成交记录。如下图所示：
 
-![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/78.png)
+![](https://vnpy-doc.oss-cn-shanghai.aliyuncs.com/cta_strategy/95.png)
 
 
 ## CTA策略模板（CtaTemplate）
@@ -780,6 +745,14 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 在策略中调用get_pricetick函数，可以获取交易合约的最小价格跳动。
 
+**get_size**
+
+* 入参：无
+
+* 出参：size: int / None
+
+在策略中调用get_size函数，可以获取交易合约的合约乘数。取不到合约信息时返回空。
+
 **load_bar**
 
 * 入参：days: int, interval: Interval = Interval.MINUTE, callback: Callable = None, use_database: bool = False
@@ -837,9 +810,9 @@ cancel_order和cancel_all都是负责撤单的交易请求类函数。cancel_ord
 
 * 出参：无
 
-配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以发送指定内容的邮件到自己的邮箱。
+配置好邮箱相关信息之后（配置方法详见基本使用篇的全局配置部分），在策略中调用send_email函数，可以把指定内容发到自己的邮箱；若已完成微信绑定，也会同时发到微信。
 
-请注意，要策略初始化完成，inited状态变为【True】之后，才能发送邮件。
+请注意，要策略初始化完成，inited状态变为【True】之后，才能发送。
 
 **sync_data**
 
