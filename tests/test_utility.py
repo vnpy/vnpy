@@ -12,6 +12,7 @@ from vnpy.trader.utility import (
     extract_vt_symbol,
     floor_to,
     generate_vt_symbol,
+    get_digits,
     get_file_path,
     load_json,
     round_to,
@@ -516,3 +517,20 @@ def test_load_json_writes_empty_object_when_file_is_missing() -> None:
 def test_extract_vt_symbol_rejects_unknown_exchange() -> None:
     with pytest.raises(ValueError):
         extract_vt_symbol("SYM.BAD")
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (1e-7, 7),
+        (1.25e-7, 9),
+        (-1.25e-7, 9),
+        (1.234e-5, 8),
+        (0.0001, 4),
+        (0.25, 2),
+        (10, 0),
+        (10.0, 1),
+    ],
+)
+def test_get_digits_includes_scientific_mantissa(value: float, expected: int) -> None:
+    assert get_digits(value) == expected
