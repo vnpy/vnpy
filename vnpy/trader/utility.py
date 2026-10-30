@@ -161,8 +161,9 @@ def get_digits(value: float) -> int:
 
     if "e-" in value_str:
         buf: str
-        _, buf = value_str.split("e-")
-        return int(buf)
+        mantissa, buf = value_str.split("e-")
+        decimals: int = len(mantissa.split(".")[1]) if "." in mantissa else 0
+        return int(buf) + decimals
     elif "." in value_str:
         _, buf = value_str.split(".")
         return len(buf)
