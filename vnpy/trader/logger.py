@@ -45,7 +45,7 @@ logger.remove()
 
 
 # Add console output
-if SETTINGS["log.console"]:
+if SETTINGS["log.console"] and sys.stdout is not None:
     logger.add(sink=sys.stdout, level=level, format=format)
 
 
