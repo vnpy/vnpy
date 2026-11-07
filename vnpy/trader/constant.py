@@ -69,6 +69,7 @@ class OrderType(Enum):
     FOK = "FOK"
     RFQ = _("询价")
     ETF = "ETF"
+    TAL = "盘后"
 
 
 class OptionType(Enum):
