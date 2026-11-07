@@ -166,16 +166,16 @@ def test_bar_generator_keeps_new_extreme_on_the_new_minute_bar() -> None:
 
     assert len(finished) == 1
     previous: BarData = finished[0]
-    assert previous.high_price == 100
-    assert previous.low_price == 100
+    assert previous.high_price == 101
+    assert previous.low_price == 99
 
     bar: BarData | None = generator.generate()
 
     assert bar is not None
     assert bar.high_price == 105
     assert bar.low_price == 95
-    assert previous.high_price == 100
-    assert previous.low_price == 100
+    assert previous.high_price == 101
+    assert previous.low_price == 99
 
 
 def test_bar_generator_ignores_unchanged_day_extreme_on_a_new_minute() -> None:
@@ -197,8 +197,8 @@ def test_bar_generator_ignores_unchanged_day_extreme_on_a_new_minute() -> None:
 
     assert len(finished) == 1
     previous: BarData = finished[0]
-    assert previous.high_price == 100
-    assert previous.low_price == 100
+    assert previous.high_price == 110
+    assert previous.low_price == 90
 
     bar: BarData | None = generator.generate()
 
@@ -207,7 +207,7 @@ def test_bar_generator_ignores_unchanged_day_extreme_on_a_new_minute() -> None:
     assert bar.low_price == 102
 
 
-def test_bar_generator_ignores_day_extreme_and_cumulative_totals_on_the_first_tick() -> None:
+def test_bar_generator_records_first_tick_extremes_without_cumulative_volume() -> None:
     generator: BarGenerator = BarGenerator(lambda bar: None)
 
     generator.update_tick(_fake_tick(
@@ -222,10 +222,43 @@ def test_bar_generator_ignores_day_extreme_and_cumulative_totals_on_the_first_ti
     bar: BarData | None = generator.generate()
 
     assert bar is not None
-    assert bar.high_price == 100
-    assert bar.low_price == 100
+    assert bar.open_price == 100
+    assert bar.high_price == 120
+    assert bar.low_price == 80
+    assert bar.close_price == 100
     assert bar.volume == 0
     assert bar.turnover == 0
+
+
+def test_bar_generator_keeps_first_tick_extreme_when_the_day_range_does_not_change() -> None:
+    """The day low can print on the first tick and then stay unchanged.
+
+    A later tick in the same minute repeats that day low, so a delta against
+    the previous tick never fires. The bar still has to keep the first print.
+    """
+    generator: BarGenerator = BarGenerator(lambda bar: None)
+
+    generator.update_tick(_fake_tick(
+        datetime(2025, 8, 4, 9, 30, 0),
+        4018.6,
+        high_price=4020.0,
+        low_price=4017.4,
+    ))
+    generator.update_tick(_fake_tick(
+        datetime(2025, 8, 4, 9, 30, 1),
+        4019.0,
+        high_price=4020.0,
+        low_price=4017.4,
+    ))
+
+    bar: BarData | None = generator.generate()
+
+    assert bar is not None
+    assert bar.open_price == 4018.6
+    assert bar.high_price == 4020.0
+    assert bar.low_price == 4017.4
+    assert bar.close_price == 4019.0
+    assert bar.volume == 0
 
 
 def test_bar_generator_ignores_zero_low_in_the_same_minute() -> None:
@@ -330,8 +363,8 @@ def test_bar_generator_accepts_negative_extremes_on_a_new_minute() -> None:
 
     assert len(finished) == 1
     previous: BarData = finished[0]
-    assert previous.high_price == -6
-    assert previous.low_price == -6
+    assert previous.high_price == -4
+    assert previous.low_price == -8
 
     bar: BarData | None = generator.generate()
 
@@ -391,8 +424,8 @@ def test_bar_generator_absorbs_a_day_high_that_breaks_the_previous_session() -> 
     ))
 
     assert len(finished) == 1
-    assert finished[0].high_price == 3960
-    assert finished[0].low_price == 3960
+    assert finished[0].high_price == 4000
+    assert finished[0].low_price == 3900
 
     bar: BarData | None = generator.generate()
 
@@ -421,7 +454,8 @@ def test_bar_generator_absorbs_a_day_low_that_breaks_the_previous_session() -> N
     ))
 
     assert len(finished) == 1
-    assert finished[0].low_price == 3960
+    assert finished[0].high_price == 4000
+    assert finished[0].low_price == 3900
 
     bar: BarData | None = generator.generate()
 
@@ -452,8 +486,8 @@ def test_bar_generator_ignores_a_day_range_inside_the_previous_session() -> None
     ))
 
     assert len(finished) == 1
-    assert finished[0].high_price == 3960
-    assert finished[0].low_price == 3960
+    assert finished[0].high_price == 4000
+    assert finished[0].low_price == 3900
 
     bar: BarData | None = generator.generate()
 

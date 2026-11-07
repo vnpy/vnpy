@@ -232,6 +232,19 @@ class BarGenerator:
             new_minute = True
 
         if new_minute:
+            high_price: float = tick.last_price
+            low_price: float = tick.last_price
+            # Day high/low are cumulative, so later bars only absorb a change
+            # versus the previous tick. The first tick has no baseline: its
+            # extreme is the only observation, and the next tick will not
+            # report it again once the day extreme stops changing. Volume
+            # still needs a previous tick, because that field is a counter.
+            if self.last_tick is None:
+                if tick.high_price != 0:
+                    high_price = max(high_price, tick.high_price)
+                if tick.low_price != 0:
+                    low_price = min(low_price, tick.low_price)
+
             self.bar = BarData(
                 symbol=tick.symbol,
                 exchange=tick.exchange,
@@ -239,8 +252,8 @@ class BarGenerator:
                 datetime=tick.datetime,
                 gateway_name=tick.gateway_name,
                 open_price=tick.last_price,
-                high_price=tick.last_price,
-                low_price=tick.last_price,
+                high_price=high_price,
+                low_price=low_price,
                 close_price=tick.last_price,
                 open_interest=tick.open_interest
             )
