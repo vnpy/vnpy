@@ -110,6 +110,38 @@ def _fake_tick(
     )
 
 
+@pytest.mark.parametrize("next_dt", [
+    datetime(2024, 1, 3, 9, 0, 5),
+    datetime(2024, 2, 2, 9, 0, 5),
+    datetime(2025, 1, 2, 9, 0, 5),
+])
+def test_bar_generator_separates_same_clock_minute_on_different_dates(next_dt: datetime) -> None:
+    finished: list[BarData] = []
+    generator: BarGenerator = BarGenerator(finished.append)
+    first_dt: datetime = datetime(2024, 1, 2, 9, 0, 5)
+
+    generator.update_tick(_fake_tick(first_dt, 100))
+    generator.update_tick(_fake_tick(first_dt.replace(second=30), 102))
+    generator.update_tick(_fake_tick(next_dt, 120))
+
+    assert len(finished) == 1
+    first_bar: BarData = finished[0]
+    assert first_bar.datetime == first_dt.replace(second=0)
+    assert first_bar.open_price == 100
+    assert first_bar.high_price == 102
+    assert first_bar.low_price == 100
+    assert first_bar.close_price == 102
+
+    last_bar: BarData | None = generator.generate()
+    assert last_bar is not None
+    assert last_bar.datetime == next_dt.replace(second=0)
+    assert last_bar.open_price == 120
+    assert last_bar.high_price == 120
+    assert last_bar.low_price == 120
+    assert last_bar.close_price == 120
+    assert finished == [first_bar, last_bar]
+
+
 def test_bar_generator_updates_same_minute_extremes_and_deltas() -> None:
     finished: list[BarData] = []
     generator: BarGenerator = BarGenerator(finished.append)
