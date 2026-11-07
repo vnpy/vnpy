@@ -123,6 +123,10 @@ msgstr "Market"
 msgid "询价"
 msgstr "RFQ"
 
+#: vnpy\trader\constant.py:72
+msgid "盘后"
+msgstr "TAL"
+
 #: vnpy\trader\constant.py:77
 msgid "看涨期权"
 msgstr "Call"

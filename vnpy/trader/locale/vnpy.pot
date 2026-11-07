@@ -123,6 +123,10 @@ msgstr ""
 msgid "询价"
 msgstr ""
 
+#: vnpy\trader\constant.py:72
+msgid "盘后"
+msgstr ""
+
 #: vnpy\trader\constant.py:77
 msgid "看涨期权"
 msgstr ""
