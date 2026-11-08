@@ -42,6 +42,11 @@ _templates
 lab/
 /.mypy_cache
 
+# Examples
+examples/simple_paper_trading/data/
+examples/real_data_weekly/data/
+examples/dividend_rotation/data/
+
 # Type checker / linter / test caches
 .ruff_cache/
 .pytest_cache/
