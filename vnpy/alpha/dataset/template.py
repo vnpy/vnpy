@@ -111,18 +111,21 @@ class AlphaDataset:
         # Create process pool
         logger.info("开始计算表达式因子特征")
 
-        args: list[tuple] = [(self.df, name, expression) for name, expression in expressions]
-
         context: BaseContext = get_context("spawn")
 
+        # Send the DataFrame to each worker once instead of pickling it again for every expression
         pool: Pool
-        with context.Pool(processes=max_workers) as pool:
+        with context.Pool(
+            processes=max_workers,
+            initializer=init_feature_worker,
+            initargs=(self.df,)
+        ) as pool:
             # Calculate all expressions in parallel
-            it: IMapIterator[pl.Series] = pool.imap(calculate_feature, args)
+            it: IMapIterator[pl.Series] = pool.imap(calculate_worker_feature, expressions)
 
             # Collect results
             result: pl.Series
-            for result in tqdm(it, total=len(args)):
+            for result in tqdm(it, total=len(expressions)):
                 results.append(result)
 
         self.result_df = self.df.with_columns(results)
@@ -324,6 +327,29 @@ def query_by_time(df: pl.DataFrame, start: datetime | str = "", end: datetime | 
         df = df.filter(pl.col("datetime") <= end)
 
     return df.sort(["datetime", "vt_symbol"])
+
+
+# DataFrame used by feature calculation in a worker process
+worker_df: pl.DataFrame = pl.DataFrame()
+
+
+def init_feature_worker(df: pl.DataFrame) -> None:
+    """
+    Store the DataFrame for feature calculation in a worker process
+    """
+    global worker_df
+    worker_df = df
+
+
+def calculate_worker_feature(args: tuple[str, str | pl.expr.expr.Expr]) -> pl.Series:
+    """
+    Calculate feature by expression with the DataFrame stored in this worker
+    """
+    name: str
+    expression: str | pl.expr.expr.Expr
+    name, expression = args
+
+    return calculate_feature((worker_df, name, expression))
 
 
 def calculate_feature(args: tuple[pl.DataFrame, str, str | pl.expr.expr.Expr]) -> pl.Series:
