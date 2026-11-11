@@ -47,6 +47,7 @@ def ts_argmax(feature: DataProxy, window: int) -> DataProxy:
         feature=feature,
         window=window,
         reduce_slice=_reduce_argmax_slice,
+        reduce_axis=_reduce_argmax_axis,
     )
 
 
@@ -56,6 +57,7 @@ def ts_argmin(feature: DataProxy, window: int) -> DataProxy:
         feature=feature,
         window=window,
         reduce_slice=_reduce_argmin_slice,
+        reduce_axis=_reduce_argmin_axis,
     )
 
 
@@ -582,6 +584,42 @@ def _reduce_argmax_slice(series: pl.Series) -> float:
 def _reduce_argmin_slice(series: pl.Series) -> float:
     """1-based argmin position using Polars Series semantics."""
     return float(cast(int, series.arg_min()) + 1)
+
+
+def _reduce_argmax_axis(windows: np.ndarray) -> np.ndarray:
+    """Vectorized 1-based argmax over the last axis, skipping NaN like Polars arg_max."""
+    return _reduce_arg_extreme_axis(windows, -np.inf, np.argmax)
+
+
+def _reduce_argmin_axis(windows: np.ndarray) -> np.ndarray:
+    """Vectorized 1-based argmin over the last axis, skipping NaN like Polars arg_min."""
+    return _reduce_arg_extreme_axis(windows, np.inf, np.argmin)
+
+
+def _reduce_arg_extreme_axis(
+    windows: np.ndarray,
+    nan_fill: float,
+    arg_func: Callable[..., np.ndarray],
+) -> np.ndarray:
+    """1-based position of the first extreme value in each window."""
+    if not np.issubdtype(windows.dtype, np.floating):
+        positions: np.ndarray = arg_func(windows, axis=-1)
+        return np.asarray(positions + 1, dtype=np.float64)
+
+    # Polars skips NaN, so fill NaN with a value that can tie the winner but never beat it
+    nan_windows: np.ndarray = np.isnan(windows)
+    filled: np.ndarray = np.where(nan_windows, nan_fill, windows)
+    positions = arg_func(filled, axis=-1)
+
+    # When the winner equals the fill value, a NaN may sit before the real value.
+    # Polars then returns the first non-NaN position, or 0 if the window is all NaN.
+    winners: np.ndarray = np.take_along_axis(filled, positions[:, None], axis=-1)[:, 0]
+    tied_with_fill: np.ndarray = winners == nan_fill
+    if tied_with_fill.any():
+        first_valid: np.ndarray = np.argmax(~nan_windows[tied_with_fill], axis=-1)
+        positions[tied_with_fill] = first_valid
+
+    return np.asarray(positions + 1, dtype=np.float64)
 
 
 def _reduce_rank_slice(series: pl.Series) -> float:
