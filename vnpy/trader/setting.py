@@ -12,6 +12,8 @@ SETTINGS: dict = {
     "font.family": "微软雅黑",
     "font.size": 12,
 
+    "language": "zh_CN",  # zh_CN: 中文, en_US: English
+
     "log.active": True,
     "log.level": INFO,
     "log.console": True,
