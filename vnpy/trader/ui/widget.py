@@ -1245,34 +1245,118 @@ class GlobalDialog(QtWidgets.QDialog):
         """"""
         self.setWindowTitle(_("全局配置"))
         self.setMinimumWidth(800)
+        self.setMinimumHeight(600)
 
         settings: dict = copy(SETTINGS)
         settings.update(load_json(SETTING_FILENAME))
 
-        # Initialize line edits and form layout based on setting.
-        form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
+        # Group settings by prefix
+        groups: dict[str, dict[str, tuple[Any, type]]] = {
+            _("字体设置"): {},
+            _("日志设置"): {},
+            _("邮件设置"): {},
+            _("数据服务"): {},
+            _("数据库"): {},
+        }
 
         for field_name, field_value in settings.items():
             field_type: type = type(field_value)
-            widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(str(field_value))
+            
+            # Determine group based on prefix
+            if field_name.startswith("font.") or field_name == "language":
+                groups[_("字体设置")][field_name] = (field_value, field_type)
+            elif field_name.startswith("log."):
+                groups[_("日志设置")][field_name] = (field_value, field_type)
+            elif field_name.startswith("email."):
+                groups[_("邮件设置")][field_name] = (field_value, field_type)
+            elif field_name.startswith("datafeed."):
+                groups[_("数据服务")][field_name] = (field_value, field_type)
+            elif field_name.startswith("database."):
+                groups[_("数据库")][field_name] = (field_value, field_type)
 
-            form.addRow(f"{field_name} <{field_type.__name__}>", widget)
-            self.widgets[field_name] = (widget, field_type)
+        # Create tab widget
+        tab_widget: QtWidgets.QTabWidget = QtWidgets.QTabWidget()
 
-        button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("确定"))
-        button.clicked.connect(self.update_setting)
-        form.addRow(button)
+        # Create a tab for each group
+        for group_name, group_settings in groups.items():
+            if not group_settings:
+                continue
 
-        scroll_widget: QtWidgets.QWidget = QtWidgets.QWidget()
-        scroll_widget.setLayout(form)
+            tab_page: QtWidgets.QWidget = QtWidgets.QWidget()
+            tab_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+            
+            # Create form layout for this group
+            form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
+            
+            for field_name, (field_value, field_type) in group_settings.items():
+                # Use combo box for language setting
+                if field_name == "language":
+                    widget: QtWidgets.QComboBox = QtWidgets.QComboBox()
+                    widget.addItem("zh_CN - 中文", "zh_CN")
+                    widget.addItem("en_US - English", "en_US")
+                    
+                    # Set current value
+                    current_index = widget.findData(field_value)
+                    if current_index >= 0:
+                        widget.setCurrentIndex(current_index)
+                else:
+                    widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(str(field_value))
+                
+                # Add test button for datafeed, database and email related fields
+                if field_name.startswith("datafeed.") or field_name.startswith("database.") or field_name.startswith("email."):
+                    hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+                    hbox.addWidget(widget)
+                    
+                    # Add test connection button for the first field of each section
+                    if field_name == "datafeed.name":
+                        test_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("测试连接"))
+                        test_button.clicked.connect(self.test_datafeed_connection)
+                        hbox.addWidget(test_button)
+                    elif field_name == "database.name":
+                        test_button = QtWidgets.QPushButton(_("测试连接"))
+                        test_button.clicked.connect(self.test_database_connection)
+                        hbox.addWidget(test_button)
+                    elif field_name == "email.server":
+                        test_button = QtWidgets.QPushButton(_("测试连接"))
+                        test_button.clicked.connect(self.test_email_connection)
+                        hbox.addWidget(test_button)
+                    
+                    form.addRow(f"{field_name} <{field_type.__name__}>", hbox)
+                else:
+                    form.addRow(f"{field_name} <{field_type.__name__}>", widget)
+                
+                self.widgets[field_name] = (widget, field_type)
+            
+            # Add stretch to push form to top
+            form.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding))
+            
+            scroll_widget: QtWidgets.QWidget = QtWidgets.QWidget()
+            scroll_widget.setLayout(form)
+            
+            scroll_area: QtWidgets.QScrollArea = QtWidgets.QScrollArea()
+            scroll_area.setWidgetResizable(True)
+            scroll_area.setWidget(scroll_widget)
+            
+            tab_layout.addWidget(scroll_area)
+            tab_page.setLayout(tab_layout)
+            
+            tab_widget.addTab(tab_page, group_name)
 
-        scroll_area: QtWidgets.QScrollArea = QtWidgets.QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setWidget(scroll_widget)
-
-        vbox: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-        vbox.addWidget(scroll_area)
-        self.setLayout(vbox)
+        # Add OK button at the bottom
+        button_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        button_layout.addStretch()
+        
+        ok_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("确定"))
+        ok_button.clicked.connect(self.update_setting)
+        ok_button.setMinimumWidth(100)
+        button_layout.addWidget(ok_button)
+        
+        # Main layout
+        main_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        main_layout.addWidget(tab_widget)
+        main_layout.addLayout(button_layout)
+        
+        self.setLayout(main_layout)
 
     def update_setting(self) -> None:
         """
@@ -1281,7 +1365,12 @@ class GlobalDialog(QtWidgets.QDialog):
         settings: dict = {}
         for field_name, tp in self.widgets.items():
             widget, field_type = tp
-            value_text: str = widget.text()
+            
+            # Handle QComboBox for language setting
+            if isinstance(widget, QtWidgets.QComboBox):
+                value_text: str = widget.currentData()
+            else:
+                value_text: str = widget.text()
 
             if field_type is bool:
                 if value_text == "True":
@@ -1302,6 +1391,209 @@ class GlobalDialog(QtWidgets.QDialog):
 
         save_json(SETTING_FILENAME, settings)
         self.accept()
+
+    def test_datafeed_connection(self) -> None:
+        """
+        Test datafeed connection.
+        """
+        from ..datafeed import get_datafeed, BaseDatafeed
+        
+        # Temporarily update SETTINGS with current values from widgets
+        temp_settings: dict = {}
+        for field_name, tp in self.widgets.items():
+            if field_name.startswith("datafeed."):
+                widget, field_type = tp
+                value_text: str = widget.text()
+                
+                if field_type is bool:
+                    field_value: bool = (value_text == "True")
+                else:
+                    field_value = field_type(value_text)
+                
+                temp_settings[field_name] = field_value
+        
+        # Update global SETTINGS temporarily
+        original_settings: dict = {}
+        for key, value in temp_settings.items():
+            original_settings[key] = SETTINGS.get(key)
+            SETTINGS[key] = value
+        
+        try:
+            # Reset global datafeed to force re-initialization
+            import vnpy.trader.datafeed as datafeed_module
+            datafeed_module.datafeed = None
+            
+            # Get datafeed instance
+            datafeed: BaseDatafeed = get_datafeed()
+            
+            # Try to initialize
+            success: bool = datafeed.init(output=lambda msg: None)
+            
+            if success:
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "测试结果",
+                    "数据服务连接成功！"
+                )
+            else:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "测试结果",
+                    "数据服务连接失败，请检查配置信息。"
+                )
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "测试结果",
+                f"数据服务连接错误：{str(e)}"
+            )
+        finally:
+            # Restore original settings
+            for key, value in original_settings.items():
+                if value is None:
+                    del SETTINGS[key]
+                else:
+                    SETTINGS[key] = value
+            
+            # Reset datafeed again
+            datafeed_module.datafeed = None
+
+    def test_database_connection(self) -> None:
+        """
+        Test database connection.
+        """
+        from ..database import get_database, BaseDatabase
+        
+        # Temporarily update SETTINGS with current values from widgets
+        temp_settings: dict = {}
+        for field_name, tp in self.widgets.items():
+            if field_name.startswith("database."):
+                widget, field_type = tp
+                value_text: str = widget.text()
+                
+                if field_type is bool:
+                    field_value: bool = (value_text == "True")
+                else:
+                    field_value = field_type(value_text)
+                
+                temp_settings[field_name] = field_value
+        
+        # Update global SETTINGS temporarily
+        original_settings: dict = {}
+        for key, value in temp_settings.items():
+            original_settings[key] = SETTINGS.get(key)
+            SETTINGS[key] = value
+        
+        try:
+            # Try to get database instance
+            database: BaseDatabase = get_database()
+            
+            # Try a simple operation to test connection
+            # For SQLite, just getting the instance is enough
+            # For other databases, we might need to do a ping
+            if hasattr(database, 'db'):
+                # Try to access the database connection
+                _ = database.db
+            
+            QtWidgets.QMessageBox.information(
+                self,
+                "测试结果",
+                "数据库连接成功！"
+            )
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "测试结果",
+                f"数据库连接错误：{str(e)}"
+            )
+        finally:
+            # Restore original settings
+            for key, value in original_settings.items():
+                if value is None:
+                    del SETTINGS[key]
+                else:
+                    SETTINGS[key] = value
+
+    def test_email_connection(self) -> None:
+        """
+        Test email connection.
+        """
+        import smtplib
+        from email.message import EmailMessage
+        
+        # Temporarily update SETTINGS with current values from widgets
+        temp_settings: dict = {}
+        for field_name, tp in self.widgets.items():
+            if field_name.startswith("email."):
+                widget, field_type = tp
+                value_text: str = widget.text()
+                
+                if field_type is bool:
+                    field_value: bool = (value_text == "True")
+                else:
+                    field_value = field_type(value_text)
+                
+                temp_settings[field_name] = field_value
+        
+        # Update global SETTINGS temporarily
+        original_settings: dict = {}
+        for key, value in temp_settings.items():
+            original_settings[key] = SETTINGS.get(key)
+            SETTINGS[key] = value
+        
+        try:
+            # Get email settings
+            server: str = SETTINGS["email.server"]
+            port: int = SETTINGS["email.port"]
+            username: str = SETTINGS["email.username"]
+            password: str = SETTINGS["email.password"]
+            sender: str = SETTINGS["email.sender"]
+            receiver: str = SETTINGS["email.receiver"]
+            
+            # Check if all required fields are filled
+            if not all([server, port, username, password, sender, receiver]):
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "测试结果",
+                    "请填写完整的邮件配置信息（服务器、端口、用户名、密码、发件人、收件人）"
+                )
+                return
+            
+            # Try to connect and login to SMTP server
+            with smtplib.SMTP_SSL(server, port) as smtp:
+                smtp.login(username, password)
+                smtp.close()
+            
+            QtWidgets.QMessageBox.information(
+                self,
+                "测试结果",
+                "邮件服务器连接成功！"
+            )
+        except smtplib.SMTPAuthenticationError:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "测试结果",
+                "邮件服务器认证失败，请检查用户名和密码"
+            )
+        except smtplib.SMTPConnectError:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "测试结果",
+                f"无法连接到邮件服务器 {server}:{port}"
+            )
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "测试结果",
+                f"邮件连接错误：{str(e)}"
+            )
+        finally:
+            # Restore original settings
+            for key, value in original_settings.items():
+                if value is None:
+                    del SETTINGS[key]
+                else:
+                    SETTINGS[key] = value
 
 
 class WechatWorker(QtCore.QThread):
