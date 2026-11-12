@@ -1302,32 +1302,10 @@ class GlobalDialog(QtWidgets.QDialog):
                 else:
                     widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(str(field_value))
                 
-                # Add test button for datafeed, database and email related fields
-                if field_name.startswith("datafeed.") or field_name.startswith("database.") or field_name.startswith("email."):
-                    hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
-                    hbox.addWidget(widget)
-                    
-                    # Add test connection button for the first field of each section
-                    if field_name == "datafeed.name":
-                        test_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("测试连接"))
-                        test_button.clicked.connect(self.test_datafeed_connection)
-                        hbox.addWidget(test_button)
-                    elif field_name == "database.name":
-                        test_button = QtWidgets.QPushButton(_("测试连接"))
-                        test_button.clicked.connect(self.test_database_connection)
-                        hbox.addWidget(test_button)
-                    elif field_name == "email.server":
-                        test_button = QtWidgets.QPushButton(_("测试连接"))
-                        test_button.clicked.connect(self.test_email_connection)
-                        hbox.addWidget(test_button)
-                    
-                    form.addRow(f"{field_name} <{field_type.__name__}>", hbox)
-                else:
-                    form.addRow(f"{field_name} <{field_type.__name__}>", widget)
-                
+                form.addRow(f"{field_name} <{field_type.__name__}>", widget)
                 self.widgets[field_name] = (widget, field_type)
             
-            # Add stretch to push form to top
+            # Add stretch to push form content to top
             form.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding))
             
             scroll_widget: QtWidgets.QWidget = QtWidgets.QWidget()
@@ -1338,6 +1316,36 @@ class GlobalDialog(QtWidgets.QDialog):
             scroll_area.setWidget(scroll_widget)
             
             tab_layout.addWidget(scroll_area)
+            
+            # Add test button at the bottom for datafeed, database and email tabs
+            if group_name == _("数据服务"):
+                test_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("测试连接"))
+                test_button.clicked.connect(self.test_datafeed_connection)
+                test_button.setMinimumWidth(150)
+                button_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+                button_layout.addStretch()
+                button_layout.addWidget(test_button)
+                button_layout.addStretch()
+                tab_layout.addLayout(button_layout)
+            elif group_name == _("数据库"):
+                test_button = QtWidgets.QPushButton(_("测试连接"))
+                test_button.clicked.connect(self.test_database_connection)
+                test_button.setMinimumWidth(150)
+                button_layout = QtWidgets.QHBoxLayout()
+                button_layout.addStretch()
+                button_layout.addWidget(test_button)
+                button_layout.addStretch()
+                tab_layout.addLayout(button_layout)
+            elif group_name == _("邮件设置"):
+                test_button = QtWidgets.QPushButton(_("测试连接"))
+                test_button.clicked.connect(self.test_email_connection)
+                test_button.setMinimumWidth(150)
+                button_layout = QtWidgets.QHBoxLayout()
+                button_layout.addStretch()
+                button_layout.addWidget(test_button)
+                button_layout.addStretch()
+                tab_layout.addLayout(button_layout)
+            
             tab_page.setLayout(tab_layout)
             
             tab_widget.addTab(tab_page, group_name)
