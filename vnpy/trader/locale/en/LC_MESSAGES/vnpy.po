@@ -829,3 +829,22 @@ msgstr "Connect gateway -> {}"
 msgid "个体突变概率：{:.0%}"
 msgstr "Individual mutation probability: {:.0%}"
 
+#: vnpy\trader\ui\widget.py:1255
+msgid "字体设置"
+msgstr "Font Settings"
+
+#: vnpy\trader\ui\widget.py:1256
+msgid "日志设置"
+msgstr "Log Settings"
+
+#: vnpy\trader\ui\widget.py:1257
+msgid "邮件设置"
+msgstr "Email Settings"
+
+#: vnpy\trader\ui\widget.py:1258
+msgid "数据服务"
+msgstr "Datafeed"
+
+#: vnpy\trader\ui\widget.py:1259
+msgid "数据库"
+msgstr "Database"
