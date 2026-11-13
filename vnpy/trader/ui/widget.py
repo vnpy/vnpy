@@ -1237,7 +1237,7 @@ class GlobalDialog(QtWidgets.QDialog):
         """"""
         super().__init__()
 
-        self.widgets: dict[str, tuple[QtWidgets.QLineEdit, type]] = {}
+        self.widgets: dict[str, tuple[QtWidgets.QComboBox | QtWidgets.QLineEdit, type]] = {}
 
         self.init_ui()
 
@@ -1261,7 +1261,7 @@ class GlobalDialog(QtWidgets.QDialog):
 
         for field_name, field_value in settings.items():
             field_type: type = type(field_value)
-            
+
             # Determine group based on prefix
             if field_name.startswith("font.") or field_name == "language":
                 groups[_("字体设置")][field_name] = (field_value, field_type)
@@ -1284,45 +1284,46 @@ class GlobalDialog(QtWidgets.QDialog):
 
             tab_page: QtWidgets.QWidget = QtWidgets.QWidget()
             tab_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-            
+
             # Create form layout for this group
             form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
-            
+
             for field_name, (field_value, field_type) in group_settings.items():
                 # Use combo box for language setting
+                widget: QtWidgets.QComboBox | QtWidgets.QLineEdit
                 if field_name == "language":
-                    widget: QtWidgets.QComboBox = QtWidgets.QComboBox()
+                    widget = QtWidgets.QComboBox()
                     widget.addItem("zh_CN - 中文", "zh_CN")
                     widget.addItem("en_US - English", "en_US")
-                    
+
                     # Set current value
                     current_index = widget.findData(field_value)
                     if current_index >= 0:
                         widget.setCurrentIndex(current_index)
                 else:
-                    widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(str(field_value))
-                
+                    widget = QtWidgets.QLineEdit(str(field_value))
+
                 form.addRow(f"{field_name} <{field_type.__name__}>", widget)
                 self.widgets[field_name] = (widget, field_type)
-            
+
             # Add stretch to push form content to top
             form.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding))
-            
+
             scroll_widget: QtWidgets.QWidget = QtWidgets.QWidget()
             scroll_widget.setLayout(form)
-            
+
             scroll_area: QtWidgets.QScrollArea = QtWidgets.QScrollArea()
             scroll_area.setWidgetResizable(True)
             scroll_area.setWidget(scroll_widget)
-            
+
             tab_layout.addWidget(scroll_area)
-            
+
             # Add test button at the bottom for datafeed, database and email tabs
             if group_name == _("数据服务"):
-                test_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("测试连接"))
+                test_button = QtWidgets.QPushButton(_("测试连接"))
                 test_button.clicked.connect(self.test_datafeed_connection)
                 test_button.setMinimumWidth(150)
-                button_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+                button_layout = QtWidgets.QHBoxLayout()
                 button_layout.addStretch()
                 button_layout.addWidget(test_button)
                 button_layout.addStretch()
@@ -1345,25 +1346,25 @@ class GlobalDialog(QtWidgets.QDialog):
                 button_layout.addWidget(test_button)
                 button_layout.addStretch()
                 tab_layout.addLayout(button_layout)
-            
+
             tab_page.setLayout(tab_layout)
-            
+
             tab_widget.addTab(tab_page, group_name)
 
         # Add OK button at the bottom
-        button_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
-        
-        ok_button: QtWidgets.QPushButton = QtWidgets.QPushButton(_("确定"))
+
+        ok_button = QtWidgets.QPushButton(_("确定"))
         ok_button.clicked.connect(self.update_setting)
         ok_button.setMinimumWidth(100)
         button_layout.addWidget(ok_button)
-        
+
         # Main layout
         main_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         main_layout.addWidget(tab_widget)
         main_layout.addLayout(button_layout)
-        
+
         self.setLayout(main_layout)
 
     def update_setting(self) -> None:
@@ -1373,16 +1374,16 @@ class GlobalDialog(QtWidgets.QDialog):
         settings: dict = {}
         for field_name, tp in self.widgets.items():
             widget, field_type = tp
-            
+
             # Handle QComboBox for language setting
             if isinstance(widget, QtWidgets.QComboBox):
-                value_text: str = widget.currentData()
+                value_text = widget.currentData()
             else:
-                value_text: str = widget.text()
+                value_text = widget.text()
 
             if field_type is bool:
                 if value_text == "True":
-                    field_value: bool = True
+                    field_value = True
                 else:
                     field_value = False
             else:
@@ -1405,55 +1406,59 @@ class GlobalDialog(QtWidgets.QDialog):
         Test datafeed connection.
         """
         from ..datafeed import get_datafeed, BaseDatafeed
-        
+
         # Temporarily update SETTINGS with current values from widgets
         temp_settings: dict = {}
         for field_name, tp in self.widgets.items():
             if field_name.startswith("datafeed."):
                 widget, field_type = tp
-                value_text: str = widget.text()
-                
-                if field_type is bool:
-                    field_value: bool = (value_text == "True")
-                else:
-                    field_value = field_type(value_text)
-                
-                temp_settings[field_name] = field_value
-        
+                if isinstance(widget, QtWidgets.QLineEdit):
+                    value_text = widget.text()
+
+                    if field_type is bool:
+                        field_value = (value_text == "True")
+                    else:
+                        field_value = field_type(value_text)
+
+                    temp_settings[field_name] = field_value
+
         # Update global SETTINGS temporarily
         original_settings: dict = {}
         for key, value in temp_settings.items():
             original_settings[key] = SETTINGS.get(key)
             SETTINGS[key] = value
-        
+
         try:
             # Reset global datafeed to force re-initialization
             import vnpy.trader.datafeed as datafeed_module
             datafeed_module.datafeed = None
-            
+
             # Get datafeed instance
             datafeed: BaseDatafeed = get_datafeed()
-            
+
             # Try to initialize
             success: bool = datafeed.init(output=lambda msg: None)
-            
+
             if success:
                 QtWidgets.QMessageBox.information(
                     self,
                     "测试结果",
-                    "数据服务连接成功！"
+                    "数据服务连接成功！",
+                    QtWidgets.QMessageBox.StandardButton.Ok
                 )
             else:
                 QtWidgets.QMessageBox.warning(
                     self,
                     "测试结果",
-                    "数据服务连接失败，请检查配置信息。"
+                    "数据服务连接失败，请检查配置信息。",
+                    QtWidgets.QMessageBox.StandardButton.Ok
                 )
         except Exception as e:
             QtWidgets.QMessageBox.critical(
                 self,
                 "测试结果",
-                f"数据服务连接错误：{str(e)}"
+                f"数据服务连接错误：{str(e)}",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         finally:
             # Restore original settings
@@ -1462,7 +1467,7 @@ class GlobalDialog(QtWidgets.QDialog):
                     del SETTINGS[key]
                 else:
                     SETTINGS[key] = value
-            
+
             # Reset datafeed again
             datafeed_module.datafeed = None
 
@@ -1471,48 +1476,51 @@ class GlobalDialog(QtWidgets.QDialog):
         Test database connection.
         """
         from ..database import get_database, BaseDatabase
-        
+
         # Temporarily update SETTINGS with current values from widgets
         temp_settings: dict = {}
         for field_name, tp in self.widgets.items():
             if field_name.startswith("database."):
                 widget, field_type = tp
-                value_text: str = widget.text()
-                
-                if field_type is bool:
-                    field_value: bool = (value_text == "True")
-                else:
-                    field_value = field_type(value_text)
-                
-                temp_settings[field_name] = field_value
-        
+                if isinstance(widget, QtWidgets.QLineEdit):
+                    value_text = widget.text()
+
+                    if field_type is bool:
+                        field_value = (value_text == "True")
+                    else:
+                        field_value = field_type(value_text)
+
+                    temp_settings[field_name] = field_value
+
         # Update global SETTINGS temporarily
         original_settings: dict = {}
         for key, value in temp_settings.items():
             original_settings[key] = SETTINGS.get(key)
             SETTINGS[key] = value
-        
+
         try:
             # Try to get database instance
             database: BaseDatabase = get_database()
-            
+
             # Try a simple operation to test connection
             # For SQLite, just getting the instance is enough
             # For other databases, we might need to do a ping
             if hasattr(database, 'db'):
                 # Try to access the database connection
                 _ = database.db
-            
+
             QtWidgets.QMessageBox.information(
                 self,
                 "测试结果",
-                "数据库连接成功！"
+                "数据库连接成功！",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         except Exception as e:
             QtWidgets.QMessageBox.critical(
                 self,
                 "测试结果",
-                f"数据库连接错误：{str(e)}"
+                f"数据库连接错误：{str(e)}",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         finally:
             # Restore original settings
@@ -1527,28 +1535,28 @@ class GlobalDialog(QtWidgets.QDialog):
         Test email connection.
         """
         import smtplib
-        from email.message import EmailMessage
-        
+
         # Temporarily update SETTINGS with current values from widgets
         temp_settings: dict = {}
         for field_name, tp in self.widgets.items():
             if field_name.startswith("email."):
                 widget, field_type = tp
-                value_text: str = widget.text()
-                
-                if field_type is bool:
-                    field_value: bool = (value_text == "True")
-                else:
-                    field_value = field_type(value_text)
-                
-                temp_settings[field_name] = field_value
-        
+                if isinstance(widget, QtWidgets.QLineEdit):
+                    value_text = widget.text()
+
+                    if field_type is bool:
+                        field_value = (value_text == "True")
+                    else:
+                        field_value = field_type(value_text)
+
+                    temp_settings[field_name] = field_value
+
         # Update global SETTINGS temporarily
         original_settings: dict = {}
         for key, value in temp_settings.items():
             original_settings[key] = SETTINGS.get(key)
             SETTINGS[key] = value
-        
+
         try:
             # Get email settings
             server: str = SETTINGS["email.server"]
@@ -1557,7 +1565,7 @@ class GlobalDialog(QtWidgets.QDialog):
             password: str = SETTINGS["email.password"]
             sender: str = SETTINGS["email.sender"]
             receiver: str = SETTINGS["email.receiver"]
-            
+
             # Check if all required fields are filled
             if not all([server, port, username, password, sender, receiver]):
                 QtWidgets.QMessageBox.warning(
@@ -1566,34 +1574,38 @@ class GlobalDialog(QtWidgets.QDialog):
                     "请填写完整的邮件配置信息（服务器、端口、用户名、密码、发件人、收件人）"
                 )
                 return
-            
+
             # Try to connect and login to SMTP server
             with smtplib.SMTP_SSL(server, port) as smtp:
                 smtp.login(username, password)
                 smtp.close()
-            
+
             QtWidgets.QMessageBox.information(
                 self,
                 "测试结果",
-                "邮件服务器连接成功！"
+                "邮件服务器连接成功！",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         except smtplib.SMTPAuthenticationError:
             QtWidgets.QMessageBox.critical(
                 self,
                 "测试结果",
-                "邮件服务器认证失败，请检查用户名和密码"
+                "邮件服务器认证失败，请检查用户名和密码",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         except smtplib.SMTPConnectError:
             QtWidgets.QMessageBox.critical(
                 self,
                 "测试结果",
-                f"无法连接到邮件服务器 {server}:{port}"
+                f"无法连接到邮件服务器 {server}:{port}",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         except Exception as e:
             QtWidgets.QMessageBox.critical(
                 self,
                 "测试结果",
-                f"邮件连接错误：{str(e)}"
+                f"邮件连接错误：{str(e)}",
+                QtWidgets.QMessageBox.StandardButton.Ok
             )
         finally:
             # Restore original settings
