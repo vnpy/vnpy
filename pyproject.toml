@@ -16,6 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Office/Business :: Financial :: Investment",
     "Natural Language :: Chinese (Simplified)",
@@ -24,7 +25,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "tzlocal>=5.3.1",
-    "PySide6==6.8.2.1",
+    "PySide6==6.10.1",
     "pyqtgraph>=0.13.7",
     "qdarkstyle>=3.2.3",
     "numpy>=2.2.3",
