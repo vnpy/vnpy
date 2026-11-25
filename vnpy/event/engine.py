@@ -7,6 +7,7 @@ from collections.abc import Callable
 from queue import Empty, Queue
 from threading import Thread
 from time import sleep
+from traceback import print_exc
 from typing import Any, TypeAlias
 
 
@@ -72,12 +73,23 @@ class EventEngine:
 
         Then distribute event to those general handlers which listens
         to all types.
+
+        Exception raised by any handler is printed, so that a single
+        broken handler won't stop the whole event engine.
         """
         if event.type in self._handlers:
-            [handler(event) for handler in self._handlers[event.type]]
+            for handler in self._handlers[event.type]:
+                try:
+                    handler(event)
+                except Exception:
+                    print_exc()
 
         if self._general_handlers:
-            [handler(event) for handler in self._general_handlers]
+            for handler in self._general_handlers:
+                try:
+                    handler(event)
+                except Exception:
+                    print_exc()
 
     def _run_timer(self) -> None:
         """
