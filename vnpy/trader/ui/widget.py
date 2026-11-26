@@ -217,7 +217,7 @@ class TimeCell(BaseCell):
 
         millisecond: int = int(content.microsecond / 1000)
         if millisecond:
-            timestamp = f"{timestamp}.{millisecond}"
+            timestamp = f"{timestamp}.{millisecond:03d}"
         else:
             timestamp = f"{timestamp}.000"
 
