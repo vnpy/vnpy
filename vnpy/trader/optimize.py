@@ -3,6 +3,7 @@ Brute-force and genetic algorithm parameter optimization.
 """
 
 from collections.abc import Callable
+from decimal import Decimal
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
 from random import random, choice
@@ -61,12 +62,10 @@ class OptimizationSetting:
         if step <= 0:
             return False, _("参数优化步进必须大于0")
 
-        value: float = start
         value_list: list[float] = []
 
-        while value <= end:
-            value_list.append(value)
-            value += step
+        count: int = int((Decimal(str(end)) - Decimal(str(start))) / Decimal(str(step)))
+        value_list = [round(start + i * step, 12) for i in range(count + 1)]
 
         self.params[name] = value_list
 
