@@ -11,7 +11,7 @@ from time import sleep
 # 加载VeighNa核心框架
 from vnpy.event import EventEngine, Event
 from vnpy.trader.setting import SETTINGS
-from vnpy.trader.engine import MainEngine, LogEngine
+from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import ContractData
 from vnpy.trader.constant import Exchange, Product
 from vnpy.trader.event import EVENT_CONTRACT
@@ -110,9 +110,6 @@ def run_recorder() -> None:
     # 注册合约事件处理函数，当有新合约信息推送时，会自动调用subscribe_data函数
     event_engine.register(EVENT_CONTRACT, subscribe_data)
 
-    # 获取日志引擎并设置日志处理
-    log_engine: LogEngine = main_engine.get_engine("log")
-
     def print_log(event: Event) -> None:
         """
         处理数据录制模块的日志事件
@@ -123,7 +120,7 @@ def run_recorder() -> None:
         参数:
             event: 包含日志信息的事件对象
         """
-        log_engine.logger.log(INFO, event.data)
+        main_engine.write_log(event.data, "DATA_RECORDER")
 
     # 注册日志事件处理函数，当有新的日志推送时，会自动调用print_log函数
     event_engine.register(EVENT_RECORDER_LOG, print_log)
