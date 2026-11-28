@@ -55,3 +55,11 @@ def test_delay_mean_and_rank_on_tiny_frame() -> None:
     assert_values(data_values(delayed), [None, 1.0, 3.0, None, 4.0, 2.0])
     assert_values(data_values(averaged), [1.0, 2.0, 4.0, 4.0, 3.0, 5.0])
     assert_values(data_values(ranked), [0.5, 1.0, 0.5, 1.0, 0.5, 1.0])
+
+
+def test_decay_linear_weights_latest_value_most() -> None:
+    frame: pl.DataFrame = sample_frame()
+
+    decayed: pl.DataFrame = calculate_by_expression(frame, "ts_decay_linear(close, 2)")
+
+    assert_values(data_values(decayed), [None, 7 / 3, 13 / 3, None, 8 / 3, 6.0])

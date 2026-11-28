@@ -315,7 +315,7 @@ def ts_decay_linear(feature: DataProxy, window: int) -> DataProxy:
     """Calculate linear decay weighted average"""
     def decay_func(s: pl.Series) -> float:
         """Calculate linear decay weighted average for a series"""
-        weights: pl.Series = pl.Series(range(window, 0, -1))
+        weights: pl.Series = pl.Series(range(1, window + 1))
         denominator: int = window * (window + 1) // 2
         return float((s * weights).sum() / denominator)
 
